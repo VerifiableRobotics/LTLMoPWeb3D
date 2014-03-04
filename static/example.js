@@ -11,7 +11,7 @@
 	// declare objects
 	var initScene, render,
 		ground_material, car_material, wheel_material, wheel_geometry,
-		projector, renderer, render_stats, physics_stats, scene, ground_geometry, ground, light, camera,
+		projector, renderer, scene, ground_geometry, ground, light, camera,
 		car = {};
 	
 	// initialize the scene
@@ -20,7 +20,10 @@
 		
       	// create the renderer
 		renderer = new THREE.WebGLRenderer({ antialias: true });
-		renderer.setSize( window.innerWidth, window.innerHeight );
+      	var rendWidth = $('#viewport').width();
+        var rendHeight = $('#viewport').height();
+      	console.log(rendHeight);
+		renderer.setSize( rendWidth, rendHeight );
 		renderer.shadowMapEnabled = true;
 		renderer.shadowMapSoft = true;
 		document.getElementById( 'viewport' ).appendChild( renderer.domElement );
@@ -70,7 +73,6 @@
 			.5, // high friction
 			0 // no restitution
 		);
-		
 		// create the ground
 		ground = new Physijs.BoxMesh(
 			new THREE.CubeGeometry(100, 1, 100),
@@ -78,6 +80,7 @@
 			0 // mass
 		);
 		ground.receiveShadow = true;
+      	// use .position.set to set 3D location of obj before adding to scene
 		scene.add( ground );
 		
 		
