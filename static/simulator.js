@@ -5,8 +5,8 @@
 	'use strict';
 	
 	// set worker and ammo
-    Physijs.scripts.worker = 'static/physijs_worker.js';
-    Physijs.scripts.ammo = 'ammo.js';
+  Physijs.scripts.worker = 'static/physijs_worker.js';
+  Physijs.scripts.ammo = 'ammo.js';
 	
 	// declare objects
 	var initScene, render,
@@ -18,19 +18,19 @@
 	initScene = function() {
 		projector = new THREE.Projector;
 		
-      	// create the renderer
+  	// create the renderer
 		renderer = new THREE.WebGLRenderer({ antialias: true });
-      	var rendWidth = $('#viewport').width();
-        var rendHeight = $('#viewport').height();
-      	console.log(rendHeight);
+  	var rendWidth = $('#viewport').width();
+    var rendHeight = $('#viewport').height();
+  	console.log(rendHeight);
 		renderer.setSize( rendWidth, rendHeight );
 		renderer.shadowMapEnabled = true;
 		renderer.shadowMapSoft = true;
 		document.getElementById( 'viewport' ).appendChild( renderer.domElement );
 		
 		
-      	// create the scene and add gravity
-      	// also add the listener to drop the car down upon update
+  	// create the scene and add gravity
+  	// also add the listener to drop the car down upon update
 		scene = new Physijs.Scene;
 		scene.setGravity(new THREE.Vector3( 0, -30, 0 ));
 		scene.addEventListener(
@@ -69,7 +69,7 @@
 		
 		// create the ground material
 		ground_material = Physijs.createMaterial(
-          new THREE.MeshLambertMaterial({color: 0x00ff00}),  // just some green
+      new THREE.MeshLambertMaterial({color: 0x00ff00}),  // just some green
 			.5, // high friction
 			0 // no restitution
 		);
@@ -80,7 +80,7 @@
 			0 // mass
 		);
 		ground.receiveShadow = true;
-      	// use .position.set to set 3D location of obj before adding to scene
+  	// use .position.set to set 3D location of obj before adding to scene
 		scene.add( ground );
 		
 		
@@ -90,18 +90,17 @@
 			.5, // high friction
 			0 // no restitution
 		);
-      	car.body = new Physijs.BoxMesh(
+  	car.body = new Physijs.BoxMesh(
 			new THREE.CubeGeometry( 10, 5, 7 ),
 			car_material,
 			1000
 		);
-      	car.body.position.y = 10;
 		car.body.receiveShadow = car.body.castShadow = true;
 		scene.add( car.body );
 		
 		
-      	// create the 4 wheels
-      	wheel_material = Physijs.createMaterial(
+  	// create the 4 wheels
+    wheel_material = Physijs.createMaterial(
 			new THREE.MeshLambertMaterial({ color: 0x444444 }),
 			.5, // high friction
 			0 // no restitution
@@ -112,27 +111,27 @@
 			wheel_material,
 			500
 		);
-      	car.wheel_fr = new Physijs.CylinderMesh(
+    car.wheel_fr = new Physijs.CylinderMesh(
 			wheel_geometry,
 			wheel_material,
 			500
 		);
-      	car.wheel_bl = new Physijs.CylinderMesh(
+  	car.wheel_bl = new Physijs.CylinderMesh(
 			wheel_geometry,
 			wheel_material,
 			500
 		);
-      	car.wheel_br = new Physijs.CylinderMesh(
+  	car.wheel_br = new Physijs.CylinderMesh(
 			wheel_geometry,
 			wheel_material,
 			500
 		);
       
 		// hold var for less repeated computations
-      	var pidiv2 = Math.PI / 2;
-      	// set contraints and rotations for the wheels
-      	// front left wheel
-      	car.wheel_fl.rotation.x = pidiv2;
+  	var pidiv2 = Math.PI / 2;
+  	// set contraints and rotations for the wheels
+  	// front left wheel
+  	car.wheel_fl.rotation.x = pidiv2;
 		car.wheel_fl.position.set( -3.5, 6.5, 5 );
 		car.wheel_fl.receiveShadow = car.wheel_fl.castShadow = true;
 		scene.add( car.wheel_fl );
@@ -142,7 +141,7 @@
 		scene.addConstraint( car.wheel_fl_constraint );
 		car.wheel_fl_constraint.setAngularLowerLimit({ x: 0, y: 0, z: 0 });
 		car.wheel_fl_constraint.setAngularUpperLimit({ x: 0, y: 0, z: 0 });
-        // front right wheel
+    // front right wheel
 		car.wheel_fr.rotation.x = pidiv2;
 		car.wheel_fr.position.set( -3.5, 6.5, -5 );
 		car.wheel_fr.receiveShadow = car.wheel_fr.castShadow = true;
@@ -177,13 +176,13 @@
 		car.wheel_br_constraint.setAngularUpperLimit({ x: 0, y: 0, z: 0 });
 		
       
-      	// add the key listeners to move the car with
+  	// add the key listeners to move the car with
 		document.addEventListener(
 			'keydown',
 			function( ev ) {
 				switch( ev.keyCode ) {
 					case 37: // Left
-                    	// x-axis motor, upper limit, lower limit, target velocity, maximum force
+          	// x-axis motor, upper limit, lower limit, target velocity, maximum force
 						car.wheel_fl_constraint.configureAngularMotor( 1, -pidiv2, pidiv2, 1, 200 );
 						car.wheel_fr_constraint.configureAngularMotor( 1, -pidiv2, pidiv2, 1, 200 );
 						car.wheel_fl_constraint.enableAngularMotor( 1 ); // start x-axis motor
@@ -191,7 +190,7 @@
 						break;
 					
 					case 39: // Right
-                    	// x-axis motor, upper limit, lower limit, target velocity, maximum force
+          	// x-axis motor, upper limit, lower limit, target velocity, maximum force
 						car.wheel_fl_constraint.configureAngularMotor( 1, -pidiv2, pidiv2, -1, 200 );
 						car.wheel_fr_constraint.configureAngularMotor( 1, -pidiv2, pidiv2, -1, 200 );
 						car.wheel_fl_constraint.enableAngularMotor( 1 ); // start x-axis motor
@@ -199,26 +198,26 @@
 						break;
 					
 					case 38: // Up
-                    	// z-axis motor, upper limit, lower limit, target velocity, maximum force
+          	// z-axis motor, upper limit, lower limit, target velocity, maximum force
 						car.wheel_bl_constraint.configureAngularMotor( 2, 5, 0, 5, 200000 );
 						car.wheel_br_constraint.configureAngularMotor( 2, 5, 0, 5, 200000 );
-                    	car.wheel_fl_constraint.configureAngularMotor( 2, 5, 0, 5, 200000 );
+          	car.wheel_fl_constraint.configureAngularMotor( 2, 5, 0, 5, 200000 );
 						car.wheel_fr_constraint.configureAngularMotor( 2, 5, 0, 5, 200000 );
 						car.wheel_bl_constraint.enableAngularMotor( 2 ); // start z-axis motor
 						car.wheel_br_constraint.enableAngularMotor( 2 ); // start z-axis motor
-                    	car.wheel_fl_constraint.enableAngularMotor( 2 ); // start z-axis motor
+          	car.wheel_fl_constraint.enableAngularMotor( 2 ); // start z-axis motor
 						car.wheel_fr_constraint.enableAngularMotor( 2 ); // start z-axis motor
 						break;
 					
 					case 40: // Down
 						// z-axis motor, upper limit, lower limit, target velocity, maximum force
-                    	car.wheel_bl_constraint.configureAngularMotor( 2, 1, 0, -5, 200000 );
+          	car.wheel_bl_constraint.configureAngularMotor( 2, 1, 0, -5, 200000 );
 						car.wheel_br_constraint.configureAngularMotor( 2, 1, 0, -5, 200000 );
-                    	car.wheel_fl_constraint.configureAngularMotor( 2, 1, 0, -5, 200000 );
+          	car.wheel_fl_constraint.configureAngularMotor( 2, 1, 0, -5, 200000 );
 						car.wheel_fr_constraint.configureAngularMotor( 2, 1, 0, -5, 200000 );
 						car.wheel_bl_constraint.enableAngularMotor( 2 ); // start z-axis motor
 						car.wheel_br_constraint.enableAngularMotor( 2 ); // start z-axis motor
-                    	car.wheel_fl_constraint.enableAngularMotor( 2 ); // start z-axis motor
+          	car.wheel_fl_constraint.enableAngularMotor( 2 ); // start z-axis motor
 						car.wheel_fr_constraint.enableAngularMotor( 2 ); // start z-axis motor
 						break;
 				}
@@ -230,7 +229,7 @@
 				switch( ev.keyCode ) {
 					case 37:
 						// Left
-                    	car.wheel_fl_constraint.configureAngularMotor( 1, 0, 0, -1, 200 );
+          	car.wheel_fl_constraint.configureAngularMotor( 1, 0, 0, -1, 200 );
 						car.wheel_fr_constraint.configureAngularMotor( 1, 0, 0, -1, 200 );
 						car.wheel_fl_constraint.disableAngularMotor( 1 );
 						car.wheel_fr_constraint.disableAngularMotor( 1 );
@@ -238,35 +237,35 @@
 					
 					case 39:
 						// Right
-                    	car.wheel_fl_constraint.configureAngularMotor( 1, 0, 0, 1, 200 );
+          	car.wheel_fl_constraint.configureAngularMotor( 1, 0, 0, 1, 200 );
 						car.wheel_fr_constraint.configureAngularMotor( 1, 0, 0, 1, 200 );
 						car.wheel_fl_constraint.disableAngularMotor( 1 );
 						car.wheel_fr_constraint.disableAngularMotor( 1 );
 						break;
 					
 					case 38:
-                    	// Up
-                    	car.wheel_bl_constraint.configureAngularMotor( 2, 0, 1, -5, 20000000 );
+          	// Up
+          	car.wheel_bl_constraint.configureAngularMotor( 2, 0, 1, -5, 20000000 );
 						car.wheel_br_constraint.configureAngularMotor( 2, 0, 1, -5, 20000000 );
-                    	car.wheel_fl_constraint.configureAngularMotor( 2, 0, 1, -5, 20000000 );
+          	car.wheel_fl_constraint.configureAngularMotor( 2, 0, 1, -5, 20000000 );
 						car.wheel_fr_constraint.configureAngularMotor( 2, 0, 1, -5, 20000000 );
 						car.wheel_bl_constraint.disableAngularMotor( 2 );
 						car.wheel_br_constraint.disableAngularMotor( 2 );
-                    	car.wheel_fl_constraint.disableAngularMotor( 2 );
+          	car.wheel_fl_constraint.disableAngularMotor( 2 );
 						car.wheel_fr_constraint.disableAngularMotor( 2 );
-						break
+						break;
                         
-                  	case 40:
+	      	case 40:
 						// Down
-                    	car.wheel_bl_constraint.configureAngularMotor( 2, 0, 1, 5, 20000000 );
+          	car.wheel_bl_constraint.configureAngularMotor( 2, 0, 1, 5, 20000000 );
 						car.wheel_br_constraint.configureAngularMotor( 2, 0, 1, 5, 20000000 );
-                    	car.wheel_fl_constraint.configureAngularMotor( 2, 0, 1, 5, 20000000 );
+          	car.wheel_fl_constraint.configureAngularMotor( 2, 0, 1, 5, 20000000 );
 						car.wheel_fr_constraint.configureAngularMotor( 2, 0, 1, 5, 20000000 );
 						car.wheel_bl_constraint.disableAngularMotor( 2 );
 						car.wheel_br_constraint.disableAngularMotor( 2 );
-                    	car.wheel_fl_constraint.disableAngularMotor( 2 );
+          	car.wheel_fl_constraint.disableAngularMotor( 2 );
 						car.wheel_fr_constraint.disableAngularMotor( 2 );
-						break
+						break;
 				}
 			}
 		);
@@ -284,9 +283,44 @@
 	// set the scene to initiliaze as soon as the window is loaded
 	window.onload = initScene;
 	
-	// ajax call for velocity/theta
-	var hasError = false; // flag if error occurs
-	var currentVelocity = 0; // stores current velocity
-	var currentTheta = 0; // stores current theta
+	$('#import_spec').click(function(){
+		// ajax call for velocity/theta
+		var hasError = false; // flag if error occurs
+		var currentVelocity = 0; // stores current velocity
+		var currentTheta = 0; // stores current theta
 
+		$.ajax({
+      url: '/getVelocityTheta',
+      type: 'GET',
+      datatype: json,
+      success: function(data) {
+        // z-axis motor, upper limit, lower limit, target velocity, maximum force
+				car.wheel_bl_constraint.configureAngularMotor( 2, data.velocity, 0, data.velocity, 200000 );
+				car.wheel_br_constraint.configureAngularMotor( 2, data.velocity, 0, data.velocity, 200000 );
+      	car.wheel_fl_constraint.configureAngularMotor( 2, data.velocity, 0, data.velocity, 200000 );
+				car.wheel_fr_constraint.configureAngularMotor( 2, data.velocity, 0, data.velocity, 200000 );
+				car.wheel_bl_constraint.enableAngularMotor( 2 ); // start z-axis motor
+				car.wheel_br_constraint.enableAngularMotor( 2 ); // start z-axis motor
+      	car.wheel_fl_constraint.enableAngularMotor( 2 ); // start z-axis motor
+				car.wheel_fr_constraint.enableAngularMotor( 2 ); // start z-axis motor
+
+				// x-axis motor, upper limit, lower limit, target velocity, maximum force
+				car.wheel_fl_constraint.configureAngularMotor( 1, data.theta, 0, data.theta, 200 );
+				car.wheel_fr_constraint.configureAngularMotor( 1, data.theta, 0, data.theta, 200 );
+				car.wheel_fl_constraint.enableAngularMotor( 1 ); // start x-axis motor
+				car.wheel_fr_constraint.enableAngularMotor( 1 ); // start x-axis motor
+		  },
+      error: function(xhr, status){
+      	car.wheel_bl_constraint.disableAngularMotor( 2 ); // stop z-axis motors
+				car.wheel_br_constraint.disableAngularMotor( 2 ); 
+      	car.wheel_fl_constraint.disableAngularMotor( 2 ); 
+				car.wheel_fr_constraint.disableAngularMotor( 2 ); 
+
+				car.wheel_fl_constraint.disableAngularMotor( 1 ); // stop x-axis motors
+				car.wheel_fr_constraint.disableAngularMotor( 1 ); 
+
+        console.log("velocity theta ajax error");
+      }
+    });
+	}
     
