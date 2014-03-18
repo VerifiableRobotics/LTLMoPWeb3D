@@ -1,17 +1,17 @@
 html {
 	margin: 0;
 	padding: 0;
-  	height: 100%;
+	height: 100%;
 }
 
 body {
-  	position: absolute;
+	position: absolute;
 	margin: 0;
 	padding: 0;
-  	top: 0px;
-  	bottom: 0px;
-  	left: 0px;
-  	right: 0px;
+	top: 0px;
+	bottom: 0px;
+	left: 0px;
+	right: 0px;
 	font-family: Verdana;
 	font-size: 10pt;
 }
@@ -20,8 +20,8 @@ body {
 	position: relative;
 	top: 0;
 	width: 100%;
-  	height: 50px;
-  	margin: 0;
+	height: 50px;
+	margin: 0;
 	padding: 0;
 	background-color: #71b87b;
 	text-align: center;
@@ -29,18 +29,22 @@ body {
 #heading h1 {
 	margin: 0;
 	height: 30px;
-  	line-height: 30px;
-  	background-color: #64a36d;
+	line-height: 30px;
+	background-color: #64a36d;
 	font-size: 16px;
 }
 #heading p {
-  	margin: 0;
+	margin: 0;
 	line-height: 20px;
-  	height: 20px;
+	height: 20px;
 }
 
 #viewport{
   position: relative;
   width: 100%;
   height: 90%;
+}
+
+.center_wrapper{
+  text-align: center;
 }

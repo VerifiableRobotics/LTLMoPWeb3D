@@ -322,5 +322,5 @@
         console.log("velocity theta ajax error");
       }
     });
-	}
+	};
     
