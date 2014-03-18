@@ -95,6 +95,7 @@
 			car_material,
 			1000
 		);
+		car.body.position.y = 10;
 		car.body.receiveShadow = car.body.castShadow = true;
 		scene.add( car.body );
 		
