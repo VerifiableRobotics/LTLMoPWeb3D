@@ -75,7 +75,7 @@
 		);
 		// create the ground
 		ground = new Physijs.BoxMesh(
-			new THREE.CubeGeometry(300, 1, 300),
+			new THREE.CubeGeometry(100, 1, 100),
 			ground_material,
 			0 // mass
 		);
@@ -288,6 +288,8 @@
 		var hasError = false; // flag if error occurs
 		var currentVelocity = 0; // stores current velocity
 		var currentTheta = 0; // stores current theta
+
+		console.log("clicked import_spec")
 
 		$.ajax({
       url: '/getVelocityTheta',
