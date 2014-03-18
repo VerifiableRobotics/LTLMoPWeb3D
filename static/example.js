@@ -75,7 +75,7 @@
 		);
 		// create the ground
 		ground = new Physijs.BoxMesh(
-			new THREE.CubeGeometry(100, 1, 100),
+			new THREE.CubeGeometry(300, 1, 300),
 			ground_material,
 			0 // mass
 		);
@@ -284,3 +284,9 @@
 	// set the scene to initiliaze as soon as the window is loaded
 	window.onload = initScene;
 	
+	// ajax call for velocity/theta
+	var hasError = false; // flag if error occurs
+	var currentVelocity = 0; // stores current velocity
+	var currentTheta = 0; // stores current theta
+
+    
