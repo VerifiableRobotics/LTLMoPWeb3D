@@ -330,5 +330,28 @@
 	      }
 	    });
 		});
+
+		$('#get_sensors').click(function(){
+			// ajax call for sensor list
+
+			console.log("clicked get_sensors")
+
+			$.ajax({
+	      url: '/getSensorList',
+	      type: 'GET',
+	      datatype: "json",
+	      success: function(data) {
+	        for (var i = 0; i < data.sensorArray.length; i++) {
+		        $('#sensor_list').prepend("<button type="button" class="sensor_button">" + data.sensorArray[i] + "</button>");
+		      }
+		      $(".sensor_button").click(function() {
+		      	this.toggleClass("greened");
+		      });
+			  },
+	      error: function(xhr, status) {
+	        console.log("sensor ajax error");
+	      }
+	    });
+		});
 	});
     

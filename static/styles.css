@@ -48,3 +48,15 @@ body {
 .center_wrapper{
   text-align: center;
 }
+
+.right_wrapper{
+  text-align: right;
+}
+
+.sensor_button{
+  background-color: red;
+}
+
+.greened{
+  background-color: green;
+}
