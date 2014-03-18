@@ -284,46 +284,48 @@
 	// set the scene to initiliaze as soon as the window is loaded
 	window.onload = initScene;
 	
-	$('#import_spec').click(function(){
-		// ajax call for velocity/theta
-		var hasError = false; // flag if error occurs
-		var currentVelocity = 0; // stores current velocity
-		var currentTheta = 0; // stores current theta
+	$( document ).ready(function() {
+		$('#import_spec').click(function(){
+			// ajax call for velocity/theta
+			var hasError = false; // flag if error occurs
+			var currentVelocity = 0; // stores current velocity
+			var currentTheta = 0; // stores current theta
 
-		console.log("clicked import_spec")
+			console.log("clicked import_spec")
 
-		$.ajax({
-      url: '/getVelocityTheta',
-      type: 'GET',
-      datatype: json,
-      success: function(data) {
-        // z-axis motor, upper limit, lower limit, target velocity, maximum force
-				car.wheel_bl_constraint.configureAngularMotor( 2, data.velocity, 0, data.velocity, 200000 );
-				car.wheel_br_constraint.configureAngularMotor( 2, data.velocity, 0, data.velocity, 200000 );
-      	car.wheel_fl_constraint.configureAngularMotor( 2, data.velocity, 0, data.velocity, 200000 );
-				car.wheel_fr_constraint.configureAngularMotor( 2, data.velocity, 0, data.velocity, 200000 );
-				car.wheel_bl_constraint.enableAngularMotor( 2 ); // start z-axis motor
-				car.wheel_br_constraint.enableAngularMotor( 2 ); // start z-axis motor
-      	car.wheel_fl_constraint.enableAngularMotor( 2 ); // start z-axis motor
-				car.wheel_fr_constraint.enableAngularMotor( 2 ); // start z-axis motor
+			$.ajax({
+	      url: '/getVelocityTheta',
+	      type: 'GET',
+	      datatype: json,
+	      success: function(data) {
+	        // z-axis motor, upper limit, lower limit, target velocity, maximum force
+					car.wheel_bl_constraint.configureAngularMotor( 2, data.velocity, 0, data.velocity, 200000 );
+					car.wheel_br_constraint.configureAngularMotor( 2, data.velocity, 0, data.velocity, 200000 );
+	      	car.wheel_fl_constraint.configureAngularMotor( 2, data.velocity, 0, data.velocity, 200000 );
+					car.wheel_fr_constraint.configureAngularMotor( 2, data.velocity, 0, data.velocity, 200000 );
+					car.wheel_bl_constraint.enableAngularMotor( 2 ); // start z-axis motor
+					car.wheel_br_constraint.enableAngularMotor( 2 ); // start z-axis motor
+	      	car.wheel_fl_constraint.enableAngularMotor( 2 ); // start z-axis motor
+					car.wheel_fr_constraint.enableAngularMotor( 2 ); // start z-axis motor
 
-				// x-axis motor, upper limit, lower limit, target velocity, maximum force
-				car.wheel_fl_constraint.configureAngularMotor( 1, data.theta, 0, data.theta, 200 );
-				car.wheel_fr_constraint.configureAngularMotor( 1, data.theta, 0, data.theta, 200 );
-				car.wheel_fl_constraint.enableAngularMotor( 1 ); // start x-axis motor
-				car.wheel_fr_constraint.enableAngularMotor( 1 ); // start x-axis motor
-		  },
-      error: function(xhr, status) {
-      	car.wheel_bl_constraint.disableAngularMotor( 2 ); // stop z-axis motors
-				car.wheel_br_constraint.disableAngularMotor( 2 ); 
-      	car.wheel_fl_constraint.disableAngularMotor( 2 ); 
-				car.wheel_fr_constraint.disableAngularMotor( 2 ); 
+					// x-axis motor, upper limit, lower limit, target velocity, maximum force
+					car.wheel_fl_constraint.configureAngularMotor( 1, data.theta, 0, data.theta, 200 );
+					car.wheel_fr_constraint.configureAngularMotor( 1, data.theta, 0, data.theta, 200 );
+					car.wheel_fl_constraint.enableAngularMotor( 1 ); // start x-axis motor
+					car.wheel_fr_constraint.enableAngularMotor( 1 ); // start x-axis motor
+			  },
+	      error: function(xhr, status) {
+	      	car.wheel_bl_constraint.disableAngularMotor( 2 ); // stop z-axis motors
+					car.wheel_br_constraint.disableAngularMotor( 2 ); 
+	      	car.wheel_fl_constraint.disableAngularMotor( 2 ); 
+					car.wheel_fr_constraint.disableAngularMotor( 2 ); 
 
-				car.wheel_fl_constraint.disableAngularMotor( 1 ); // stop x-axis motors
-				car.wheel_fr_constraint.disableAngularMotor( 1 ); 
+					car.wheel_fl_constraint.disableAngularMotor( 1 ); // stop x-axis motors
+					car.wheel_fr_constraint.disableAngularMotor( 1 ); 
 
-        console.log("velocity theta ajax error");
-      }
-    });
+	        console.log("velocity theta ajax error");
+	      }
+	    });
+		});
 	});
     
