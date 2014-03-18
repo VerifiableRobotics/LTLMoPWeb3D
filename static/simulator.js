@@ -328,13 +328,13 @@
 
 	        console.log("velocity theta ajax error");
 	      }
-	    });
-		});
+	    }); // end ajax
+		}); // end click
 
 		$('#get_sensors').click(function(){
 			// ajax call for sensor list
 
-			console.log("clicked get_sensors")
+			console.log("clicked get_sensors");
 
 			$.ajax({
 	      url: '/getSensorList',
@@ -351,7 +351,8 @@
 	      error: function(xhr, status) {
 	        console.log("sensor ajax error");
 	      }
-	    });
-		});
+	    }); // end ajax
+		}); // end click
+	
 	});
     
