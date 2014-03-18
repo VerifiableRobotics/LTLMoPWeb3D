@@ -296,7 +296,7 @@
 			$.ajax({
 	      url: '/getVelocityTheta',
 	      type: 'GET',
-	      datatype: json,
+	      datatype: "json",
 	      success: function(data) {
 	        // z-axis motor, upper limit, lower limit, target velocity, maximum force
 					car.wheel_bl_constraint.configureAngularMotor( 2, data.velocity, 0, data.velocity, 200000 );
