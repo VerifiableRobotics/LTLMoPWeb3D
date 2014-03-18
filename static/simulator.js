@@ -313,6 +313,8 @@
 					car.wheel_fr_constraint.configureAngularMotor( 1, data.theta, 0, data.theta, 200 );
 					car.wheel_fl_constraint.enableAngularMotor( 1 ); // start x-axis motor
 					car.wheel_fr_constraint.enableAngularMotor( 1 ); // start x-axis motor
+
+					console.log("velocity: " + data.velocity " , theta: " + data.theta)
 			  },
 	      error: function(xhr, status) {
 	      	car.wheel_bl_constraint.disableAngularMotor( 2 ); // stop z-axis motors
