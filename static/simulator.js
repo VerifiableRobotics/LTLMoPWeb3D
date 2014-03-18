@@ -314,7 +314,7 @@
 					car.wheel_fl_constraint.enableAngularMotor( 1 ); // start x-axis motor
 					car.wheel_fr_constraint.enableAngularMotor( 1 ); // start x-axis motor
 
-					var newstr = "velocity: " + data.velocity.toString() " , theta: " + data.theta.toString();
+					var newstr = "velocity: " + data.velocity.toString() + " , theta: " + data.theta.toString();
 					console.log(newstr);
 			  },
 	      error: function(xhr, status) {
