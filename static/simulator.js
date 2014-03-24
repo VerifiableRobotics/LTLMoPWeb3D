@@ -320,13 +320,15 @@
 
 		// ajax call for velocity theta
 		function getVelocityTheta() {
-				var position = 0;
-				console.log("car position:" + car.body.position);
+				var x = car.body.position.x;
+          var y = car.body.position.y;
+				console.log("car position x:" + x);
+          console.log("car position z:" + y);
 				$.ajax({
 		      url: '/getVelocityTheta',
 		      type: 'GET',
 		      datatype: "json",
-		      data: {position: position},
+                  data: {x: x, y: y},
 		      success: function(data) {
 		        // z-axis motor, upper limit, lower limit, target velocity, maximum force
 						car.wheel_bl_constraint.configureAngularMotor( 2, data.velocity, 0, data.velocity, 200000 );
