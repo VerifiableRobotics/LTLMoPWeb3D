@@ -11,7 +11,7 @@ def loadSimulator():
 	return render_template('/simulator.html', name='example')
 
 @app.route('/getVelocityTheta')
-def sendVelocityTheta():
+def sendVelocityTheta(data):
 	newVelocity = random.uniform(0, 30)
 	newTheta = random.uniform(0, math.pi/2)
 	return jsonify(velocity = newVelocity, theta = newTheta)

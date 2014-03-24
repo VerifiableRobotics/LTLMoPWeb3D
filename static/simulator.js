@@ -230,27 +230,27 @@
 				switch( ev.keyCode ) {
 					case 37:
 						// Left
-          	car.wheel_fl_constraint.configureAngularMotor( 1, 0, 0, -1, 200 );
+          	/*car.wheel_fl_constraint.configureAngularMotor( 1, 0, 0, -1, 200 );
 						car.wheel_fr_constraint.configureAngularMotor( 1, 0, 0, -1, 200 );
-						car.wheel_fl_constraint.disableAngularMotor( 1 );
+						*/car.wheel_fl_constraint.disableAngularMotor( 1 );
 						car.wheel_fr_constraint.disableAngularMotor( 1 );
 						break;
 					
 					case 39:
 						// Right
-          	car.wheel_fl_constraint.configureAngularMotor( 1, 0, 0, 1, 200 );
+          	/*car.wheel_fl_constraint.configureAngularMotor( 1, 0, 0, 1, 200 );
 						car.wheel_fr_constraint.configureAngularMotor( 1, 0, 0, 1, 200 );
-						car.wheel_fl_constraint.disableAngularMotor( 1 );
+						*/car.wheel_fl_constraint.disableAngularMotor( 1 );
 						car.wheel_fr_constraint.disableAngularMotor( 1 );
 						break;
 					
 					case 38:
           	// Up
-          	car.wheel_bl_constraint.configureAngularMotor( 2, 0, 1, -5, 20000000 );
+          	/*car.wheel_bl_constraint.configureAngularMotor( 2, 0, 1, -5, 20000000 );
 						car.wheel_br_constraint.configureAngularMotor( 2, 0, 1, -5, 20000000 );
           	car.wheel_fl_constraint.configureAngularMotor( 2, 0, 1, -5, 20000000 );
 						car.wheel_fr_constraint.configureAngularMotor( 2, 0, 1, -5, 20000000 );
-						car.wheel_bl_constraint.disableAngularMotor( 2 );
+						*/car.wheel_bl_constraint.disableAngularMotor( 2 );
 						car.wheel_br_constraint.disableAngularMotor( 2 );
           	car.wheel_fl_constraint.disableAngularMotor( 2 );
 						car.wheel_fr_constraint.disableAngularMotor( 2 );
@@ -258,11 +258,11 @@
                         
 	      	case 40:
 						// Down
-          	car.wheel_bl_constraint.configureAngularMotor( 2, 0, 1, 5, 20000000 );
+          	/*car.wheel_bl_constraint.configureAngularMotor( 2, 0, 1, 5, 20000000 );
 						car.wheel_br_constraint.configureAngularMotor( 2, 0, 1, 5, 20000000 );
           	car.wheel_fl_constraint.configureAngularMotor( 2, 0, 1, 5, 20000000 );
 						car.wheel_fr_constraint.configureAngularMotor( 2, 0, 1, 5, 20000000 );
-						car.wheel_bl_constraint.disableAngularMotor( 2 );
+						*/car.wheel_bl_constraint.disableAngularMotor( 2 );
 						car.wheel_br_constraint.disableAngularMotor( 2 );
           	car.wheel_fl_constraint.disableAngularMotor( 2 );
 						car.wheel_fr_constraint.disableAngularMotor( 2 );
@@ -291,44 +291,8 @@
 			var currentVelocity = 0; // stores current velocity
 			var currentTheta = 0; // stores current theta
 
-			console.log("clicked import_spec")
-
-			$.ajax({
-	      url: '/getVelocityTheta',
-	      type: 'GET',
-	      datatype: "json",
-	      success: function(data) {
-	        // z-axis motor, upper limit, lower limit, target velocity, maximum force
-					car.wheel_bl_constraint.configureAngularMotor( 2, data.velocity, 0, data.velocity, 200000 );
-					car.wheel_br_constraint.configureAngularMotor( 2, data.velocity, 0, data.velocity, 200000 );
-	      	car.wheel_fl_constraint.configureAngularMotor( 2, data.velocity, 0, data.velocity, 200000 );
-					car.wheel_fr_constraint.configureAngularMotor( 2, data.velocity, 0, data.velocity, 200000 );
-					car.wheel_bl_constraint.enableAngularMotor( 2 ); // start z-axis motor
-					car.wheel_br_constraint.enableAngularMotor( 2 ); // start z-axis motor
-	      	car.wheel_fl_constraint.enableAngularMotor( 2 ); // start z-axis motor
-					car.wheel_fr_constraint.enableAngularMotor( 2 ); // start z-axis motor
-
-					// x-axis motor, upper limit, lower limit, target velocity, maximum force
-					car.wheel_fl_constraint.configureAngularMotor( 1, data.theta, 0, data.theta, 200 );
-					car.wheel_fr_constraint.configureAngularMotor( 1, data.theta, 0, data.theta, 200 );
-					car.wheel_fl_constraint.enableAngularMotor( 1 ); // start x-axis motor
-					car.wheel_fr_constraint.enableAngularMotor( 1 ); // start x-axis motor
-
-					var newstr = "velocity: " + data.velocity.toString() + " , theta: " + data.theta.toString();
-					console.log(newstr);
-			  },
-	      error: function(xhr, status) {
-	      	car.wheel_bl_constraint.disableAngularMotor( 2 ); // stop z-axis motors
-					car.wheel_br_constraint.disableAngularMotor( 2 ); 
-	      	car.wheel_fl_constraint.disableAngularMotor( 2 ); 
-					car.wheel_fr_constraint.disableAngularMotor( 2 ); 
-
-					car.wheel_fl_constraint.disableAngularMotor( 1 ); // stop x-axis motors
-					car.wheel_fr_constraint.disableAngularMotor( 1 ); 
-
-	        console.log("velocity theta ajax error");
-	      }
-	    }); // end ajax
+			console.log("clicked import_spec");
+			getVelocityTheta();
 		}); // end click
 
 		$('#get_sensors').click(function(){
@@ -342,10 +306,10 @@
 	      datatype: "json",
 	      success: function(data) {
 	        for (var i = 0; i < data.sensorArray.length; i++) {
-		        $('#sensor_list').prepend("<button type="button" class="sensor_button">" + data.sensorArray[i] + "</button>");
+		        $('#sensor_list').append("<button type="button" class="sensor_button">" + data.sensorArray[i] + "</button>");
 		      }
 		      $(".sensor_button").click(function() {
-		      	this.toggleClass("greened");
+		      	this.toggleClass("green_sensor");
 		      });
 			  },
 	      error: function(xhr, status) {
@@ -353,6 +317,49 @@
 	      }
 	    }); // end ajax
 		}); // end click
+
+		// ajax call for velocity theta
+		function getVelocityTheta() {
+				var position = 0;
+				console.log("car position:" + car.body.position);
+				$.ajax({
+		      url: '/getVelocityTheta',
+		      type: 'GET',
+		      datatype: "json",
+		      data: {position: position},
+		      success: function(data) {
+		        // z-axis motor, upper limit, lower limit, target velocity, maximum force
+						car.wheel_bl_constraint.configureAngularMotor( 2, data.velocity, 0, data.velocity, 200000 );
+						car.wheel_br_constraint.configureAngularMotor( 2, data.velocity, 0, data.velocity, 200000 );
+		      	car.wheel_fl_constraint.configureAngularMotor( 2, data.velocity, 0, data.velocity, 200000 );
+						car.wheel_fr_constraint.configureAngularMotor( 2, data.velocity, 0, data.velocity, 200000 );
+						car.wheel_bl_constraint.enableAngularMotor( 2 ); // start z-axis motor
+						car.wheel_br_constraint.enableAngularMotor( 2 ); // start z-axis motor
+		      	car.wheel_fl_constraint.enableAngularMotor( 2 ); // start z-axis motor
+						car.wheel_fr_constraint.enableAngularMotor( 2 ); // start z-axis motor
+
+						// x-axis motor, upper limit, lower limit, target velocity, maximum force
+						car.wheel_fl_constraint.configureAngularMotor( 1, data.theta, 0, data.theta, 200 );
+						car.wheel_fr_constraint.configureAngularMotor( 1, data.theta, 0, data.theta, 200 );
+						car.wheel_fl_constraint.enableAngularMotor( 1 ); // start x-axis motor
+						car.wheel_fr_constraint.enableAngularMotor( 1 ); // start x-axis motor
+
+						var newstr = "velocity: " + data.velocity.toString() + " , theta: " + data.theta.toString();
+						console.log(newstr);
+				  },
+		      error: function(xhr, status) {
+		      	car.wheel_bl_constraint.disableAngularMotor( 2 ); // stop z-axis motors
+						car.wheel_br_constraint.disableAngularMotor( 2 ); 
+		      	car.wheel_fl_constraint.disableAngularMotor( 2 ); 
+						car.wheel_fr_constraint.disableAngularMotor( 2 ); 
+
+						car.wheel_fl_constraint.disableAngularMotor( 1 ); // stop x-axis motors
+						car.wheel_fr_constraint.disableAngularMotor( 1 ); 
+
+		        console.log("velocity theta ajax error");
+		      }
+		    }); // end ajax
+			} // end func
 	
-	});
+	}); // end document ready
     
