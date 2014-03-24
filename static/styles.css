@@ -45,12 +45,17 @@ body {
   height: 50%;
 }
 
+#simulator_wrapper{
+	width: 100%;
+}
+
 .center_wrapper{
   text-align: center;
 }
 
 .right_wrapper{
   text-align: right;
+  width: 50%;
 }
 
 .sensor_button{

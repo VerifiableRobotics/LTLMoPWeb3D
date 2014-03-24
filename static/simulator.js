@@ -308,8 +308,8 @@
 	        for (var i = 0; i < data.sensorArray.length; i++) {
 		        $('#sensor_list').append("<button type=\"button\" class=\"sensor_button\">" + data.sensorArray[i] + "</button>");
 		      }
-		      $(".sensor_button").click(function() {
-		      	this.toggleClass("green_sensor");
+		      $(".sensor_button").click(function(ev) {
+		      	$(ev.target).toggleClass("green_sensor"); // toggle the clicked button's color
 		      });
 			  },
 	      error: function(xhr, status) {
