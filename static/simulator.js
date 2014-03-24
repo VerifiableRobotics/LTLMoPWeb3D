@@ -306,7 +306,7 @@
 	      datatype: "json",
 	      success: function(data) {
 	        for (var i = 0; i < data.sensorArray.length; i++) {
-		        $('#sensor_list').append("<button type=\"button\" class=\"sensor_button\">" + data.sensorArray[i] + "</button>");
+		        $('#sensor_list').append("<li><button type=\"button\" class=\"sensor_button\">" + data.sensorArray[i] + "</button></li>");
 		      }
 		      $(".sensor_button").click(function(ev) {
 		      	$(ev.target).toggleClass("green_sensor"); // toggle the clicked button's color

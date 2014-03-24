@@ -41,6 +41,7 @@ body {
 
 #viewport{
   position: relative;
+  float: left;
   width: 50%;
   height: 50%;
 }
@@ -49,13 +50,19 @@ body {
 	width: 100%;
 }
 
+#sensor_list{
+  list-style-type: none;
+}
+
 .center_wrapper{
   text-align: center;
 }
 
 .right_wrapper{
+  position: relative;
   text-align: right;
   width: 50%;
+  float:right;
 }
 
 .sensor_button{
