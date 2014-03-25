@@ -1,10 +1,27 @@
-from flask import Flask
-from flask import render_template
-from flask import jsonify
+import os
+from flask import Flask, request, redirect, url_for, render_template, jsonify0
+from werkzeug.utils import secure_filename
 import random
 import math
 
+UPLOAD_FOLDER = '/uploads'
+ALLOWED_EXTENSIONS = set(['regions, spec, aut'])
+
 app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# check if in allowed extensions set
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+
+@app.route('/upload', methods=['POST'])
+def uploadFile():
+  file = request.files['file']
+  if file and allowed_file(file.filename):
+    filename = secure_filename(file.filename)
+    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+    return redirect(url_for('uploaded_file', filename=filename))
+  return render_template('/simulator.html', name='example')
 
 @app.route('/')
 def loadSimulator():
