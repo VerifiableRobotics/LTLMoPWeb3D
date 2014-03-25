@@ -264,16 +264,14 @@
         type: 'GET',
         datatype: "json",
         success: function(data) {
+          $('#sensor_list').empty(); // empty ul
+          // add li/buttons to ul
           for (var i = 0; i < data.sensorArray.length; i++) {
             $('#sensor_list').append("<li><button type=\"button\" class=\"sensor_button\">" + data.sensorArray[i] + "</button></li>");
-            /*$("button").filter(function() {
-              return $(this).text() === data.sensorArray[i]; // only return buttons whose text matches sensor array i
-            }).click(function{
-              // ajax call
-            });*/
           }
           $(".sensor_button").click(function(ev) {
             $(ev.target).toggleClass("green_sensor"); // toggle the clicked button's color
+            // send ajax here
           });
         },
         error: function(xhr, status) {

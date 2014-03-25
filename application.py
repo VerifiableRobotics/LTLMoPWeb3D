@@ -14,18 +14,18 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
-@app.route('/upload', methods=['POST'])
-def uploadFile():
+@app.route('/uploadRegion', methods=['POST'])
+def uploadRegion():
   file = request.files['file']
   if file and allowed_file(file.filename):
     filename = secure_filename(file.filename)
     file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-    return redirect(url_for('uploaded_file', filename=filename))
-  return render_template('/simulator.html', name='example')
+    return True #
+  return render_template('/simulator.html', name='simulator')
 
 @app.route('/')
 def loadSimulator():
-	return render_template('/simulator.html', name='example')
+	return render_template('/simulator.html', name='simulator')
 
 @app.route('/getVelocityTheta', methods=['GET'])
 def sendVelocityTheta():
