@@ -195,6 +195,7 @@
       var currentTheta = 0; // stores current theta
 
       console.log("clicked import_spec");
+      getVelocityTheta();
       
       // ajax call for velocity theta
       function getVelocityTheta() {
@@ -265,11 +266,11 @@
         success: function(data) {
           for (var i = 0; i < data.sensorArray.length; i++) {
             $('#sensor_list').append("<li><button type=\"button\" class=\"sensor_button\">" + data.sensorArray[i] + "</button></li>");
-            $("button").filter(function() {
+            /*$("button").filter(function() {
               return $(this).text() === data.sensorArray[i]; // only return buttons whose text matches sensor array i
             }).click(function{
               // ajax call
-            })
+            });*/
           }
           $(".sensor_button").click(function(ev) {
             $(ev.target).toggleClass("green_sensor"); // toggle the clicked button's color
