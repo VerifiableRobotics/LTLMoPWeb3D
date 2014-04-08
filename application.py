@@ -20,7 +20,7 @@ def uploadRegion():
   if file and allowed_file(file.filename):
     filename = secure_filename(file.filename)
     file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-    return True #
+    return True
   return render_template('/simulator.html', name='simulator')
 
 @app.route('/')
