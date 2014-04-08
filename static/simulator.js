@@ -189,18 +189,18 @@
   window.onload = initScene;
   
   $( document ).ready(function() {
-    $('#import_spec').click(function(){
+    $('#get_vel_theta').click(function(){
       // ajax call for velocity/theta
       var currentVelocity = 0; // stores current velocity
       var currentTheta = 0; // stores current theta
 
-      console.log("clicked import_spec");
+      console.log("clicked get_vel_theta");
       getVelocityTheta();
       
       // ajax call for velocity theta
       function getVelocityTheta() {
         var x = car.body.position.x;
-        var y = car.body.position.y;
+        var y = car.body.position.z; // z-axis is the y-axis in this case
         console.log("car position x:" + x);
         console.log("car position z:" + y);
         $.ajax({
@@ -280,6 +280,19 @@
       }); // end ajax
     }); // end click
 
+    $("#region_uploader").uploadFile({
+      url:"/uploadRegion",
+      fileName:"theRegion",
+      multiple: "false",
+      method: "POST",
+      onSuccess:function(data) {
+      	alert("success");
+      },
+      onError:function() {
+      	alert("error");
+      }
+      
+	});
   
   }); // end document ready
     
