@@ -1,8 +1,6 @@
-from flask import Flask, request, redirect, url_for, render_template, jsonify
+from flask import Flask, request, redirect, url_for, render_template, jsonify, Response
 from werkzeug.utils import secure_filename
-import random
-import math
-import os, sys
+import random, math, os, sys
                                                                                                                                                                                                                
 sys.path.append(os.path.join("LTLMoP","src","lib")) # add lib to path
 import regions
@@ -27,7 +25,7 @@ def uploadRegion():
     newFilePath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     file.save(newFilePath)
     newJSON = rfi.extractJSONFromRegions(newFilePath)
-    return newJSON
+    return jsonify(theList = newJSON)
   return jsonify(theBool = "False")
 
 @app.route('/')
