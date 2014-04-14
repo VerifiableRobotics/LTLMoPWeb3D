@@ -10,18 +10,18 @@ import regions
 rfi = regions.RegionFileInterface()
 
 UPLOAD_FOLDER = 'uploads'
-ALLOWED_EXTENSIONS = set(['regions, spec, aut'])
+ALLOWED_EXTENSIONS = set(['regions', 'spec', 'aut'])
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # check if in allowed extensions set
 def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+  return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
 @app.route('/uploadRegion', methods=['POST'])
 def uploadRegion():
-  file = request.files['theRegion']
+  file = request.files['file']
   if file and allowed_file(file.filename):
     filename = secure_filename(file.filename)
     newFilePath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
