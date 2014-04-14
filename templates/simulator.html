@@ -11,8 +11,7 @@
   	<script type="text/javascript" src="{{ url_for('static', filename='physi.js') }}"></script>
   	<script type="text/javascript" src="{{ url_for('static', filename='jquery-2.1.0.min.js') }}"></script>
   	<script type="text/javascript" src="{{ url_for('static', filename='simulator.js') }}"></script>
-    <script src="http://hayageek.github.io/jQuery-Upload-File/jquery.uploadfile.min.js"></script>
-	
+    
 </head>
 
 <body>
@@ -21,7 +20,11 @@
 	</div>
   <div class="center_wrapper">
     <button type="button" id="get_vel_theta">Vel/Theta Button</button>
-    <div id="region_uploader"></div>
+    <form enctype="multipart/form-data" id="regions_upload_form">
+      <input name="file" type="file" id="regions_upload_file"/>
+      <input type="button" value="Upload" id="regions_upload_button"/>
+    </form>
+    <progress id="regions_upload_progress"></progress>
   </div>
   <div id="simulator_wrapper">
     <div class="right_wrapper">

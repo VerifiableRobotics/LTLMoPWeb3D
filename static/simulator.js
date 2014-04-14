@@ -280,20 +280,54 @@
       }); // end ajax
     }); // end click
 
-    $("#region_uploader").uploadFile({
-      url:"/uploadRegion",
-      fileName:"theRegion",
-      multiple: "false",
-      method: "POST",
-      onSuccess:function(data) {
-        alert("" + data.theBool);
-      	alert("success");
+  // ------------------ the below borrowed from StackOverflow, thank you olanod! ----------------------
+  // file validation
+  $('#regions_upload_file').change(function(){
+    var file = this.files[0];
+    var name = file.name;
+    var size = file.size;
+    var type = file.type;
+    //Your validation
+  });
+
+  // clicked submit
+  $('#regions_upload_button').click(function(){
+    var formData = new FormData($('#regions_upload_form')[0]);
+    $.ajax({
+      url: '/uploadRegion',
+      type: 'POST',
+      xhr: function() {  // custom XMLHttpRequest
+        var myXhr = $.ajaxSettings.xhr();
+        if(myXhr.upload){ // check if upload property exists
+          // handle upload progress
+          myXhr.upload.addEventListener('#regions_upload_progress', progressHandlingFunction, false);
+        }
+        return myXhr;
       },
-      onError:function() {
-      	alert("error");
-      }
-      
-	});
+      // ajax callbacks 
+      success: function(data) {
+        alert("" + data.theBool);
+        alert("success");
+      },
+      error: function(xhr, status) {
+        alert("error");
+      },
+      // Form data to send
+      data: formData,
+      //Options to tell jQuery not to process data or worry about content-type.
+      cache: false,
+      contentType: false,
+      processData: false
+    });
+  });
+
+  // updates progress bar
+  function progressHandlingFunction(e){
+    if(e.lengthComputable){
+      $('#regions_upload_progress').attr({value:e.loaded,max:e.total});
+    }
+  }
+  // --------------------------- end borrowed from StackOverflow ---------------------
   
-  }); // end document ready
+}); // end document ready
     
