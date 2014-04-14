@@ -254,7 +254,7 @@
       } // end func
     }); // end click
 
-    $('#get_sensors').click(function(){
+    $('#get_sensors').click(function() {
       // ajax call for sensor list
 
       console.log("clicked get_sensors");
@@ -286,6 +286,7 @@
       multiple: "false",
       method: "POST",
       onSuccess:function(data) {
+        alert("" + data.theBool);
       	alert("success");
       },
       onError:function() {
