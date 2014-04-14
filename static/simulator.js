@@ -80,7 +80,7 @@
       0 // mass
     );
     ground.receiveShadow = true;
-    // use .position.set to set 3D location of obj before adding to scene
+    // use ground.position.set to set 3D location of obj before adding to scene
     scene.add( ground );
     
     
@@ -280,7 +280,7 @@
       }); // end ajax
     }); // end click
 
-  // ------------------ the below borrowed from StackOverflow, thank you olanod! ----------------------
+  // ------------------ the below largely borrowed from StackOverflow, thank you olanod! ----------------------
   // file validation
   $('#regions_upload_file').change(function(){
     var file = this.files[0];
@@ -288,6 +288,9 @@
     var size = file.size;
     var type = file.type;
     //Your validation
+    if(type == "regions") {
+      alert("this is a regions file!");
+    }
   });
 
   // clicked submit
@@ -306,15 +309,14 @@
       },
       // ajax callbacks 
       success: function(data) {
-        alert("" + data.theBool);
-        alert("success");
+        createRegionsFromJSON(data);
       },
       error: function(xhr, status) {
-        alert("error");
+        console.log("regions upload failed")
       },
-      // Form data to send
+      // form data to send
       data: formData,
-      //Options to tell jQuery not to process data or worry about content-type.
+      // options to tell jQuery not to process data or worry about content-type.
       cache: false,
       contentType: false,
       processData: false
@@ -329,5 +331,45 @@
   }
   // --------------------------- end borrowed from StackOverflow ---------------------
   
+  // create regions from JSON
+  function createRegionsFromJSON(data) {
+    // loop through the region array
+    data.forEach(function(region) {
+      // get name
+      var name = region.name;
+      console.log("name: " + name);
+      // get rgb values
+      var red = region.color[0]; 
+      var green = region.color[1];
+      var blue = region.color[2];
+      console.log("red: " + red);
+      // get position
+      var xpos = region.position[0];
+      var ypos = region.position[1];
+      // get size
+      var width = region.size[0];
+      var height = region.size[2];
+
+      // create the new ground material
+      new_ground_material = Physijs.createMaterial(
+        new THREE.MeshLambertMaterial({color: "rgb(" + red + "," + green + "," + blue + ")"}),  // set color
+        .5, // high friction
+        0 // no restitution
+      );
+      // create the new ground
+      new_ground = new Physijs.BoxMesh(
+        new THREE.CubeGeometry(width, 1, height), // set width and height
+        new_ground_material,
+        0 // mass
+      );
+      new_ground.receiveShadow = true;
+      new_ground.position.set(xpos, 0, ypos); // set position
+      
+      // add the new_ground to the scene
+      scene.add(new_ground);
+
+    }) // end for each
+  }
+
 }); // end document ready
     

@@ -27,7 +27,7 @@ def uploadRegion():
     newFilePath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     file.save(newFilePath)
     newJSON = rfi.extractJSONFromRegions(newFilePath)
-    return jsonify(theBool = "True")
+    return newJSON
   return jsonify(theBool = "False")
 
 @app.route('/')
