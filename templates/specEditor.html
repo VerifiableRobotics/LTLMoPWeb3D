@@ -3,22 +3,55 @@
 <html>
 
 <head>
-	<title>LTLMoPWeb3D Spec Editor</title>
+  <title>LTLMoPWeb3D Specification Editor</title>
 	
-  	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}" />
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}" />
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='jquery-linedtextarea.css') }}" />
 	
-  	<script type="text/javascript" src="{{ url_for('static', filename='jquery-2.1.0.min.js') }}"></script>
-  	<script type="text/javascript" src="{{ url_for('static', filename='specEditor.js') }}"></script>
-    
+  <script type="text/javascript" src="{{ url_for('static', filename='jquery-2.1.0.min.js') }}"></script>
+  <script type="text/javascript" src="{{ url_for('static', filename='specEditor.js') }}"></script>
+  <script type="text/javascript" src="{{ url_for('static', filename='jquery-linedtextarea.js') }}"></script>  
+  
 </head>
 
 <body>
-	<div id="heading">
-		<h1>LTLMoPWeb3D Spec Editor</h1>
+  <div id="heading">
+    <h1>LTLMoPWeb3D Specification Editor</h1>
     <a href="/">Simulator</a>
-    <a href="/specEditor">Spec Editor</a>
+    <a href="/specEditor">Specification Editor</a>
     <a href="/regionEditor">Region Editor</a>
-	</div>
+  </div>
+  <div id="spec_editor_wrapper">
+    <div id="spec_editor_text_wrapper">
+      <textarea id="spec_editor_text" placeholder="Write your spec here"></textarea>
+    </div>
+    <div id="spec_editor_rightside">
+      <div class="spec_editor_labels">Regions:</div>
+      <ul class="spec_editor_selectlist" id="spec_editor_regions"></ul>
+      <ul class="spec_editor_buttonlist">
+        <li><button id="spec_editor_regions_selectfrommap">Select from Map...</button></li>
+        <li><button id="spec_editor_regions_editregions">Edit Regions...</button></li>
+      </ul>
+      <div class="spec_editor_labels">Sensors:</div>
+      <ul class="spec_editor_selectlist" id="spec_editor_sensors"></ul>
+      <ul class="spec_editor_buttonlist">
+        <li><button id="spec_editor_sensors_add">Add</button></li>
+        <li><button id="spec_editor_sensors_remove">Remove</button></li>
+      </ul>
+      <div class="spec_editor_labels">Actuators:</div>
+      <ul class="spec_editor_selectlist" id="spec_editor_actuators"></ul>
+      <ul class="spec_editor_buttonlist">
+        <li><button id="spec_editor_actuators_add">Add</button></li>
+        <li><button id="spec_editor_actuators_remove">Remove</button></li>
+      </ul>
+      <div class="spec_editor_labels">Custom Propositions:</div>
+      <ul class="spec_editor_selectlist" id="spec_editor_customprops"></ul>
+      <ul class="spec_editor_buttonlist">
+        <li><button id="spec_editor_customprops_add">Add</button></li>
+        <li><button id="spec_editor_customprops_remove">Remove</button></li>
+      </ul>
+    </div>
+  </div>
 </body>
 
 </html>
