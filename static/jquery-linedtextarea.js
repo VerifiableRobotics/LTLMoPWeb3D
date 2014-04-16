@@ -122,8 +122,11 @@
 			});
           
             /* in case the screen resizes */
-          	$(window).on('resize', function(){
+          	$(window).on('resize', function(ev){
               setWidth(textarea.outerWidth(true));
+              if(!$(ev.target).is(textarea)) { // textarea resize triggers window resize, don't create an infinite loop
+                textarea.resize();
+              }
               textarea.scroll();
             });
           
