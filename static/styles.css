@@ -84,17 +84,19 @@ body {
 }
 
 #spec_editor_text_wrapper{
+  float: left;
+  width: 70%;
+  height: 80%;
 }
 
 #spec_editor_text{
-  max-width: 94%;
   height: 100%;
-  width: 80%;  
+  width: 69%;  
 }
 
 #spec_editor_rightside{
   float: right;
-  width: 20%;
+  width: 30%;
   height: 80%;
   overflow: auto;
 }

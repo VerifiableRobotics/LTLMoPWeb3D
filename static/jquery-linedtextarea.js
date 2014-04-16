@@ -64,7 +64,7 @@
 			/* Turn off the wrapping of as we don't want to screw up the line numbers */
 			textarea.attr("wrap", "off");
 			textarea.css({resize:'none'});
-			var originalTextAreaWidth	= textarea.outerWidth();
+			var originalTextAreaWidth	= textarea.outerWidth(true);
 
 			/* Wrap the text area in the elements we need */
 			textarea.wrap("<div class='linedtextarea'></div>");
@@ -92,13 +92,19 @@
 
 			
 			/* Set the width */
-			var sidebarWidth					= linesDiv.outerWidth();
-			var paddingHorizontal 		= parseInt( linedWrapDiv.css("border-left-width") ) + parseInt( linedWrapDiv.css("border-right-width") ) + parseInt( linedWrapDiv.css("padding-left") ) + parseInt( linedWrapDiv.css("padding-right") );
-			var linedWrapDivNewWidth 	= originalTextAreaWidth - paddingHorizontal;
-			var textareaNewWidth			= originalTextAreaWidth - sidebarWidth - paddingHorizontal;
-
-			textarea.width( textareaNewWidth );
-			linedWrapDiv.width( linedWrapDivNewWidth );
+            function setWidth(originalTextAreaWidth) {
+				var sidebarWidth					= linesDiv.outerWidth(true);
+                var paddingHorizontal 		= parseInt( linedWrapDiv.css("border-left-width") ) + parseInt( linedWrapDiv.css("border-right-width") ) + parseInt( linedWrapDiv.css("padding-left") ) + parseInt( linedWrapDiv.css("padding-right") );
+                var linedWrapDivNewWidth 	= originalTextAreaWidth - paddingHorizontal;
+                var textareaNewWidth			= linedWrapDivNewWidth - sidebarWidth - parseInt(textarea.css("padding-right")) - parseInt(textarea.css("padding-left"));
+                var textareaNewWidthPercent = textareaNewWidth*1.0 / linedWrapDivNewWidth
+				
+                console.log("resize");
+                textarea.width("" + textareaNewWidthPercent*100 + "%" );
+                linedWrapDiv.width( "100%" );
+            }
+          
+          	setWidth(originalTextAreaWidth);
 			
 
 			
@@ -114,9 +120,15 @@
 
 			/* Should the textarea get resized outside of our control */
 			textarea.resize( function(tn){
-				var domTextArea	= $(this)[0];
+              	var domTextArea	= $(this)[0];
 				linesDiv.height( domTextArea.clientHeight + 6 );
 			});
+          
+            /* in case the screen resizes */
+          	$(window).on('resize', function(){
+              setWidth(textarea.outerWidth(true));
+              textarea.scroll();
+            });
 
 		});
 	};

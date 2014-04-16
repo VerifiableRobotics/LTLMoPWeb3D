@@ -2,15 +2,6 @@ $(document).ready(function() {
   // create a lined text area with a largely borrowed plugin
   $('#spec_editor_text').linedtextarea();
   
-  // adjust results of lined text area
-  var spec_editor_text_wrapper = $('#spec_editor_text_wrapper');
-  spec_editor_text_wrapper.css('float','left');
-  spec_editor_text_wrapper.css('width','80%');
-  spec_editor_text_wrapper.css('height','80%');
-  var spec_editor_text = $('#spec_editor_text');
-  spec_editor_text.resize();
-  spec_editor_text.scroll();
-  
   // add event handlers
   $('#spec_editor_sensors_add').click(function() {
     var sensorList = $('#spec_editor_sensors');
