@@ -91,17 +91,17 @@
 
       
       /* Set the width */
-            function setWidth(originalTextAreaWidth) {
-                var sidebarWidth          = linesDiv.outerWidth(true);
-                var paddingHorizontal     = parseInt( linedWrapDiv.css("border-left-width") ) + parseInt( linedWrapDiv.css("border-right-width") ) + parseInt( linedWrapDiv.css("padding-left") ) + parseInt( linedWrapDiv.css("padding-right") );
-                var linedWrapDivNewWidth  = originalTextAreaWidth - paddingHorizontal;
-                var textareaNewWidth      = linedWrapDivNewWidth - sidebarWidth - parseInt(textarea.css("padding-right")) - parseInt(textarea.css("padding-left"));
-                var textareaNewWidthPercent = textareaNewWidth*1.0 / linedWrapDivNewWidth
-        
-                textarea.width("" + textareaNewWidthPercent*100 + "%" );
-            }
-          
-            setWidth(originalTextAreaWidth);
+      function setWidth(originalTextAreaWidth) {
+        var sidebarWidth          = linesDiv.outerWidth(true);
+        var paddingHorizontal     = parseInt( linedWrapDiv.css("border-left-width") ) + parseInt( linedWrapDiv.css("border-right-width") ) + parseInt( linedWrapDiv.css("padding-left") ) + parseInt( linedWrapDiv.css("padding-right") );
+        var linedWrapDivNewWidth  = originalTextAreaWidth - paddingHorizontal;
+        var textareaNewWidth      = linedWrapDivNewWidth - sidebarWidth - parseInt(textarea.css("padding-right")) - parseInt(textarea.css("padding-left"));
+        var textareaNewWidthPercent = textareaNewWidth*1.0 / linedWrapDivNewWidth
+
+        textarea.width("" + textareaNewWidthPercent*100 + "%" );
+      }
+    
+      setWidth(originalTextAreaWidth);
       
 
       
