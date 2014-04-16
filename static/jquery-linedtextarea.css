@@ -24,11 +24,13 @@
 
 .linedwrap {
 	padding: 3px;
+  	height: 100%;
 }
 
 .linedtextarea {
 	padding: 0px;
 	margin: 0px;
+    height: 100%;
 }
 
 .linedtextarea textarea, .linedwrap .codelines .lineno {

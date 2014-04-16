@@ -68,11 +68,10 @@
 
 			/* Wrap the text area in the elements we need */
 			textarea.wrap("<div class='linedtextarea'></div>");
-            textarea.parent().height("100%");
-			var linedTextAreaDiv	= textarea.parent().wrap("<div class='linedwrap' style='height: 100%;width:" + originalTextAreaWidth + "px'></div>");
+            var linedTextAreaDiv	= textarea.parent().wrap("<div class='linedwrap'></div>");
 			var linedWrapDiv 			= linedTextAreaDiv.parent();
 			
-			linedWrapDiv.prepend("<div class='lines' style='width:50px'></div>");
+			linedWrapDiv.prepend("<div class='lines'></div>");
 			
 			var linesDiv	= linedWrapDiv.find(".lines");
 			linesDiv.height( textarea.parent().parent().height() + 6 );
@@ -99,9 +98,7 @@
                 var textareaNewWidth			= linedWrapDivNewWidth - sidebarWidth - parseInt(textarea.css("padding-right")) - parseInt(textarea.css("padding-left"));
                 var textareaNewWidthPercent = textareaNewWidth*1.0 / linedWrapDivNewWidth
 				
-                console.log("resize");
                 textarea.width("" + textareaNewWidthPercent*100 + "%" );
-                linedWrapDiv.width( "100%" );
             }
           
           	setWidth(originalTextAreaWidth);
@@ -129,6 +126,8 @@
               setWidth(textarea.outerWidth(true));
               textarea.scroll();
             });
+          
+          	$(window).resize(); // initial resize
 
 		});
 	};
