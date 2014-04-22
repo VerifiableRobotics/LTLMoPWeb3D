@@ -111,6 +111,10 @@ body {
   padding-left: 0pt;
 }
 
+.spec_editor_selectlist li:focus{
+  background: #0000FF;
+}
+
 .spec_editor_buttonlist{
   padding-left: 0pt;
   margin: 2px 0px;
