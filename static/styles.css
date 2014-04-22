@@ -78,7 +78,7 @@ body {
 
 /* spec editor specific css */
 #spec_editor_wrapper{
-  height: 100%;
+  height: calc(100% - 50px);
   width: 100%;
   background: #E0E0E0;
 }
@@ -86,33 +86,37 @@ body {
 #spec_editor_text_wrapper{
   float: left;
   width: 70%;
-  height: 80%;
+  height: 72%;
 }
 
 #spec_editor_text{
   height: 100%;
   width: 69%;  
+  word-wrap: break-word;
+  border: 1px solid gray;
 }
 
 #spec_editor_rightside{
   float: right;
   width: 30%;
-  height: 80%;
+  height: 74%;
   overflow: auto;
 }
 
 .spec_editor_selectlist{
   list-style-type: none;
-  width: 100%;
-  height: 20%;
+  width: 99%;
+  height: 15%;
   overflow: auto;
   background: white;
   margin: 4px 2px;
   padding-left: 0pt;
+  border: 1px solid gray;
 }
 
-.spec_editor_selectlist li:focus{
+.spec_editor_selectlist_li_clicked{
   background: #0000FF;
+  color: white;
 }
 
 .spec_editor_buttonlist{
@@ -123,4 +127,41 @@ body {
 .spec_editor_buttonlist li{
   display: inline;
   list-style-type: none;
+}
+
+#spec_editor_bottom{
+  height: 24%;
+  bottom: 0px;
+  position: absolute;
+  width: 100%;
+}
+
+.spec_editor_bottom_radio{
+  position: absolute;
+  right: 100%;
+  opacity: 0;
+  top: 0;
+}
+
+.spec_editor_bottom_label{
+  border: 2px solid;
+  margin-right: -4px;
+}
+
+.spec_editor_bottom_label_clicked{
+  border-bottom: 0px;
+}
+
+.spec_editor_bottom_radio:checked + .spec_editor_bottom_div{
+  display: block;
+}
+
+.spec_editor_bottom_div{
+  display: none;
+  background-color: white;
+  height: calc(100% - 20px);
+  top: 2px;
+  position: relative;
+  border: solid 1px gray;
+  overflow: auto;
 }

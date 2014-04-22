@@ -16,45 +16,81 @@ $(document).ready(function() {
 
   // add event handlers
   $('#spec_editor_sensors_add').click(function() {
-    var num_sensors = sensorList.children().length;
-    var sensorName = prompt("Name of Sensor:","sensor" + (num_sensors + 1));
-    if(sensorName != "" && sensorMap[sensorName] == null) {
-   	  sensorList.append("<li tabindex=\"0\"><input type=\"checkbox\" checked>" + sensorName + "</li>");
-      sensorMap[sensorName] = true; // add to map
-      sensorRemove[0].disabled = false; // allow removal
-    }
-    else{
-      alert("You did not enter a valid name");
-    }
+    clickAdd(sensorList, sensorMap, sensorRemove,
+      "Name of Sensor:", "sensor", "<li class=\"spec_editor_selectlist_li_clicked\" tabindex=\"0\"><input type=\"checkbox\" checked>", "</li>");
   });
   $('#spec_editor_actuators_add').click(function() {
-    var num_actuators = actuatorList.children().length;
-    var actuatorName = prompt("Name of Actuator:","actuator" + (num_actuators + 1));
-    if(actuatorName != "" && actuatorMap[actuatorName] == null) {
-      actuatorList.append("<li tabindex=\"0\"><input type=\"checkbox\" checked>" + actuatorName + "</li>");
-      actuatorMap[actuatorName] = true; // add to map
-      actuatorRemove[0].disabled = false; // allow removal
-    }
-    else{
-      alert("You did not enter a valid name");
-    }
+    clickAdd(actuatorList, actuatorMap, actuatorRemove,
+      "Name of Actuator:", "actuator", "<li class=\"spec_editor_selectlist_li_clicked\" tabindex=\"0\"><input type=\"checkbox\" checked>", "</li>");
   });
   $('#spec_editor_customprops_add').click(function() {
-    var num_customprops = custompropList.children().length;
-    var custompropName = prompt("Name of Custom Proposition:","prop" + (num_customprops + 1));
-    if(custompropName != "" && custompropMap[custompropName] == null) {  
-      custompropList.append("<li tabindex=\"0\">" + custompropName + "</li>");
-      custompropMap[custompropName] = true; // add to map
-      custompropRemove[0].disabled = false; // allow removal
-    }
-    else {
-      alert("You did not enter a valid name");
-    }
+    clickAdd(custompropList, custompropMap, custompropRemove,
+      "Name of Custom Proposition:", "prop", "<li class=\"spec_editor_selectlist_li_clicked\" tabindex=\"0\">", "</li>");
   });
   
   // remove event handlers
   sensorRemove.click(function() {
-    sensorList.children(':focus').remove();
+    clickRemove(this, sensorList, sensorMap);
+  });
+  actuatorRemove.click(function() {
+    clickRemove(this, actuatorList, actuatorMap);
+  });
+  custompropRemove.click(function() {
+    clickRemove(this, custompropList, custompropMap);
+  });
+  
+  // click add function
+  function clickAdd(selectList, selectMap, removeButton, promptText, nameText, htmlLeft, htmlRight) {
+  	var count = 1;
+    // until we get "name" + count that is not in the map
+    while(selectMap[nameText + count] != null) {
+      count += 1;
+    }
+    var name = prompt(promptText, nameText + count);
+    if(name != "" && name != null && selectMap[name] == null) {
+      selectList.children().removeClass("spec_editor_selectlist_li_clicked"); // unclick all
+      var newProp = $(htmlLeft + name + htmlRight);
+      newProp.click(function(ev) {
+        clickSelectListLi(ev, selectList);
+      });
+      selectList.append(newProp);
+      selectMap[name] = true; // add to map
+      removeButton[0].disabled = false; // allow removal
+    }
+    else if(selectMap[name] != null) {
+      alert("Duplicates are not allowed");
+    }
+    else if(name == "") {
+      alert("A blank name is not allowed");
+    }
+  }
+  
+  // click remove function
+  function clickRemove(_t, selectList, selectMap) {
+    var elem = selectList.children('.spec_editor_selectlist_li_clicked');
+    var text = elem.text();
+    delete selectMap[text]; // remove from map
+    elem.remove(); // remove from DOM
+    if(selectList.children().length <= 0) {
+      _t.disabled = true; // disallow removal
+    }
+  }
+  
+  // click li functions
+  function clickSelectListLi(ev, selectList) {
+    selectList.children().removeClass("spec_editor_selectlist_li_clicked");
+    var target = $(ev.target);
+    if(!target.is('li')) { // in case the checkbox was clicked
+      target = target.parent('li');
+    }
+    target.addClass("spec_editor_selectlist_li_clicked");
+  }
+  
+  // add and remove styling for bottom labels on click
+  var bottomLabels = $('.spec_editor_bottom_label');
+  bottomLabels.click(function(ev) {
+    bottomLabels.removeClass('spec_editor_bottom_label_clicked');
+    $(ev.target).addClass('spec_editor_bottom_label_clicked');
   });
   
 }); // end document ready
