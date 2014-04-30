@@ -41,15 +41,18 @@ def saveSpec():
 	dict = request.args
 	proj = project.Project()
 	proj.specText = dict.get('specText') # "blah"
-	proj.all_sensors = dict.get('all_sensors') # ["s1"]
-	proj.all_actuators = dict.get('all_actuators') # ["a1","a2"]
-	proj.enabled_sensors = dict.get('enabled_sensors') # ["s1"]
-	proj.enabled_actuators = dict.get('enabled_actuators') # ["a1"]
+	if proj.specText is None:
+		proj.specText = ''
+	proj.all_sensors = dict.getlist('all_sensors') # ["s1"]
+	proj.all_actuators = dict.getlist('all_actuators') # ["a1","a2"]
+	proj.enabled_sensors = dict.getlist('enabled_sensors') # ["s1"]
+	proj.enabled_actuators = dict.getlist('enabled_actuators') # ["a1"]
+	proj.all_customs = dict.getlist('all_customs') # ['p1']
 	proj.rfi = regions.RegionFileInterface()                                                                                                                                                                                                    
 	proj.rfi.readFile(os.path.join(app.config['UPLOAD_FOLDER'], "floorplan.regions"))
-	filepath = os.path.join(app.config['UPLOAD_FOLDER'], "spec.spec")
-	proj.writeSpecFile(filepath)
-	return send_file(filepath, as_attachment=True, mimetype='text/plain')
+	thepath = os.path.join(app.config['UPLOAD_FOLDER'], "spec.spec")
+	proj.writeSpecFile(thepath)
+	return send_file(thepath, as_attachment=True, mimetype='text/plain')
 
 @app.route('/getVelocityTheta', methods=['GET'])
 def sendVelocityTheta():

@@ -98,7 +98,10 @@ $(document).ready(function() {
   // send json to create spec and then download spec
   $('#spec_editor_save').click(function() {
     var data = {};
-    data['specText'] = specEditorText.val();
+    var specText = specEditorText.val();
+    if(specText != '') {
+      data['specText'] = specText;
+    }
     // arrays to store data that will be passed to server 
     data['all_sensors'] = [];
     data['enabled_sensors'] = [];
@@ -121,7 +124,8 @@ $(document).ready(function() {
       data['all_customs'].push($(this).text());
     });
     
-    window.location="specEditor/saveSpec" + JSON.stringify(data)
+    // save spec
+    window.location="specEditor/saveSpec?" + $.param(data, true);
   });
   
 }); // end document ready
