@@ -22,6 +22,69 @@
     <a href="/regionEditor">Region Editor</a>
   </div>
   <div id="spec_editor_wrapper">
+    <div id="menuh-container">
+      <div id="menuh">
+          <ul>
+            <li><a href="#">File &#x25BC;</a>
+              <ul>
+                <li><a href="#">Open...</a></li>
+                <li><a href="#">Import Region File...</a></li>
+                <li><a id="spec_editor_save" href="#">Save</a></li>
+              </ul>
+            </li>
+          </ul>
+          <ul>	
+            <li><a href="#">Edit &#x25BC;</a>
+              <ul>
+                <li><a href="#">Undo</a></li>
+                <li><a href="#">Redo</a></li>
+                <li><a href="#">Cut</a></li>
+                <li><a href="#">Copy</a></li>
+                <li><a href="#">Paste</a></li>
+              </ul>
+            </li>
+          </ul>
+          <ul>	
+            <li><a href="#">Run &#x25BC;</a>
+              <ul>
+                <li><a href="#">Compile</a></li>
+                <li><a href="#" class="parent">Compilation options &#x25b6;</a>
+                  <ul>
+                    <li><a href="#"><input id="compilation_options_convexify" type="checkbox" name="compilation_options" checked="checked">Decompose workspace into convex regions</a></li>
+                    <li><a href="#"><input id="compilation_options_fastslow" type="checkbox" name="compilation_options">Enable "fast-slow" synthesis</a></li>
+                    <li><a href="#"><input id="compilation_options_use_region_bit_encoding" type="checkbox" name="compilation_options" checked="checked">Use bit-vector region encoding</a></li>
+                    <li><a href="#" class="parent">Parser Mode &#x25b6;</a>
+                      <ul>
+                        <li><a href="#"><input class="parser_mode_radio" type="radio" name="parser_mode" value="slurp">SLURP (NL)</a></li>
+                        <li><a href="#"><input class="parser_mode_radio" type="radio" name="parser_mode" value="english" checked="checked">Structured English</a></li>
+                        <li><a href="#"><input class="parser_mode_radio" type="radio" name="parser_mode" value="ltl">LTL</a></li>
+                      </ul>
+                    </li>
+                  </ul>
+                </li>
+                <li><a href="#">Simulate</a></li>
+                <li><a href="#">Configure Simulation...</a></li>
+              </ul>
+            </li>
+          </ul>
+          <ul>	
+            <li><a href="#">Debug &#x25BC;</a>
+              <ul>
+                <li><a href="#">Analyze</a></li>
+                <li><a href="#">View Automaton</a></li>
+                <li><a href="#">Visualize Counterstrategy...</a></li>
+              </ul>
+            </li>
+          </ul> 
+          <ul>	
+            <li><a href="#">Help &#x25BC;</a>
+              <ul>
+                <li><a href="#">About Specification Editor...</a></li>
+              </ul>
+            </li>
+          </ul> 
+      </div> 	<!-- end the menuh-container div -->  
+    </div>	<!-- end the menuh div --> 
     <div id="spec_editor_text_wrapper">
       <textarea id="spec_editor_text" placeholder="Write your specification here"></textarea>
     </div>
@@ -57,12 +120,12 @@
       <label class="spec_editor_bottom_label" for="spec_editor_workspacedecomposition_radio">Workspace Decomposition</label>
       
       <input class="spec_editor_bottom_radio" type="radio" id="spec_editor_compilerlog_radio" name="tab" checked="checked" />
-      <div class="spec_editor_bottom_div" id="spec_editor_compilerlog_text">
-        Content One
+      <div class="spec_editor_bottom_div">
+        <textarea  id="spec_editor_compilerlog_text" class="spec_editor_bottom_textarea" disabled></textarea>
       </div>
       <input class="spec_editor_bottom_radio" type="radio" id="spec_editor_ltloutput_radio" name="tab" />
-      <div class="spec_editor_bottom_div" id="spec_editor_ltloutput_text">
-        Content Two
+      <div class="spec_editor_bottom_div">
+        <textarea  id="spec_editor_ltloutput_text" class="spec_editor_bottom_textarea" disabled></textarea>
       </div>
       <input class="spec_editor_bottom_radio" type="radio" id="spec_editor_workspacedecomposition_radio" name="tab" />
       <div class="spec_editor_bottom_div" id="spec_editor_workspacedecomposition_text">

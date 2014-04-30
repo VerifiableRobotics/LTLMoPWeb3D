@@ -1,6 +1,7 @@
 $(document).ready(function() {
   // create a lined text area with a largely borrowed plugin
-  $('#spec_editor_text').linedtextarea();
+  var specEditorText = $('#spec_editor_text');
+  specEditorText.linedtextarea();
   
   var sensorList = $('#spec_editor_sensors');
   var actuatorList =  $('#spec_editor_actuators');
@@ -50,6 +51,7 @@ $(document).ready(function() {
     if(name != "" && name != null && selectMap[name] == null) {
       selectList.children().removeClass("spec_editor_selectlist_li_clicked"); // unclick all
       var newProp = $(htmlLeft + name + htmlRight);
+      newProp.find('input').val(name); // set value of checkbox to name as well
       newProp.click(function(ev) {
         clickSelectListLi(ev, selectList);
       });
@@ -91,6 +93,35 @@ $(document).ready(function() {
   bottomLabels.click(function(ev) {
     bottomLabels.removeClass('spec_editor_bottom_label_clicked');
     $(ev.target).addClass('spec_editor_bottom_label_clicked');
+  });
+  
+  // send json to create spec and then download spec
+  $('#spec_editor_save').click(function() {
+    var data = {};
+    data['specText'] = specEditorText.val();
+    // arrays to store data that will be passed to server 
+    data['all_sensors'] = [];
+    data['enabled_sensors'] = [];
+    data['all_actuators'] = [];
+    data['enabled_actuators'] = [];
+    data['all_customs'] = [];
+    sensorList.children().each(function() {
+      data['all_sensors'].push($(this).text());
+    });
+    sensorList.find(':checked').each(function() {
+      data['enabled_sensors'].push($(this).val());
+    });
+    actuatorList.children().each(function() {
+      data['all_actuators'].push($(this).text());
+    });
+    actuatorList.find(':checked').each(function() {
+      data['enabled_actuators'].push($(this).val());
+    });
+    custompropList.children().each(function() {
+      data['all_customs'].push($(this).text());
+    });
+    
+    window.location="specEditor/saveSpec" + JSON.stringify(data)
   });
   
 }); // end document ready
