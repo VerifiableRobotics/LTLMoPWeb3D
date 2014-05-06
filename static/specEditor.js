@@ -3,6 +3,9 @@ $(document).ready(function() {
   var specEditorText = $('#spec_editor_text');
   specEditorText.linedtextarea();
   
+  var regionPath = ''; // variable to hold the path to the regions file
+  
+  var regionList = $('#spec_editor_regions');
   var sensorList = $('#spec_editor_sensors');
   var actuatorList =  $('#spec_editor_actuators');
   var custompropList =  $('#spec_editor_customprops');
@@ -78,7 +81,7 @@ $(document).ready(function() {
     }
   }
   
-  // click li functions
+  // click li function
   function clickSelectListLi(ev, selectList) {
     selectList.children().removeClass("spec_editor_selectlist_li_clicked");
     var target = $(ev.target);
@@ -98,10 +101,24 @@ $(document).ready(function() {
   // send json to create spec and then download spec
   $('#spec_editor_save').click(function() {
     var data = {};
+    
     var specText = specEditorText.val();
     if(specText != '') {
-      data['specText'] = specText;
+      data['specText'] = specText; // store spec text
     }
+    
+    data['regionPath'] = regionPath; // store the path to the regions file
+    
+    // store compilation options
+    // get checkboxes
+    data['convexify'] = $('#compilation_options_convexify')[0].checked;
+    data['fastslow'] = $('#compilation_options_fastslow')[0].checked;
+    data['use_region_bit_encoding'] = $('#compilation_options_use_region_bit_encoding')[0].checked;
+    data['symbolic'] = $('#compilation_options_symbolic')[0].checked;
+    // get radio buttons
+    data['parser'] = $('.parser_mode_radio:checked').val();
+    data['synthesizer'] = $('.synthesizer_radio:checked').val();
+    
     // arrays to store data that will be passed to server 
     data['all_sensors'] = [];
     data['enabled_sensors'] = [];
@@ -124,8 +141,58 @@ $(document).ready(function() {
       data['all_customs'].push($(this).text());
     });
     
-    // save spec
+    // save spec... downloads cannot be done via ajax
     window.location="specEditor/saveSpec?" + $.param(data, true);
+  });
+  
+  // bind to change event, partly borrowed from olanod on SO
+  $('#spec_editor_regions_upload_file').change(function(){
+    var file = this.files[0];
+    var name = file.name;
+    var extension = name.split('.')[name.split('.').length - 1]
+    // validation
+    if(extension != "regions") {
+      alert("This only accepts *.regions files!");
+    }
+    else { // do upload
+      var formData = new FormData($('#spec_editor_regions_upload_form')[0]);
+      $.ajax({
+        url: '/specEditor/uploadRegions',
+        type: 'POST',
+        // ajax callbacks 
+        success: function(data) {
+          createRegionsFromJSON(data.theList); // add li elems
+          regionPath = data.thePath; // store path
+          $('#spec_editor_regions_selectfrommap').prop('disabled', false); // enable button
+        },
+        error: function(xhr, status) {
+          console.log("regions upload failed")
+        },
+        // form data to send
+        data: formData,
+        // options to tell jQuery not to process data or worry about content-type.
+        cache: false,
+        contentType: false,
+        processData: false
+      }); // end ajax
+    } // end else
+  }); // end change
+  
+  function createRegionsFromJSON(theList) {
+    // loop through the region array
+    theList.forEach(function(region) {
+      var name = region.name; // get name
+      var newRegion = $("<li class=\"spec_editor_selectlist_li\" tabindex=\"0\">" + name + "</li>"); // create elem
+      newRegion.click(function(ev) { // bind click to element
+        clickSelectListLi(ev, regionList);
+      });
+      regionList.append(newRegion); // append element      
+    }) // end for each
+  } // end create regions from JSON
+  
+  // click about handler 
+  $('#about_spec_editor').click(function() {
+    alert("Specification Editor is part of the LTLMoP Toolkit.\nFor more information, please visit http://ltlmop.github.com");
   });
   
 }); // end document ready

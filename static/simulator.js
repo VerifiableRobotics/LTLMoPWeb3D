@@ -280,8 +280,7 @@
       }); // end ajax
     }); // end click
 
-  // ------------------ the below in part borrowed from StackOverflow, thank you olanod! ----------------------
-  // bind to change event
+  // bind to change event, partly borrowed from olanod on SO
   $('#regions_upload_file').change(function(){
     var file = this.files[0];
     var name = file.name;
@@ -310,9 +309,8 @@
         processData: false
       }); // end ajax
     } // end else
-  });
-  // --------------------------- end borrowed from StackOverflow ---------------------
-  
+  }); // end change
+    
   // create regions from JSON
   function createRegionsFromJSON(theList) {
     // loop through the region array
@@ -336,9 +334,15 @@
         .5, // high friction
         0 // no restitution
       );
+      // create the custom geometry
+      var new_geometry = new THREE.Geometry();
+      // add each point as a vertex of the new geometry
+      region.points.forEach(function(point) {
+        new_geometry.vertices.push(new THREE.Vector3(point[0], 0, point[1]));
+      })
       // create the new ground
       var new_ground = new Physijs.BoxMesh(
-        new THREE.CubeGeometry(width, 1, height), // set width and height
+        new_geometry,
         new_ground_material,
         0 // mass
       );
@@ -348,7 +352,7 @@
       scene.add(new_ground);
       
     }) // end for each
-  }
+  } // end create regions from JSON
   
   // camera zooming and panning
   $(document).keyup(function(event) {

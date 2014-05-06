@@ -23,7 +23,7 @@ def loadSimulator():
 	return render_template('/simulator.html', name='simulator')
 
 @app.route('/simulator/uploadRegions', methods=['POST'])
-def uploadRegion():
+def simulatorUploadRegion():
   file = request.files['file']
   if file and allowed_file(file.filename):
     filename = secure_filename(file.filename)
@@ -48,23 +48,58 @@ def sendSensorList():
 def loadSpecEditor():
 	return render_template('/specEditor.html', name='specEditor')
 
-@app.route('/specEditor/saveSpec', methods=['GET', 'POST'])
-def saveSpec():
-	dict = request.args
+# create a spec file from request.args dict and return its path
+def createSpec(dict):
 	proj = project.Project()
+
+	# store text
 	proj.specText = dict.get('specText') # "blah"
-	if proj.specText is None:
-		proj.specText = ''
+	if proj.specText is None: 
+		proj.specText = '' # store as blank string, not None if None
+	
+	# store sensors
 	proj.all_sensors = dict.getlist('all_sensors') # ["s1"]
 	proj.all_actuators = dict.getlist('all_actuators') # ["a1","a2"]
 	proj.enabled_sensors = dict.getlist('enabled_sensors') # ["s1"]
 	proj.enabled_actuators = dict.getlist('enabled_actuators') # ["a1"]
 	proj.all_customs = dict.getlist('all_customs') # ['p1']
-	proj.rfi = regions.RegionFileInterface()                                                                                                                                                                                                    
-	proj.rfi.readFile(os.path.join(app.config['UPLOAD_FOLDER'], "floorplan.regions"))
+
+	# store compliation options
+	proj.compile_options = {}
+	proj.compile_options['convexify'] = dict.get('convexify') == 'true' # true or false
+	proj.compile_options['fastslow'] = dict.get('fastslow') == 'true' # true or false
+	proj.compile_options['symbolic'] = dict.get('symbolic') == 'true' # true or false
+	proj.compile_options['decompose'] = True; # cannot be changed by user
+	proj.compile_options['use_region_bit_encoding'] = dict.get('use_region_bit_encoding') == 'true' # true or false
+	proj.compile_options['synthesizer'] = dict.get('synthesizer') # 'jtlv' or 'slugs'
+	proj.compile_options['parser'] = dict.get('parser') # 'structured' or 'slurp' or 'ltl'
+	
+	# store region path
+	regionPath = dict.get('regionPath')
+	if regionPath is not None and regionPath != '': # make sure there is a path to region before rfi
+		proj.rfi = regions.RegionFileInterface()
+		proj.rfi.readFile(dict.get('regionPath')) # 'uploads/floorplan.regions'
+	
+	# write spec, save spec, and return path
 	thepath = os.path.join(app.config['UPLOAD_FOLDER'], "spec.spec")
 	proj.writeSpecFile(thepath)
+	return thepath
+
+@app.route('/specEditor/saveSpec', methods=['GET', 'POST'])
+def saveSpec():
+	thepath = createSpec(request.args);
 	return send_file(thepath, as_attachment=True, mimetype='text/plain')
+
+@app.route('/specEditor/uploadRegions', methods=['POST'])
+def specEditorUploadRegion():
+  file = request.files['file']
+  if file and allowed_file(file.filename):
+    filename = secure_filename(file.filename)
+    newFilePath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    file.save(newFilePath)
+    newJSON = rfi.extractJSONFromRegions(newFilePath)
+    return jsonify(theList = newJSON, thePath = newFilePath)
+  return jsonify(theBool = "False")
 	
 
 if __name__ == '__main__':

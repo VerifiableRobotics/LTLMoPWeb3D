@@ -28,7 +28,12 @@
             <li><a href="#">File &#x25BC;</a>
               <ul>
                 <li><a href="#">Open...</a></li>
-                <li><a href="#">Import Region File...</a></li>
+                <li>
+                  <form enctype="multipart/form-data" id="spec_editor_regions_upload_form">
+                    <input name="file" type="file" id="spec_editor_regions_upload_file"/>
+                    <a id="spec_editor_importregions" href="#">Import Region File...</a>
+                  </form>
+                </li>
                 <li><a id="spec_editor_save" href="#">Save</a></li>
               </ul>
             </li>
@@ -60,6 +65,13 @@
                         <li><a href="#"><input class="parser_mode_radio" type="radio" name="parser_mode" value="ltl">LTL</a></li>
                       </ul>
                     </li>
+                    <li><a href="#" class="parent">Synthesizer &#x25b6;</a>
+                      <ul>
+                        <li><a href="#"><input class="synthesizer_radio" type="radio" name="synthesizer" value="jtlv" checked="checked">JTLV</a></li>
+                        <li><a href="#"><input class="synthesizer_radio" type="radio" name="synthesizer" value="slugs">Slugs</a></li>
+                      </ul>
+                    </li>
+                    <li><a href="#"><input id="compilation_options_symbolic" type="checkbox" name="compilation_options">Use symbolic strategy</a></li>
                   </ul>
                 </li>
                 <li><a href="#">Simulate</a></li>
@@ -79,7 +91,7 @@
           <ul>	
             <li><a href="#">Help &#x25BC;</a>
               <ul>
-                <li><a href="#">About Specification Editor...</a></li>
+                <li><a id="about_spec_editor" href="#">About Specification Editor...</a></li>
               </ul>
             </li>
           </ul> 

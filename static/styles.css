@@ -103,6 +103,14 @@ body {
   border: 1px solid gray;
 }
 
+/* so that the browser/OS generated button isn't seen */
+#spec_editor_regions_upload_file{
+  opacity: 0;
+  z-index: 2;
+  position: absolute;
+  width: 140px; /* approximate width of the text overlay */
+}
+
 #spec_editor_rightside{
   float: right;
   width: 30%;
