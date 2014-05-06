@@ -1,0 +1,3 @@
+[submodule "LTLMoP"]
+	path = LTLMoP
+	url = https://github.com/LTLMoP/LTLMoP.git

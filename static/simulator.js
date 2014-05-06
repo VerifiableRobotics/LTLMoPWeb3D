@@ -200,11 +200,11 @@
       // ajax call for velocity theta
       function getVelocityTheta() {
         var x = car.body.position.x;
-        var y = car.body.position.z; // z-axis is the y-axis in this case
+        var y = car.body.position.z; // z-axis is the 'y-axis' in this case for simplicity
         console.log("car position x:" + x);
         console.log("car position z:" + y);
         $.ajax({
-          url: '/getVelocityTheta',
+          url: '/simulator/getVelocityTheta',
           type: 'GET',
           datatype: "json",
           data: {x: x, y: y},
@@ -260,7 +260,7 @@
       console.log("clicked get_sensors");
 
       $.ajax({
-        url: '/getSensorList',
+        url: '/simulator/getSensorList',
         type: 'GET',
         datatype: "json",
         success: function(data) {
@@ -280,8 +280,8 @@
       }); // end ajax
     }); // end click
 
-  // ------------------ the below largely borrowed from StackOverflow, thank you olanod! ----------------------
-  // file validation
+  // ------------------ the below in part borrowed from StackOverflow, thank you olanod! ----------------------
+  // bind to change event
   $('#regions_upload_file').change(function(){
     var file = this.files[0];
     var name = file.name;
@@ -290,44 +290,27 @@
     if(extension != "regions") {
       alert("This only accepts *.regions files!");
     }
+    else { // do upload
+      var formData = new FormData($('#regions_upload_form')[0]);
+      $.ajax({
+        url: '/simulator/uploadRegions',
+        type: 'POST',
+        // ajax callbacks 
+        success: function(data) {
+          createRegionsFromJSON(data.theList);
+        },
+        error: function(xhr, status) {
+          console.log("regions upload failed")
+        },
+        // form data to send
+        data: formData,
+        // options to tell jQuery not to process data or worry about content-type.
+        cache: false,
+        contentType: false,
+        processData: false
+      }); // end ajax
+    } // end else
   });
-
-  // clicked submit
-  $('#regions_upload_button').click(function(){
-    var formData = new FormData($('#regions_upload_form')[0]);
-    $.ajax({
-      url: '/uploadRegion',
-      type: 'POST',
-      xhr: function() {  // custom XMLHttpRequest
-        var myXhr = $.ajaxSettings.xhr();
-        if(myXhr.upload){ // check if upload property exists
-          // handle upload progress
-          myXhr.upload.addEventListener('#regions_upload_progress', progressHandlingFunction, false);
-        }
-        return myXhr;
-      },
-      // ajax callbacks 
-      success: function(data) {
-        createRegionsFromJSON(data.theList);
-      },
-      error: function(xhr, status) {
-        console.log("regions upload failed")
-      },
-      // form data to send
-      data: formData,
-      // options to tell jQuery not to process data or worry about content-type.
-      cache: false,
-      contentType: false,
-      processData: false
-    });
-  });
-
-  // updates progress bar
-  function progressHandlingFunction(e){
-    if(e.lengthComputable){
-      $('#regions_upload_progress').attr({value:e.loaded,max:e.total});
-    }
-  }
   // --------------------------- end borrowed from StackOverflow ---------------------
   
   // create regions from JSON
@@ -367,15 +350,34 @@
     }) // end for each
   }
   
-  // camera zooming
+  // camera zooming and panning
   $(document).keyup(function(event) {
-    if(event.which == 40) { // down key
-      camera.position.set(camera.position.x * 2, camera.position.y * 2, camera.position.z * 2); // zoom out
+    console.log(event.which);
+    var zoomIncrement = 1.2; // zoom constant
+    var moveIncrement = 10; // move constant
+    if(event.which == 109 || event.which == 189) { // minus keys
+      camera.position.set(camera.position.x * zoomIncrement, camera.position.y * zoomIncrement, camera.position.z * zoomIncrement); // zoom out
     }
-    if(event.which == 38) { // up key
-      camera.position.set(camera.position.x / 2, camera.position.y / 2, camera.position.z / 2); // zoom in
+    else if(event.which == 107 || event.which == 187) { // plus keys
+      camera.position.set(camera.position.x / zoomIncrement, camera.position.y / zoomIncrement, camera.position.z / zoomIncrement); // zoom in
+    }
+    else if(event.which == 40) { // down arrow
+      camera.position.set(camera.position.x + moveIncrement, camera.position.y, camera.position.z + moveIncrement); // camera move back
+    }
+    else if(event.which == 38) { // up arrow
+      camera.position.set(camera.position.x - moveIncrement, camera.position.y, camera.position.z - moveIncrement); // camera move forward
+    }
+    else if(event.which == 37) { // left key
+      camera.position.set(camera.position.x - moveIncrement, camera.position.y, camera.position.z + moveIncrement); // pan left
+    }
+    else if(event.which == 39) { // right key
+      camera.position.set(camera.position.x + moveIncrement, camera.position.y, camera.position.z - moveIncrement); // pan right
     }
   }); // end keypress
 
+  // resize warning
+  $(window).resize(function() {
+    alert("The renderer has a fixed width, please refresh for simulator to have proper width and height");
+  });
 }); // end document ready
     

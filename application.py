@@ -17,7 +17,12 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 def allowed_file(filename):
   return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
-@app.route('/uploadRegion', methods=['POST'])
+# ----------------- simulator functions ------------------------------
+@app.route('/')
+def loadSimulator():
+	return render_template('/simulator.html', name='simulator')
+
+@app.route('/simulator/uploadRegions', methods=['POST'])
 def uploadRegion():
   file = request.files['file']
   if file and allowed_file(file.filename):
@@ -28,10 +33,17 @@ def uploadRegion():
     return jsonify(theList = newJSON)
   return jsonify(theBool = "False")
 
-@app.route('/')
-def loadSimulator():
-	return render_template('/simulator.html', name='simulator')
+@app.route('/simulator/getVelocityTheta', methods=['GET'])
+def sendVelocityTheta():
+	newVelocity = random.uniform(0, 30)
+	newTheta = random.uniform(0, math.pi/2)
+	return jsonify(velocity = newVelocity, theta = newTheta)
 
+@app.route('/simulator/getSensorList', methods=['GET'])
+def sendSensorList():
+	return jsonify(sensorArray = ["sensor1", "sensor2"])
+
+# -------------------- spec editor functions -----------------------------
 @app.route('/specEditor')
 def loadSpecEditor():
 	return render_template('/specEditor.html', name='specEditor')
@@ -53,16 +65,6 @@ def saveSpec():
 	thepath = os.path.join(app.config['UPLOAD_FOLDER'], "spec.spec")
 	proj.writeSpecFile(thepath)
 	return send_file(thepath, as_attachment=True, mimetype='text/plain')
-
-@app.route('/getVelocityTheta', methods=['GET'])
-def sendVelocityTheta():
-	newVelocity = random.uniform(0, 30)
-	newTheta = random.uniform(0, math.pi/2)
-	return jsonify(velocity = newVelocity, theta = newTheta)
-
-@app.route('/getSensorList')
-def sendSensorList():
-	return jsonify(sensorArray = ["sensor1", "sensor2"])
 	
 
 if __name__ == '__main__':
