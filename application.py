@@ -3,7 +3,7 @@ from werkzeug.utils import secure_filename
 import random, math, os, sys
                                                                                                                                                                                                                
 sys.path.append(os.path.join("LTLMoP","src","lib")) # add lib to path
-import regions, project
+import regions, project, specCompiler
 
 rfi = regions.RegionFileInterface()
 
@@ -22,6 +22,7 @@ def allowed_file(filename):
 def loadSimulator():
 	return render_template('/simulator.html', name='simulator')
 
+# returns a list of regions given a .regions file
 @app.route('/simulator/uploadRegions', methods=['POST'])
 def simulatorUploadRegion():
   file = request.files['file']
@@ -33,26 +34,32 @@ def simulatorUploadRegion():
     return jsonify(theList = newJSON)
   return jsonify(theBool = "False")
 
+# send velocity and theta
 @app.route('/simulator/getVelocityTheta', methods=['GET'])
 def sendVelocityTheta():
 	newVelocity = random.uniform(0, 30)
 	newTheta = random.uniform(0, math.pi/2)
 	return jsonify(velocity = newVelocity, theta = newTheta)
 
+# send an array of sensor names
 @app.route('/simulator/getSensorList', methods=['GET'])
 def sendSensorList():
 	return jsonify(sensorArray = ["sensor1", "sensor2"])
 
 # -------------------- spec editor functions -----------------------------
+proj = project.Project() # project instance
+proj.project_root = app.config['UPLOAD_FOLDER'] # set root
+fileprefix = "spec" # constant prefix
+proj.project_basename = fileprefix
+
+# render the spec editor
 @app.route('/specEditor')
 def loadSpecEditor():
 	return render_template('/specEditor.html', name='specEditor')
 
-# create a spec file from request.args dict and return its path
+# create a spec file from request.args dict
 def createSpec(dict):
-	proj = project.Project()
-
-	# store text
+	#store text
 	proj.specText = dict.get('specText') # "blah"
 	if proj.specText is None: 
 		proj.specText = '' # store as blank string, not None if None
@@ -81,15 +88,41 @@ def createSpec(dict):
 		proj.rfi.readFile(dict.get('regionPath')) # 'uploads/floorplan.regions'
 	
 	# write spec, save spec, and return path
-	thepath = os.path.join(app.config['UPLOAD_FOLDER'], "spec.spec")
+	thepath = os.path.join(app.config['UPLOAD_FOLDER'], fileprefix + ".spec")
 	proj.writeSpecFile(thepath)
-	return thepath
+	return jsonify(theBool = "True")
 
+# sends the currently stored spec to the user
 @app.route('/specEditor/saveSpec', methods=['GET', 'POST'])
 def saveSpec():
-	thepath = createSpec(request.args);
+	createSpec(request.args)
+	thepath = os.path.join(app.config['UPLOAD_FOLDER'], fileprefix + ".spec")
 	return send_file(thepath, as_attachment=True, mimetype='text/plain')
 
+# compiles the currently stored project and returns compiler log
+@app.route('/specEditor/compileSpec', methods=['GET'])
+def compileSpec():
+	sc = specCompiler.SpecCompiler()
+	sc.loadSpec(os.path.join(app.config['UPLOAD_FOLDER'], fileprefix + ".spec"))
+	realizable, realizableFS, logString = sc.compile()
+	print logString
+	print realizable
+	print realizableFS
+	return jsonify(compilerLog = logString)
+
+# sends the currently stored aut to the user
+@app.route('/specEditor/saveAut')
+def saveAut():
+	thepath = os.path.join(app.config['UPLOAD_FOLDER'], fileprefix + ".aut")
+	return send_file(thepath, as_attachment=True, mimetype='text/plain')
+
+# sends the currently stored ltl to the user
+@app.route('/specEditor/saveLTL')
+def saveLTL():
+	thepath = os.path.join(app.config['UPLOAD_FOLDER'], fileprefix + ".ltl")
+	return send_file(thepath, as_attachment=True, mimetype='text/plain')
+
+# returns a list of regions and the server path given a file
 @app.route('/specEditor/uploadRegions', methods=['POST'])
 def specEditorUploadRegion():
   file = request.files['file']
@@ -100,6 +133,34 @@ def specEditorUploadRegion():
     newJSON = rfi.extractJSONFromRegions(newFilePath)
     return jsonify(theList = newJSON, thePath = newFilePath)
   return jsonify(theBool = "False")
+
+# returns data that specifies what to place into the spec editor
+@app.route('/specEditor/importSpec', methods=['GET'])
+def specEditorImportSpec():
+	proj = project.loadSpecFileToJSON()
+	data = {}
+	"""data['convexify'] = proj.compile_options['convexify']
+    data['fastslow'] = proj.compile_options['fastslow']
+    data['use_region_bit_encoding'] = proj.compile_options['co']
+    data['symbolic'] = $('#compilation_options_symbolic')[0].checked;
+    
+    data['parser'] = $('.parser_mode_radio:checked').val();
+    data['synthesizer'] = $('.synthesizer_radio:checked').val();
+    
+    // arrays to store data that will be passed to server 
+    data['all_sensors'] = [];
+    data['enabled_sensors'] = [];
+    data['all_actuators'] = [];
+    data['enabled_actuators'] = [];
+    data['all_customs'] = [];"""
+	return jsonify(theBool = "True")
+
+
+# ------------------------- region editor functions ------------------------
+# renders the region editor
+@app.route('/regionEditor')
+def loadRegionEditor():
+	return render_template('/regionEditor.html', name='regionEditor')
 	
 
 if __name__ == '__main__':

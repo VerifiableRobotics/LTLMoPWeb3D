@@ -1,0 +1,52 @@
+
+
+State 0 with rank 0 -> <sensor1:0, l:0, bit0:0, bit1:0, bit2:0>
+	With successors : 1, 2
+State 1 with rank 0 -> <sensor1:0, l:0, bit0:1, bit1:0, bit2:0>
+	With successors : 1, 3
+State 2 with rank 0 -> <sensor1:1, l:1, bit0:0, bit1:0, bit2:0>
+	With successors : 1, 2
+State 3 with rank 0 -> <sensor1:1, l:1, bit0:1, bit1:0, bit2:0>
+	With successors : 1, 3
+State 4 with rank 0 -> <sensor1:0, l:0, bit0:0, bit1:0, bit2:1>
+	With successors : 1, 5
+State 5 with rank 0 -> <sensor1:1, l:1, bit0:0, bit1:0, bit2:1>
+	With successors : 1, 5
+State 6 with rank 0 -> <sensor1:0, l:0, bit0:0, bit1:1, bit2:0>
+	With successors : 1, 7
+State 7 with rank 0 -> <sensor1:1, l:1, bit0:0, bit1:1, bit2:0>
+	With successors : 1, 7
+State 8 with rank 0 -> <sensor1:0, l:0, bit0:0, bit1:1, bit2:1>
+	With successors : 0, 9
+State 9 with rank 0 -> <sensor1:1, l:1, bit0:0, bit1:1, bit2:1>
+	With successors : 0, 9
+State 10 with rank 0 -> <sensor1:0, l:1, bit0:0, bit1:0, bit2:0>
+	With successors : 1, 2
+State 11 with rank 0 -> <sensor1:0, l:1, bit0:0, bit1:0, bit2:1>
+	With successors : 1, 5
+State 12 with rank 0 -> <sensor1:0, l:1, bit0:0, bit1:1, bit2:0>
+	With successors : 1, 7
+State 13 with rank 0 -> <sensor1:0, l:1, bit0:0, bit1:1, bit2:1>
+	With successors : 0, 9
+State 14 with rank 0 -> <sensor1:1, l:0, bit0:0, bit1:0, bit2:0>
+	With successors : 1, 2
+State 15 with rank 0 -> <sensor1:1, l:0, bit0:0, bit1:0, bit2:1>
+	With successors : 1, 5
+State 16 with rank 0 -> <sensor1:1, l:0, bit0:0, bit1:1, bit2:0>
+	With successors : 1, 7
+State 17 with rank 0 -> <sensor1:1, l:0, bit0:0, bit1:1, bit2:1>
+	With successors : 0, 9
+State 18 with rank 0 -> <sensor1:0, l:0, bit0:1, bit1:0, bit2:1>
+	With successors : 6, 19
+State 19 with rank 0 -> <sensor1:1, l:1, bit0:1, bit1:0, bit2:1>
+	With successors : 6, 19
+State 20 with rank 0 -> <sensor1:0, l:1, bit0:1, bit1:0, bit2:0>
+	With successors : 1, 3
+State 21 with rank 0 -> <sensor1:0, l:1, bit0:1, bit1:0, bit2:1>
+	With successors : 6, 19
+State 22 with rank 0 -> <sensor1:1, l:0, bit0:1, bit1:0, bit2:0>
+	With successors : 1, 3
+State 23 with rank 0 -> <sensor1:1, l:0, bit0:1, bit1:0, bit2:1>
+	With successors : 6, 19
+
+

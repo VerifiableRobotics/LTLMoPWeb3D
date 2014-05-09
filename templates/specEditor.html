@@ -5,7 +5,8 @@
 <head>
   <title>LTLMoPWeb3D Specification Editor</title>
 	
-  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}" />
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='header.css') }}" />
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='specEditor.css') }}" />
   <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='jquery-linedtextarea.css') }}" />
 	
   <script type="text/javascript" src="{{ url_for('static', filename='jquery-2.1.0.min.js') }}"></script>
@@ -27,7 +28,7 @@
           <ul>
             <li><a href="#">File &#x25BC;</a>
               <ul>
-                <li><a href="#">Open...</a></li>
+                <li><a id="spec_editor_import_spec" href="#">Open...</a></li>
                 <li>
                   <form enctype="multipart/form-data" id="spec_editor_regions_upload_form">
                     <input name="file" type="file" id="spec_editor_regions_upload_file"/>
@@ -52,7 +53,7 @@
           <ul>	
             <li><a href="#">Run &#x25BC;</a>
               <ul>
-                <li><a href="#">Compile</a></li>
+                <li><a id="spec_editor_compile" href="#">Compile</a></li>
                 <li><a href="#" class="parent">Compilation options &#x25b6;</a>
                   <ul>
                     <li><a href="#"><input id="compilation_options_convexify" type="checkbox" name="compilation_options" checked="checked">Decompose workspace into convex regions</a></li>
@@ -61,7 +62,7 @@
                     <li><a href="#" class="parent">Parser Mode &#x25b6;</a>
                       <ul>
                         <li><a href="#"><input class="parser_mode_radio" type="radio" name="parser_mode" value="slurp">SLURP (NL)</a></li>
-                        <li><a href="#"><input class="parser_mode_radio" type="radio" name="parser_mode" value="english" checked="checked">Structured English</a></li>
+                        <li><a href="#"><input class="parser_mode_radio" type="radio" name="parser_mode" value="structured" checked="checked">Structured English</a></li>
                         <li><a href="#"><input class="parser_mode_radio" type="radio" name="parser_mode" value="ltl">LTL</a></li>
                       </ul>
                     </li>
