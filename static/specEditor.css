@@ -1,88 +1,3 @@
-html {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-}
-
-body {
-  position: absolute;
-  margin: 0;
-  padding: 0;
-  top: 0px;
-  bottom: 0px;
-  left: 0px;
-  right: 0px;
-  font-family: Verdana;
-  font-size: 10pt;
-  height: 100%;
-}
-
-#heading {
-  position: relative;
-  top: 0;
-  width: 100%;
-  height: 50px;
-  margin: 0;
-  padding: 0;
-  background-color: #71b87b;
-  text-align: center;
-}
-#heading h1 {
-  margin: 0;
-  height: 30px;
-  line-height: 30px;
-  background-color: #64a36d;
-  font-size: 16px;
-}
-#heading p {
-  margin: 0;
-  line-height: 20px;
-  height: 20px;
-}
-
-/* ------------------------ simulator specific css ------------------------*/
-#viewport{
-  position: relative;
-  float: left;
-  width: 85%;
-  height: 75%;
-}
-
-#simulator_wrapper{
-  width: 100%;
-  height: calc(100% - 102px);
-}
-
-/* so that the browser/OS generated button isn't seen */
-#regions_upload_file{
-  opacity: 0;
-  z-index: 2;
-  position: absolute;
-}
-
-#sensor_list{
-  list-style-type: none;
-}
-
-.center_wrapper{
-  text-align: center;
-}
-
-.right_wrapper{
-  position: relative;
-  text-align: right;
-  width: 15%;
-  float:right;
-}
-
-.sensor_button{
-  background-color: red;
-}
-
-.green_sensor{
-  background-color: green;
-}
-
 /* ----------------- spec editor specific css ---------------------*/
 #spec_editor_wrapper{
   height: calc(100% - 50px);
@@ -105,6 +20,14 @@ body {
 
 /* so that the browser/OS generated button isn't seen */
 #spec_editor_regions_upload_file{
+  opacity: 0;
+  z-index: 2;
+  position: absolute;
+  width: 140px; /* approximate width of the text overlay */
+}
+
+/* so that the browser/OS generated button isn't seen */
+#spec_editor_import_spec_file{
   opacity: 0;
   z-index: 2;
   position: absolute;

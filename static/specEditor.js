@@ -67,7 +67,9 @@ $(document).ready(function() {
       success: function(data) {
         $('#spec_editor_compilerlog_text').text(data.compilerLog);
         window.open("specEditor/saveAut");
-        window.open("specEditor/saveLTL");
+        setTimeout(function() {window.open("specEditor/saveLTL")}, 1000});
+        setTimeout(function() {window.open("specEditor/saveSMV")}, 1000});
+        setTimeout(function() {window.open("specEditor/saveDecomposed")}, 1000});
       },
       error: function() {
         console.log("compile spec failed");
@@ -96,18 +98,15 @@ $(document).ready(function() {
     }
   }); // end change
   
-  $('#spec_editor_import_spec').click(function() {
-    $.ajax({
-      url: 'specEditor/importSpec',
-      type: 'GET',
-      success: function(data) {
-        importSpec(data);
-      },
-      error: function(xhr, status) {
-        console.log('import spec failed');
-      }
-    }); // end ajax
-  }); // end click
+  $('#spec_editor_import_spec_file').change(function() {
+    uploadFile(this, "spec", $('#spec_editor_import_spec_form')[0], '/specEditor/importSpec', 'POST', successFunc, errorFunc);
+    function successFunc(data) {
+      importSpec(data);
+    }
+    function errorFunc(xhr, status) {
+      console.log('import spec failed');
+    }
+  }); // end change
   
   // ---------------------------------------- helper functions below ----------------------------
   

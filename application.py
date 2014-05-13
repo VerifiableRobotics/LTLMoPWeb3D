@@ -105,9 +105,6 @@ def compileSpec():
 	sc = specCompiler.SpecCompiler()
 	sc.loadSpec(os.path.join(app.config['UPLOAD_FOLDER'], fileprefix + ".spec"))
 	realizable, realizableFS, logString = sc.compile()
-	print logString
-	print realizable
-	print realizableFS
 	return jsonify(compilerLog = logString)
 
 # sends the currently stored aut to the user
@@ -122,6 +119,18 @@ def saveLTL():
 	thepath = os.path.join(app.config['UPLOAD_FOLDER'], fileprefix + ".ltl")
 	return send_file(thepath, as_attachment=True, mimetype='text/plain')
 
+# sends the currently stored smv to the user
+@app.route('/specEditor/saveSMV')
+def saveSMV():
+  thepath = os.path.join(app.config['UPLOAD_FOLDER'], fileprefix + ".smv")
+  return send_file(thepath, as_attachment=True, mimetype='text/plain')
+
+# sends the currently stored decomposed regions to the user
+@app.route('/specEditor/saveDecomposed')
+def saveDecomposed():
+  thepath = os.path.join(app.config['UPLOAD_FOLDER'], fileprefix + "_decomposed.regions")
+  return send_file(thepath, as_attachment=True, mimetype='text/plain')
+
 # returns a list of regions and the server path given a file
 @app.route('/specEditor/uploadRegions', methods=['POST'])
 def specEditorUploadRegion():
@@ -135,24 +144,33 @@ def specEditorUploadRegion():
   return jsonify(theBool = "False")
 
 # returns data that specifies what to place into the spec editor
-@app.route('/specEditor/importSpec', methods=['GET'])
+@app.route('/specEditor/importSpec', methods=['POST'])
 def specEditorImportSpec():
-	proj = project.loadSpecFileToJSON()
-	data = {}
-	"""data['convexify'] = proj.compile_options['convexify']
+	# get file and re-create project
+  file = request.files['file']
+  if file and allowed_file(file.filename):
+    newFilePath = os.path.join(app.config['UPLOAD_FOLDER'], fileprefix + ".spec")
+    file.save(newFilePath)
+    proj.loadSpecFile(newFilePath)
+
+    # create JSON
+  	data = {}
+  	data['convexify'] = proj.compile_options['convexify']
     data['fastslow'] = proj.compile_options['fastslow']
-    data['use_region_bit_encoding'] = proj.compile_options['co']
-    data['symbolic'] = $('#compilation_options_symbolic')[0].checked;
+    data['use_region_bit_encoding'] = proj.compile_options['use_region_bit_encoding']
+    data['symbolic'] = proj.compile_options['symbolic']
+      
+    data['parser'] = proj.compile_options['parser']
+    data['synthesizer'] = proj.compile_options['synthesizer']
     
-    data['parser'] = $('.parser_mode_radio:checked').val();
-    data['synthesizer'] = $('.synthesizer_radio:checked').val();
-    
-    // arrays to store data that will be passed to server 
-    data['all_sensors'] = [];
-    data['enabled_sensors'] = [];
-    data['all_actuators'] = [];
-    data['enabled_actuators'] = [];
-    data['all_customs'] = [];"""
+    # arrays to store data that will be passed to server 
+    data['all_sensors'] = proj.all_sensors
+    data['enabled_sensors'] = proj.enabled_sensors
+    data['all_actuators'] = proj.all_actuators
+    data['enabled_actuators'] = proj.enabled_actuators
+    data['all_customs'] = proj.all_customs
+    data['regionPath'] = proj.rfi.filename
+    return jsonify(data)
 	return jsonify(theBool = "True")
 
 

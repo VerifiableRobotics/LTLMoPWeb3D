@@ -28,7 +28,12 @@
           <ul>
             <li><a href="#">File &#x25BC;</a>
               <ul>
-                <li><a id="spec_editor_import_spec" href="#">Open...</a></li>
+                <li>
+                  <form enctype="multipart/form-data" id="spec_editor_import_spec_form">
+                    <input name="file" type="file" id="spec_editor_import_spec_file"/>
+                    <a id="spec_editor_import_spec" href="#">Open...</a>
+                  </form>
+                </li>
                 <li>
                   <form enctype="multipart/form-data" id="spec_editor_regions_upload_form">
                     <input name="file" type="file" id="spec_editor_regions_upload_file"/>
