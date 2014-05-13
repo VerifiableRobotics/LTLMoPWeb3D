@@ -151,11 +151,12 @@ def specEditorImportSpec():
   if file and allowed_file(file.filename):
     newFilePath = os.path.join(app.config['UPLOAD_FOLDER'], fileprefix + ".spec")
     file.save(newFilePath)
-    proj.loadSpecFile(newFilePath)
+    proj.loadProject(newFilePath)
 
     # create JSON
-  	data = {}
-  	data['convexify'] = proj.compile_options['convexify']
+    data = {}
+    data['specText'] = proj.specText
+    data['convexify'] = proj.compile_options['convexify']
     data['fastslow'] = proj.compile_options['fastslow']
     data['use_region_bit_encoding'] = proj.compile_options['use_region_bit_encoding']
     data['symbolic'] = proj.compile_options['symbolic']
@@ -171,7 +172,7 @@ def specEditorImportSpec():
     data['all_customs'] = proj.all_customs
     data['regionPath'] = proj.rfi.filename
     return jsonify(data)
-	return jsonify(theBool = "True")
+  return jsonify(theBool = "True")
 
 
 # ------------------------- region editor functions ------------------------

@@ -67,9 +67,9 @@ $(document).ready(function() {
       success: function(data) {
         $('#spec_editor_compilerlog_text').text(data.compilerLog);
         window.open("specEditor/saveAut");
-        setTimeout(function() {window.open("specEditor/saveLTL")}, 1000});
-        setTimeout(function() {window.open("specEditor/saveSMV")}, 1000});
-        setTimeout(function() {window.open("specEditor/saveDecomposed")}, 1000});
+        setTimeout(function() {window.open("specEditor/saveLTL")}, 1000);
+        setTimeout(function() {window.open("specEditor/saveSMV")}, 1000);
+        setTimeout(function() {window.open("specEditor/saveDecomposed")}, 1000);
       },
       error: function() {
         console.log("compile spec failed");
