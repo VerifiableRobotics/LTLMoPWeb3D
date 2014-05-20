@@ -163,7 +163,7 @@ $(document).ready(function() {
     })
   } // end import spec
   
-  // upload file function
+  // uploads file given the jQuery object that holds the file, the accepted extension (e.g. "spec"), the form element that wraps the file, the url to send the file to, the type of request (e.g. "POST"), and the success and error callbacks
   function uploadFile(newthis, acceptedExtension, form, url, type, successFunc, errorFunc) {
     var file = newthis.files[0];
     var name = file.name;
@@ -191,6 +191,7 @@ $(document).ready(function() {
   } // end upload file
   
    // click add function
+   // takes the ul element to add to, the map that holds the props, the button that does remove for these props, the text to prompt the user upon input, the placeholer name of the prop (e.g. "sensor"), and the html that will go to the left and right of the name
   function clickAdd(selectList, selectMap, removeButton, promptText, nameText, htmlLeft, htmlRight) {
   	var count = 1;
     // until we get "name" + count that is not in the map
@@ -201,7 +202,7 @@ $(document).ready(function() {
     addProp(name, selectMap, selectList, htmlLeft, htmlRight, removeButton);
   } // end click add
 
-  // adds the prop    
+  // adds the prop given the name, the map that holds the props, the ul that holds them, the html to the left and right of the name, and the button that removes these props   
   function addProp(name, selectMap, selectList, htmlLeft, htmlRight, removeButton) {
     if(name != "" && name != null && selectMap[name] == null) {
       selectList.children().removeClass("spec_editor_selectlist_li_clicked"); // unclick all
@@ -223,6 +224,7 @@ $(document).ready(function() {
   } // end add prop
   
   // click remove function
+  // takes in the jQuery object of the remove button, and the respective ul and map that hold the props that this button removes
   function clickRemove(_t, selectList, selectMap) {
     var elem = selectList.children('.spec_editor_selectlist_li_clicked');
     var text = elem.text();
@@ -234,6 +236,7 @@ $(document).ready(function() {
   } // end click remove
   
   // click li function
+  // takes in an event and the ul that was clicked
   function clickSelectListLi(ev, selectList) {
     selectList.children().removeClass("spec_editor_selectlist_li_clicked");
     var target = $(ev.target);
