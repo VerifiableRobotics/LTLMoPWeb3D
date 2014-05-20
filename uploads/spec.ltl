@@ -4,15 +4,36 @@
 
 LTLSPEC -- Assumptions
 	(
-			TRUE & 
-			[](TRUE) & 
+			 !e.person & 
+			 !e.hazardous_item & 
+			 []((( ((!s.bit0 & !s.bit1 & !s.bit2)) ) ) -> (   !  next(e.hazardous_item)) ) & 
+			 []((( ((!s.bit0 & !s.bit1 & !s.bit2)) ) ) -> (   !  next(e.person)) ) & 
 			[]<>(TRUE)
 	);
 
 LTLSPEC -- Guarantees
 	(
-			 []((( next(e.sensor1) ) ) -> (  next(s.l)) ) & 
-			 []<>((!( e.sensor1 ) ) -> (  ((s.bit0 & !s.bit1 & !s.bit2))) ) 
+			 (((!s.bit0 & !s.bit1 & !s.bit2))) & 
+			 !s.pick_up & 
+			 !s.drop & 
+			 !s.radio & 
+			 !s.carrying_item & 
+			 []((( next(e.hazardous_item) )  &  !( next(s.carrying_item) ) ) <-> (  next(s.pick_up)) ) & 
+			 []((( next(s.pick_up) ) ) -> ( (next(s.bit0) <-> s.bit0) & (next(s.bit1) <-> s.bit1) & (next(s.bit2) <-> s.bit2) )) & 
+			 ([](( (s.pick_up) & !(s.drop)) -> next(s.carrying_item)) ) & 
+			 ([](  (s.drop) -> !next(s.carrying_item)) ) & 
+			 ([](( (s.carrying_item) & !(s.drop)) -> next(s.carrying_item)) ) & 
+			 ([](( !(s.carrying_item) & !(s.pick_up)) -> !next(s.carrying_item)) ) & 
+			 []((( ((!next(s.bit0) & !next(s.bit1) & !next(s.bit2))) )  &  ( next(s.carrying_item) ) ) <-> (  next(s.drop)) ) & 
+			 []((!( s.carrying_item ) ) -> (   !  ((!next(s.bit0) & !next(s.bit1) & !next(s.bit2)))) ) & 
+			 []((( next(e.person) ) ) <-> (  next(s.radio)) ) & 
+			 []((( next(s.radio) )  |  ( s.radio ) ) -> ( (next(s.bit0) <-> s.bit0) & (next(s.bit1) <-> s.bit1) & (next(s.bit2) <-> s.bit2) )) & 
+			 []<>((!( s.carrying_item )  &  !( s.radio ) ) -> (  ((!s.bit0 & s.bit1 & s.bit2))) ) & 
+			 []<>((!( s.carrying_item )  &  !( s.radio ) ) -> (  ((s.bit0 & !s.bit1 & s.bit2))) ) & 
+			 []<>((!( s.carrying_item )  &  !( s.radio ) ) -> (  ((!s.bit0 & s.bit1 & !s.bit2))) ) & 
+			 []<>((!( s.carrying_item )  &  !( s.radio ) ) -> (  ((s.bit0 & !s.bit1 & !s.bit2))) ) & 
+			 []<>((!( s.carrying_item )  &  !( s.radio ) ) -> (  ((!s.bit0 & !s.bit1 & s.bit2))) ) & 
+			 []<>((( s.carrying_item )  &  !( s.radio ) ) -> (  ((!s.bit0 & !s.bit1 & !s.bit2))) ) 
 
 &
 			( (!s.bit0 & !s.bit1 & !s.bit2) 

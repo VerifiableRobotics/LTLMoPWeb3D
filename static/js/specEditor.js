@@ -110,6 +110,7 @@ $(document).ready(function() {
   
   // ---------------------------------------- helper functions below ----------------------------
   
+  // given the JSON version of a project object, imports the spec
   function importSpec(data) {
     $('#spec_editor_text').text(data['specText']); // set text
     regionPath = data['regionPath']; // store the path to the regions file
@@ -124,6 +125,19 @@ $(document).ready(function() {
     $('.parser_mode_radio[value="' + data['parser'] + '"]').prop('checked', true);
     $('.synthesizer_radio[value="' + data['synthesizer'] + '"]').prop('checked', true);
     
+    // clear all lists and maps
+    sensorMap = {};
+    actuatorMap = {};
+    custompropMap = {};
+    sensorList.empty();
+    actuatorList.empty();
+    custompropList.empty();
+    regionList.empty();
+    
+    // add regions
+    data['regionList'].forEach(function(name) {
+      createRegion(name);
+    })
     // add sensors
     data['all_sensors'].forEach(function(name) {  
       addProp(name, sensorMap, sensorList,
@@ -147,7 +161,7 @@ $(document).ready(function() {
     data['enabled_actuators'].forEach(function(name) {
       actuatorList.find(':contains('+name+')').children().prop('checked', true);
     })
-  }
+  } // end import spec
   
   // upload file function
   function uploadFile(newthis, acceptedExtension, form, url, type, successFunc, errorFunc) {
@@ -185,7 +199,7 @@ $(document).ready(function() {
     }
     var name = prompt(promptText, nameText + count);
     addProp(name, selectMap, selectList, htmlLeft, htmlRight, removeButton);
-  }
+  } // end click add
 
   // adds the prop    
   function addProp(name, selectMap, selectList, htmlLeft, htmlRight, removeButton) {
@@ -206,7 +220,7 @@ $(document).ready(function() {
     else if(name == "") {
       alert("A blank name is not allowed");
     }
-  }
+  } // end add prop
   
   // click remove function
   function clickRemove(_t, selectList, selectMap) {
@@ -217,7 +231,7 @@ $(document).ready(function() {
     if(selectList.children().length <= 0) {
       _t.disabled = true; // disallow removal
     }
-  }
+  } // end click remove
   
   // click li function
   function clickSelectListLi(ev, selectList) {
@@ -227,19 +241,25 @@ $(document).ready(function() {
       target = target.parent('li');
     }
     target.addClass("spec_editor_selectlist_li_clicked");
-  }
+  } // end click li
   
+  // adds all the regions from a JSON list
   function createRegionsFromJSON(theList) {
     // loop through the region array
     theList.forEach(function(region) {
       var name = region.name; // get name
-      var newRegion = $("<li class=\"spec_editor_selectlist_li\" tabindex=\"0\">" + name + "</li>"); // create elem
-      newRegion.click(function(ev) { // bind click to element
-        clickSelectListLi(ev, regionList);
-      });
-      regionList.append(newRegion); // append element      
+      createRegion(name); // create the region    
     }) // end for each
   } // end create regions from JSON
+  
+  // creates region element, binds the event handler, and adds to ul
+  function createRegion(name) {
+    var newRegion = $("<li class=\"spec_editor_selectlist_li\" tabindex=\"0\">" + name + "</li>"); // create elem
+    newRegion.click(function(ev) { // bind click to element
+      clickSelectListLi(ev, regionList);
+    });
+    regionList.append(newRegion); // append element  
+  } // end create region
   
   // creates and returns the json that holds all spec information
   function createJSONForSpec() {
@@ -285,6 +305,6 @@ $(document).ready(function() {
     });
     
     return data;
-  } // end create JSON for spe
+  } // end create JSON for spec
   
 }); // end document ready

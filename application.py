@@ -171,6 +171,11 @@ def specEditorImportSpec():
     data['enabled_actuators'] = proj.enabled_actuators
     data['all_customs'] = proj.all_customs
     data['regionPath'] = proj.rfi.filename
+    data['regionList'] = []
+    # loop through list of regions and add names to the array
+    for region in proj.rfi.regions:
+        data['regionList'].append(region.name)
+        
     return jsonify(data)
   return jsonify(theBool = "True")
 

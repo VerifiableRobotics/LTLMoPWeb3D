@@ -5,7 +5,7 @@
   'use strict';
   
   // set worker and ammo
-  Physijs.scripts.worker = 'static/physijs_worker.js';
+  Physijs.scripts.worker = 'static/plugins/physijs/physijs_worker.js';
   Physijs.scripts.ammo = 'ammo.js';
   
   // declare objects
