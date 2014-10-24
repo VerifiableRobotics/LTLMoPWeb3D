@@ -189,7 +189,7 @@ def loadRegionEditor():
 
 if __name__ == '__main__':
 	#app.debug = True
-	import subprocess
-	subprocess.Popen(["sh", "build.sh"])
+	os.chdir('LTLMoP/src/etc/jtlv')
+	os.system('sh build.sh')
 	port = int(os.environ.get("PORT", 5000))
 	app.run(host='0.0.0.0', port=port)
