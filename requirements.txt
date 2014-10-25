@@ -3,8 +3,9 @@ Jinja2
 Werkzeug
 
 # Commented out and moved LTLMoP requirements here to work with buildpack
-# -r ./LTLMoP/requirements.txt
-numpy==1.8.1
-scipy==0.14.0
-Polygon2
--e . # This is for it to run setup.py as well
+-r ./LTLMoP/requirements.txt
+#numpy==1.8.1
+#scipy==0.14.0
+#Polygon2
+# This is for it to run setup.py as well
+-e .
