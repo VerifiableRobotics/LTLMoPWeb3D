@@ -3,3 +3,4 @@ Jinja2
 Werkzeug
 
 -r ./LTLMoP/requirements.txt
+-r ./poop
