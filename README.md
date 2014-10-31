@@ -1,7 +1,7 @@
 LTLMoPWeb3D
 ===================
 
-A website for Cornell's Autonomous Systems Lab to essentially have LTLMoP available in 3D and online. See the [Wiki](https://github.com/LTLMoP/LTLMoP/wiki/) for more details.
+A website for Cornell's Autonomous Systems Lab to essentially have LTLMoP available in 3D and online. [Check out the live version!](https://ltlmop.herokuapp.com). See the [Wiki](https://github.com/LTLMoP/LTLMoP/wiki/) for more details.
 
 <br />
 (Below taken from the Wiki's Overview)
