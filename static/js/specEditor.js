@@ -12,6 +12,8 @@ $(document).ready(function() {
   var $spec_editor_customprops_remove = $('#spec_editor_customprops_remove');
   var $spec_editor_bottom_label = $('.spec_editor_bottom_label');
   var $spec_editor_import_spec_form = $('#spec_editor_import_spec_form');
+  var $spec_editor_regions_upload_form = $('#spec_editor_regions_upload_form');
+  var $spec_editor_regions_selectfrommap = $('#spec_editor_regions_selectfrommap');
   var $compilation_options_convexify = $('#compilation_options_convexify');
   var $compilation_options_fastslow = $('#compilation_options_fastslow'); 
   var $compilation_options_use_region_bit_encoding = $('#compilation_options_use_region_bit_encoding');
@@ -102,12 +104,12 @@ $(document).ready(function() {
   // bind to change event, partly borrowed from olanod on SO
   $('#spec_editor_regions_upload_file').change(function(){
     // upload the file
-    uploadFile(this, "regions", $('#spec_editor_regions_upload_form')[0], '/specEditor/uploadRegions', 'POST', successFunc, errorFunc);
+    uploadFile(this, "regions", $spec_editor_regions_upload_form[0], '/specEditor/uploadRegions', 'POST', successFunc, errorFunc);
     // success callback
     function successFunc(data) { 
       createRegionsFromJSON(data.theList); // add li elems
       regionPath = data.thePath; // store path
-      $('#spec_editor_regions_selectfrommap').prop('disabled', false); // enable button
+      //$spec_editor_regions_selectfrommap.prop('disabled', false); // enable button
     }
     // error callback
     function errorFunc(xhr, status) {
