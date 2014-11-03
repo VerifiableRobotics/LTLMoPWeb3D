@@ -4,20 +4,20 @@
   width: 100%;
   background: #E0E0E0;
 }
-
+.spec_editor_save_link_disabled{
+  background-color: black !important;
+}
 #spec_editor_text_wrapper{
   float: left;
   width: 70%;
   height: 72%;
 }
-
 #spec_editor_text{
   height: 100%;
   width: 69%;  
   word-wrap: break-word;
   border: 1px solid gray;
 }
-
 /* so that the browser/OS generated button isn't seen */
 #spec_editor_regions_upload_file{
   opacity: 0;
@@ -25,7 +25,6 @@
   position: absolute;
   width: 140px; /* approximate width of the text overlay */
 }
-
 /* so that the browser/OS generated button isn't seen */
 #spec_editor_import_spec_file{
   opacity: 0;
@@ -33,14 +32,12 @@
   position: absolute;
   width: 140px; /* approximate width of the text overlay */
 }
-
 #spec_editor_rightside{
   float: right;
   width: 30%;
   height: 74%;
   overflow: auto;
 }
-
 .spec_editor_selectlist{
   list-style-type: none;
   width: 99%;
@@ -51,22 +48,18 @@
   padding-left: 0pt;
   border: 1px solid gray;
 }
-
 .spec_editor_selectlist_li_clicked{
   background: #0000FF;
   color: white;
 }
-
 .spec_editor_buttonlist{
   padding-left: 0pt;
   margin: 2px 0px;
 }
-
 .spec_editor_buttonlist li{
   display: inline;
   list-style-type: none;
 }
-
 #spec_editor_bottom{
   height: 21%;
   bottom: -6px;
@@ -74,27 +67,22 @@
   width: 100%;
   clear: both;
 }
-
 .spec_editor_bottom_radio{
   position: absolute;
   right: 100%;
   opacity: 0;
   top: 0;
 }
-
 .spec_editor_bottom_label{
   border: 2px solid;
   margin-right: -4px;
 }
-
 .spec_editor_bottom_label_clicked{
   border-bottom: 0px;
 }
-
 .spec_editor_bottom_radio:checked + .spec_editor_bottom_div{
   display: block;
 }
-
 .spec_editor_bottom_div{
   display: none;
   background-color: white;
@@ -104,7 +92,6 @@
   border: solid 1px gray;
   overflow: auto;
 }
-
 .spec_editor_bottom_textarea{
   width:100%;
   height:100%;

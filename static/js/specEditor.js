@@ -1,52 +1,71 @@
 $(document).ready(function() {
+  // cache jQuery objects
+  var $spec_editor_save_link = $('.spec_editor_save_link');
+  var $spec_editor_text = $('#spec_editor_text');
+  var $spec_editor_compilerlog_text = $('#spec_editor_compilerlog_text');
+  var $spec_editor_regions = $('#spec_editor_regions');
+  var $spec_editor_sensors = $('#spec_editor_sensors');
+  var $spec_editor_actuators =  $('#spec_editor_actuators');
+  var $spec_editor_customprops =  $('#spec_editor_customprops');
+  var $spec_editor_sensors_remove = $('#spec_editor_sensors_remove');
+  var $spec_editor_actuators_remove = $('#spec_editor_actuators_remove');
+  var $spec_editor_customprops_remove = $('#spec_editor_customprops_remove');
+  var $spec_editor_bottom_label = $('.spec_editor_bottom_label');
+  var $spec_editor_import_spec_form = $('#spec_editor_import_spec_form');
+  var $compilation_options_convexify = $('#compilation_options_convexify');
+  var $compilation_options_fastslow = $('#compilation_options_fastslow'); 
+  var $compilation_options_use_region_bit_encoding = $('#compilation_options_use_region_bit_encoding');
+  var $compilation_options_symbolic = $('#compilation_options_symbolic');
+       
+
+
+  // disable download if not yet compiled
+  $spec_editor_save_link.click(function(ev) {
+    if($(this).hasClass('spec_editor_save_link_disabled')) {
+      alert('You must compile the spec before saving this file!');
+      ev.preventDefault();
+      return false;
+    } // end if
+  }); // end click
+
   // create a lined text area with a largely borrowed plugin
-  var specEditorText = $('#spec_editor_text');
-  specEditorText.linedtextarea();
+  $spec_editor_text.linedtextarea();
   
   var regionPath = ''; // variable to hold the path to the regions file
   
-  var regionList = $('#spec_editor_regions');
-  var sensorList = $('#spec_editor_sensors');
-  var actuatorList =  $('#spec_editor_actuators');
-  var custompropList =  $('#spec_editor_customprops');
   // for constant time access to check names
   var sensorMap = {};
   var actuatorMap = {};
-  var custompropMap = {};
-  
-  var sensorRemove = $('#spec_editor_sensors_remove');
-  var actuatorRemove = $('#spec_editor_actuators_remove');
-  var custompropRemove = $('#spec_editor_customprops_remove');                       
+  var custompropMap = {};                  
 
   // add event handlers
   $('#spec_editor_sensors_add').click(function() {
-    clickAdd(sensorList, sensorMap, sensorRemove,
+    clickAdd($spec_editor_sensors, sensorMap, $spec_editor_sensors_remove,
       "Name of Sensor:", "sensor", "<li class=\"spec_editor_selectlist_li_clicked\" tabindex=\"0\"><input type=\"checkbox\" checked>", "</li>");
   });
   $('#spec_editor_actuators_add').click(function() {
-    clickAdd(actuatorList, actuatorMap, actuatorRemove,
+    clickAdd($spec_editor_actuators, actuatorMap, $spec_editor_actuators_remove,
       "Name of Actuator:", "actuator", "<li class=\"spec_editor_selectlist_li_clicked\" tabindex=\"0\"><input type=\"checkbox\" checked>", "</li>");
   });
   $('#spec_editor_customprops_add').click(function() {
-    clickAdd(custompropList, custompropMap, custompropRemove,
+    clickAdd($spec_editor_customprops, custompropMap, $spec_editor_customprops_remove,
       "Name of Custom Proposition:", "prop", "<li class=\"spec_editor_selectlist_li_clicked\" tabindex=\"0\">", "</li>");
   });
   
   // remove event handlers
-  sensorRemove.click(function() {
-    clickRemove(this, sensorList, sensorMap);
+  $spec_editor_sensors_remove.click(function() {
+    clickRemove(this, $spec_editor_sensors, sensorMap);
   });
-  actuatorRemove.click(function() {
-    clickRemove(this, actuatorList, actuatorMap);
+  $spec_editor_actuators_remove.click(function() {
+    clickRemove(this, $spec_editor_actuators, actuatorMap);
   });
-  custompropRemove.click(function() {
-    clickRemove(this, custompropList, custompropMap);
+  $spec_editor_customprops_remove.click(function() {
+    clickRemove(this, $spec_editor_customprops, custompropMap);
   });
   
   // add and remove styling for bottom labels on click
-  var bottomLabels = $('.spec_editor_bottom_label');
-  bottomLabels.click(function(ev) {
-    bottomLabels.removeClass('spec_editor_bottom_label_clicked');
+  $spec_editor_bottom_label.click(function(ev) {
+    $spec_editor_bottom_label.removeClass('spec_editor_bottom_label_clicked');
     $(ev.target).addClass('spec_editor_bottom_label_clicked');
   });
   
@@ -65,14 +84,12 @@ $(document).ready(function() {
       type: 'GET',
       url: 'specEditor/compileSpec',
       success: function(data) {
-        $('#spec_editor_compilerlog_text').text(data.compilerLog);
-        window.open("specEditor/saveAut");
-        setTimeout(function() {window.open("specEditor/saveLTL")}, 1000);
-        setTimeout(function() {window.open("specEditor/saveSMV")}, 1000);
-        setTimeout(function() {window.open("specEditor/saveDecomposed")}, 1000);
+        $spec_editor_compilerlog_text.text(data.compilerLog);
+        $spec_editor_save_link.removeClass('spec_editor_save_link_disabled');
       },
       error: function() {
-        console.log("compile spec failed");
+        console.error("compile spec failed");
+        alert("Spec compilation failed!");
       }
     });
   });
@@ -94,17 +111,19 @@ $(document).ready(function() {
     }
     // error callback
     function errorFunc(xhr, status) {
-      console.log("regions upload failed");
+      console.error("regions upload failed");
+      alert("The regions file upload failed!");
     }
   }); // end change
   
   $('#spec_editor_import_spec_file').change(function() {
-    uploadFile(this, "spec", $('#spec_editor_import_spec_form')[0], '/specEditor/importSpec', 'POST', successFunc, errorFunc);
+    uploadFile(this, "spec", $spec_editor_import_spec_form[0], '/specEditor/importSpec', 'POST', successFunc, errorFunc);
     function successFunc(data) {
       importSpec(data);
     }
     function errorFunc(xhr, status) {
-      console.log('import spec failed');
+      console.error('import spec failed');
+      alert("Importing the spec failed!");
     }
   }); // end change
   
@@ -112,15 +131,15 @@ $(document).ready(function() {
   
   // given the JSON version of a project object, imports the spec
   function importSpec(data) {
-    $('#spec_editor_text').text(data['specText']); // set text
+    $spec_editor_text.text(data['specText']); // set text
     regionPath = data['regionPath']; // store the path to the regions file
     
     // set compilation options
     // checkboxes
-    $('#compilation_options_convexify').prop('checked', data['convexify'] == 'true');
-    $('#compilation_options_fastslow').prop('checked', data['fastslow'] == 'true'); 
-    $('#compilation_options_use_region_bit_encoding').prop('checked', data['use_region_bit_encoding'] == 'true');
-    $('#compilation_options_symbolic').prop('checked', data['symbolic'] == 'true');
+    $compilation_options_convexify.prop('checked', data['convexify'] == 'true');
+    $compilation_options_fastslow.prop('checked', data['fastslow'] == 'true'); 
+    $compilation_options_use_region_bit_encoding.prop('checked', data['use_region_bit_encoding'] == 'true');
+    $compilation_options_symbolic.prop('checked', data['symbolic'] == 'true');
     // radio buttons
     $('.parser_mode_radio[value="' + data['parser'] + '"]').prop('checked', true);
     $('.synthesizer_radio[value="' + data['synthesizer'] + '"]').prop('checked', true);
@@ -129,10 +148,10 @@ $(document).ready(function() {
     sensorMap = {};
     actuatorMap = {};
     custompropMap = {};
-    sensorList.empty();
-    actuatorList.empty();
-    custompropList.empty();
-    regionList.empty();
+    $spec_editor_sensors.empty();
+    $spec_editor_actuators.empty();
+    $spec_editor_customprops.empty();
+    $spec_editor_regions.empty();
     
     // add regions
     data['regionList'].forEach(function(name) {
@@ -140,26 +159,26 @@ $(document).ready(function() {
     })
     // add sensors
     data['all_sensors'].forEach(function(name) {  
-      addProp(name, sensorMap, sensorList,
+      addProp(name, sensorMap, $spec_editor_sensors,
         "<li class=\"spec_editor_selectlist_li_clicked\" tabindex=\"0\"><input type=\"checkbox\">", "</li>", 
-        sensorRemove);
+        $spec_editor_sensors_remove);
     })
     data['all_actuators'].forEach(function(name) {  
-      addProp(name, actuatorMap, actuatorList,
+      addProp(name, actuatorMap, $spec_editor_actuators,
         "<li class=\"spec_editor_selectlist_li_clicked\" tabindex=\"0\"><input type=\"checkbox\">", "</li>", 
-        actuatorRemove);
+        $spec_editor_actuators_remove);
     })
     data['all_customs'].forEach(function(name) {  
-      addProp(name, custompropMap, custompropList,
+      addProp(name, custompropMap, $spec_editor_customprops,
         "<li class=\"spec_editor_selectlist_li_clicked\" tabindex=\"0\">", "</li>", 
-        custompropRemove);
+        $spec_editor_customprops_remove);
     })
     // check sensors
     data['enabled_sensors'].forEach(function(name) {
-      sensorList.find(':contains('+name+')').children().prop('checked', true);
+      $spec_editor_sensors.find(':contains('+name+')').children().prop('checked', true);
     })
     data['enabled_actuators'].forEach(function(name) {
-      actuatorList.find(':contains('+name+')').children().prop('checked', true);
+      $spec_editor_actuators.find(':contains('+name+')').children().prop('checked', true);
     })
   } // end import spec
   
@@ -232,7 +251,7 @@ $(document).ready(function() {
     elem.remove(); // remove from DOM
     if(selectList.children().length <= 0) {
       _t.disabled = true; // disallow removal
-    }
+    } // end if
   } // end click remove
   
   // click li function
@@ -242,7 +261,7 @@ $(document).ready(function() {
     var target = $(ev.target);
     if(!target.is('li')) { // in case the checkbox was clicked
       target = target.parent('li');
-    }
+    } // end if
     target.addClass("spec_editor_selectlist_li_clicked");
   } // end click li
   
@@ -259,16 +278,16 @@ $(document).ready(function() {
   function createRegion(name) {
     var newRegion = $("<li class=\"spec_editor_selectlist_li\" tabindex=\"0\">" + name + "</li>"); // create elem
     newRegion.click(function(ev) { // bind click to element
-      clickSelectListLi(ev, regionList);
+      clickSelectListLi(ev, $spec_editor_regions);
     });
-    regionList.append(newRegion); // append element  
+    $spec_editor_regions.append(newRegion); // append element  
   } // end create region
   
   // creates and returns the json that holds all spec information
   function createJSONForSpec() {
     var data = {};
     
-    var specText = specEditorText.val();
+    var specText = $spec_editor_text.val();
     if(specText != '') {
       data['specText'] = specText; // store spec text
     }
@@ -277,10 +296,10 @@ $(document).ready(function() {
     
     // store compilation options
     // get checkboxes
-    data['convexify'] = $('#compilation_options_convexify')[0].checked;
-    data['fastslow'] = $('#compilation_options_fastslow')[0].checked;
-    data['use_region_bit_encoding'] = $('#compilation_options_use_region_bit_encoding')[0].checked;
-    data['symbolic'] = $('#compilation_options_symbolic')[0].checked;
+    data['convexify'] = $compilation_options_convexify[0].checked;
+    data['fastslow'] = $compilation_options_fastslow[0].checked;
+    data['use_region_bit_encoding'] = $compilation_options_use_region_bit_encoding[0].checked;
+    data['symbolic'] = $compilation_options_symbolic[0].checked;
     // get radio buttons
     data['parser'] = $('.parser_mode_radio:checked').val();
     data['synthesizer'] = $('.synthesizer_radio:checked').val();
@@ -291,19 +310,19 @@ $(document).ready(function() {
     data['all_actuators'] = [];
     data['enabled_actuators'] = [];
     data['all_customs'] = [];
-    sensorList.children().each(function() {
+    $spec_editor_sensors.children().each(function() {
       data['all_sensors'].push($(this).text());
     });
-    sensorList.find(':checked').each(function() {
+    $spec_editor_sensors.find(':checked').each(function() {
       data['enabled_sensors'].push($(this).val());
     });
-    actuatorList.children().each(function() {
+    $spec_editor_actuators.children().each(function() {
       data['all_actuators'].push($(this).text());
     });
-    actuatorList.find(':checked').each(function() {
+    $spec_editor_actuators.find(':checked').each(function() {
       data['enabled_actuators'].push($(this).val());
     });
-    custompropList.children().each(function() {
+    $spec_editor_customprops.children().each(function() {
       data['all_customs'].push($(this).text());
     });
     
