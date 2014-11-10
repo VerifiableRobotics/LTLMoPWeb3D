@@ -1,6 +1,6 @@
 from flask import Flask, request, redirect, url_for, render_template, jsonify, Response, send_file, session
 from werkzeug.utils import secure_filename
-import random, math, os, sys, datetime, uuid, threading
+import random, math, os, sys, datetime, uuid, threading, zipfile
                                                                                                                                                                                                                
 sys.path.append(os.path.join("LTLMoP","src","lib")) # add lib to path
 import regions, project, specCompiler
@@ -124,12 +124,27 @@ def saveSpec():
   thepath = os.path.join(app.config['UPLOAD_FOLDER'], session['username'] + ".spec")
   return send_file(thepath, as_attachment=True, mimetype='text/plain')
 
+# sends the currently stored regions to the user
+@app.route('/specEditor/saveRegions', methods=['GET', 'POST'])
+def saveRegions():
+  thepath = os.path.join(app.config['UPLOAD_FOLDER'], session['username'] + ".regions")
+  return send_file(thepath, as_attachment=True, mimetype='text/plain')
+
 # compiles the currently stored project and returns compiler log
 @app.route('/specEditor/compileSpec', methods=['GET'])
 def compileSpec():
   sc = specCompiler.SpecCompiler()
   sc.loadSpec(os.path.join(app.config['UPLOAD_FOLDER'], session['username'] + ".spec"))
   realizable, realizableFS, logString = sc.compile()
+  # create zip of all files in the project
+  with ZipFile(os.path.join(app.config['UPLOAD_FOLDER'], session['username'] + ".zip"), 'w') as myzip:
+    myzip.write(os.path.join(app.config['UPLOAD_FOLDER'], session['username'] + ".spec"))
+    myzip.write(os.path.join(app.config['UPLOAD_FOLDER'], session['username'] + ".regions"))
+    myzip.write(os.path.join(app.config['UPLOAD_FOLDER'], session['username'] + ".aut"))
+    myzip.write(os.path.join(app.config['UPLOAD_FOLDER'], session['username'] + ".ltl"))
+    myzip.write(os.path.join(app.config['UPLOAD_FOLDER'], session['username'] + ".smv"))
+    myzip.write(os.path.join(app.config['UPLOAD_FOLDER'], session['username'] + "_decomposed.regions"))
+  # end create zip
   return jsonify(compilerLog = logString)
 
 # sends the currently stored aut to the user
@@ -154,6 +169,12 @@ def saveSMV():
 @app.route('/specEditor/saveDecomposed')
 def saveDecomposed():
   thepath = os.path.join(app.config['UPLOAD_FOLDER'], session['username'] + "_decomposed.regions")
+  return send_file(thepath, as_attachment=True, mimetype='text/plain')
+
+# sends the currently stored zipped project to the user
+@app.route('/specEditor/saveZip', methods=['GET', 'POST'])
+def saveZip():
+  thepath = os.path.join(app.config['UPLOAD_FOLDER'], session['username'] + ".zip")
   return send_file(thepath, as_attachment=True, mimetype='text/plain')
 
 # returns a list of regions and the server path given a file

@@ -1,3 +1,6 @@
+# LTLMoPWeb3D Specific
+uploads/
+
 # Created by https://www.gitignore.io
 
 ### Node ###
@@ -55,7 +58,6 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
-__pycache__
 
 
 # PyInstaller
