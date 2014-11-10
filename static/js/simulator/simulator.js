@@ -284,13 +284,12 @@
   // bind to change event, partly borrowed from olanod on SO
   $('#regions_upload_file').change(function(){
     var file = this.files[0];
-    var name = file.name;
-    var extension = name.split('.')[name.split('.').length - 1]
+    var nameSplit = file.name.split('.');
+    var extension = nameSplit[nameSplit('.').length - 1];
     // validation
     if(extension != "regions") {
       alert("This only accepts *.regions files!");
-    }
-    else { // do upload
+    } else { // do upload
       var formData = new FormData($('#regions_upload_form')[0]);
       $.ajax({
         url: '/simulator/uploadRegions',
@@ -358,12 +357,19 @@
   $('#automaton_upload_file').change(function() {
     var file = this.files[0];
     if (file) {
-      var reader = new FileReader();
-      reader.onload = function(ev) { 
-        var automaton = parseAutomaton(ev.target.result);
-        console.log(automaton);
-      } // end onload
-      reader.readAsText(file);
+      var nameSplit = file.name.split('.');
+      var extension = nameSplit[nameSplit('.').length - 1];
+      // validation
+      if(extension != "aut") {
+        alert("This only accepts *.aut files!");
+      } else {
+        var reader = new FileReader();
+        reader.onload = function(ev) { 
+          var automaton = parseAutomaton(ev.target.result);
+          console.log(automaton);
+        } // end onload
+        reader.readAsText(file);
+      } // end else
     } // end if
   }); // end change
   

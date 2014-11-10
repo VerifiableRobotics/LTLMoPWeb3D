@@ -1,5 +1,8 @@
 parseAutomaton = (parse_string) -> 
-
+  # Sample string:
+  # State 0 with rank 0 -> <person:0, hazardous_item:0, pick_up:0, drop:0, radio:0, carrying_item:0, bit0:0, bit1:0, bit2:0>
+  # With successors : 1
+  
   automaton = {}
 
   # regex declarations
