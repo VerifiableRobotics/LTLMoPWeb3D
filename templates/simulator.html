@@ -4,15 +4,13 @@
 
 <head>
 	<title>LTLMoPWeb3D Simulator</title>
-	
-  	<link rel="stylesheet" type="text/css" href="static/css/header.css" />
+  <link rel="stylesheet" type="text/css" href="static/css/header.css" />
 	<link rel="stylesheet" type="text/css" href="static/css/simulator.css" />
-  
-  	<script type="text/javascript" src="static/plugins/threejs/three.min.js"></script>
-  	<script type="text/javascript" src="static/plugins/physijs/physi.js"></script>
-  	<script type="text/javascript" src="static/plugins/jquery/jquery-2.1.0.min.js"></script>
-  	<script type="text/javascript" src="static/js/simulator.js"></script>
-    
+	<script type="text/javascript" src="static/plugins/threejs/three.min.js"></script>
+	<script type="text/javascript" src="static/plugins/physijs/physi.js"></script>
+	<script type="text/javascript" src="static/plugins/jquery/jquery-2.1.0.min.js"></script>
+	<script type="text/javascript" src="static/js/simulator/automatonParser.js"></script>
+  <script type="text/javascript" src="static/js/simulator/simulator.js"></script>    
 </head>
 
 <body>
@@ -25,8 +23,12 @@
   <div class="center_wrapper">
     <button type="button" id="get_vel_theta">Vel/Theta Button</button>
     <form enctype="multipart/form-data" id="regions_upload_form">
-      <input name="file" type="file" id="regions_upload_file"/>
+      <input name="file" type="file" id="regions_upload_file" class="upload_file_overlay" />
       <button type="button" id="regions_upload_overlay">Upload Regions</button>
+    </form>
+    <form id="automaton_upload_form">
+      <input name="file" type="file" id="automaton_upload_file" class="upload_file_overlay" />
+      <button type="button" id="automaton_upload_overlay">Upload Automaton</button>
     </form>
   </div>
   <div id="simulator_wrapper">

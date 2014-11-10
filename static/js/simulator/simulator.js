@@ -1,7 +1,5 @@
   // largely borrowed from a physijs example
   // plenty of refactoring done and some changes as well
-
-
   'use strict';
   
   // set worker and ammo
@@ -19,14 +17,15 @@
     projector = new THREE.Projector;
     
     // create the renderer
-    renderer = new THREE.WebGLRenderer({ antialias: true });
-    var rendWidth = $('#viewport').width();
-    var rendHeight = $('#viewport').height();
+    renderer = new THREE.WebGLRenderer({antialias: true});
+    var $viewport = $('#viewport')
+    var rendWidth = $viewport.width();
+    var rendHeight = $viewport.height();
     console.log(rendHeight);
-    renderer.setSize( rendWidth, rendHeight );
+    renderer.setSize(rendWidth, rendHeight);
     renderer.shadowMapEnabled = true;
     renderer.shadowMapSoft = true;
-    document.getElementById( 'viewport' ).appendChild( renderer.domElement );
+    $viewport.append(renderer.domElement);
     
     
     // create the scene and add gravity
@@ -179,6 +178,7 @@
     requestAnimationFrame( render );
     scene.simulate();
   };
+  // end initScene
   
   render = function() {
     requestAnimationFrame( render );
@@ -248,12 +248,13 @@
             car.wheel_fl_constraint.disableAngularMotor( 1 ); // stop x-axis motors
             car.wheel_fr_constraint.disableAngularMotor( 1 ); 
 
-            console.log("velocity theta ajax error");
+            console.error("velocity theta ajax error");
           }
         }); // end ajax
       } // end func
     }); // end click
 
+    var $sensor_list = $('#sensor_list');
     $('#get_sensors').click(function() {
       // ajax call for sensor list
 
@@ -264,10 +265,10 @@
         type: 'GET',
         datatype: "json",
         success: function(data) {
-          $('#sensor_list').empty(); // empty ul
+          $sensor_list.empty(); // empty ul
           // add li/buttons to ul
           for (var i = 0; i < data.sensorArray.length; i++) {
-            $('#sensor_list').append("<li><button type=\"button\" class=\"sensor_button\">" + data.sensorArray[i] + "</button></li>");
+            $sensor_list.append("<li><button type=\"button\" class=\"sensor_button\">" + data.sensorArray[i] + "</button></li>");
           }
           $(".sensor_button").click(function(ev) {
             $(ev.target).toggleClass("green_sensor"); // toggle the clicked button's color
@@ -275,7 +276,7 @@
           });
         },
         error: function(xhr, status) {
-          console.log("sensor ajax error");
+          console.error("sensor ajax error");
         }
       }); // end ajax
     }); // end click
@@ -299,7 +300,7 @@
           createRegionsFromJSON(data.theList);
         },
         error: function(xhr, status) {
-          console.log("regions upload failed")
+          console.error("regions upload failed")
         },
         // form data to send
         data: formData,
@@ -353,6 +354,18 @@
       
     }) // end for each
   } // end create regions from JSON
+
+  $('#automaton_upload_file').change(function() {
+    var file = this.files[0];
+    if (file) {
+      var reader = new FileReader();
+      reader.onload = function(ev) { 
+        var automaton = parseAutomaton(ev.target.result);
+        console.log(automaton);
+      } // end onload
+      reader.readAsText(file);
+    } // end if
+  }); // end change
   
   // camera zooming and panning
   $(document).keyup(function(event) {

@@ -12,7 +12,7 @@
 }
 
 /* so that the browser/OS generated button isn't seen */
-#regions_upload_file{
+.upload_file_overlay{
   opacity: 0;
   z-index: 2;
   position: absolute;
