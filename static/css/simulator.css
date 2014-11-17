@@ -11,10 +11,14 @@
   height: calc(100% - 102px);
 }
 
+.upload_form{
+  display: inline;
+}
 /* so that the browser/OS generated button isn't seen */
 .upload_file_overlay{
   opacity: 0;
   z-index: 2;
+  max-width: 150px;
   position: absolute;
 }
 

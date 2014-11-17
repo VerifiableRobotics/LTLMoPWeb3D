@@ -1,9 +1,8 @@
-parseAutomaton = (parse_string) -> 
+parseAutomaton = (parse_string, spec) -> 
   # Sample string:
   # State 0 with rank 0 -> <person:0, hazardous_item:0, pick_up:0, drop:0, radio:0, carrying_item:0, bit0:0, bit1:0, bit2:0>
   # With successors : 1
-  
-  automaton = {}
+
 
   # regex declarations
   stateRegEx = /\w+(?= with)/gi # matches state name
@@ -18,9 +17,17 @@ parseAutomaton = (parse_string) ->
     parseInt(str.match(rankRegEx)[0])
   getProps = (str) ->
     props = {}
+    props['sensors'] = {}
+    props['actuators'] = {}
+    props['customprops'] = {}
     for prop in str.match(propRegEx)
       propSplit = prop.split(":")
-      props[propSplit[0]] = parseInt(propSplit[1])
+      if spec.Sensors.hasOwnProperty propSplit[0]
+        props['sensors'][propSplit[0]] = parseInt(propSplit[1])
+      else if spec.Actions.hasOwnProperty propSplit[0]
+        props['actuators'][propSplit[0]] = parseInt(propSplit[1])
+      else
+        props['customprops'][propSplit[0]] = parseInt(propSplit[1])
     # end for
     props
   getSuccessors = (str) ->
@@ -30,6 +37,8 @@ parseAutomaton = (parse_string) ->
   isSuccessorString = (str) ->
     if str.search(successorRegEx) >= 0 then true else false
 
+
+  automaton = {}
   # loop through lines
   currentState = ''
   for line in parse_string.trim().split "\n"
@@ -46,6 +55,77 @@ parseAutomaton = (parse_string) ->
   automaton
 # end parseAutomaton
 
+#################################################
+# helper functions for searching inside automaton
+
+# finds a next state
+getNextState = (automaton, currentState, sensors) ->
+  if automaton[currentState]["successors"].length < 1
+    alert "The current state has no successors"
+    return false
+  for successorState in automaton[currentState]["successors"]
+    isValidSuccessorState = true
+    # check sensors
+    for sensorName, isActive of sensors
+      if not automaton[successorState]["props"]["sensors"].hasOwnProperty sensorName
+        isValidSuccessorState = false
+        break
+      else if not automaton[successorState]["props"]["sensors"][sensorName] == isActive
+        isValidSuccessorState = false
+        break
+    # end for
+    if isValidSuccessorState
+      return successorState
+  # end for
+  alert "The current state has no successor states that match those sensor readings"
+  return false
+
+# finds an initial state
+getInitialState = (automaton, props) ->
+  for stateName, state of automaton
+    isValidInitialState = true
+    # check sensors
+    for sensorName, isActive of props.sensors
+      if not state["props"]["sensors"].hasOwnProperty sensorName
+        isValidInitialState = false
+        break
+      else if not state["props"]["sensors"][sensorName] == isActive
+        isValidSuccessorState = false
+        break
+    # end for
+    if not isValidInitialState
+      break
+    # check actuators
+    for actuatorName, isActive of props.actuators
+      if not state["props"]["actuators"].hasOwnProperty actuatorName
+        isValidInitialState = false
+        break
+      else if not state["props"]["actuators"][actuatorName] == isActive
+        isValidSuccessorState = false
+        break
+    # end for
+    if not isValidInitialState
+      break
+    # check customprops
+    for custompropName, isActive of props.custompropName
+      if not state["props"]["customprops"].hasOwnProperty custompropName
+        isValidInitialState = false
+        break
+      else if not state["props"]["customprops"][custompropName] == isActive
+        isValidSuccessorState = false
+        break
+    # end for
+    if isValidInitialState
+      return stateName
+  # end for
+  alert "The current configuration of props does not match any possible state in the automaton"
+  return false
+
+############################################
+
+
 exports = {
   parseAutomaton: parseAutomaton
+  getNextState: getNextState
+  getInitialState: getInitialState
 }
