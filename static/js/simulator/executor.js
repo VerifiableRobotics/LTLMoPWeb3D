@@ -1,7 +1,7 @@
 var execute, exports;
 
 execute = function(automaton, initialProps) {
-  var currentState, getInitialState, getNextState;
+  var currentState, getInitialState, getNextState, _results;
   getNextState = function(sensors) {
     var isActive, isValidSuccessorState, sensorName, successorState, _i, _len, _ref;
     if (automaton[currentState]["successors"].length < 1) {
@@ -81,8 +81,10 @@ execute = function(automaton, initialProps) {
     return false;
   };
   currentState = getInitialState(initialProps);
+  _results = [];
   while (currentState !== false) {
     currentState = getNextState(getSensors());
-    console.log(currentState);
+    _results.push(console.log(currentState));
   }
+  return _results;
 };

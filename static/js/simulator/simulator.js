@@ -106,7 +106,7 @@ addPropButtons = function(spec) {
 };
 
 getProps = function() {
-  var $actuator, $actuators, $customprop, $customprops, $sensor, $sensors, props, _i, _j, _k, _len, _len1, _len2;
+  var $actuator, $actuators, $customprop, $customprops, $sensor, $sensors, actuator, customprop, props, sensor, _i, _j, _k, _len, _len1, _len2;
   props = {};
   $sensors = $sensor_list.find('.sensor_button');
   $actuators = $actuator_list.find('.actuator_button');
@@ -115,26 +115,30 @@ getProps = function() {
   props['actuators'] = {};
   props['customprops'] = {};
   for (_i = 0, _len = $sensors.length; _i < _len; _i++) {
-    $sensor = $sensors[_i];
+    sensor = $sensors[_i];
+    $sensor = $(sensor);
     props['sensors'][$sensor.text()] = $sensor.hasClass('green_sensor');
   }
   for (_j = 0, _len1 = $actuators.length; _j < _len1; _j++) {
-    $actuator = $actuators[_j];
+    actuator = $actuators[_j];
+    $actuator = $(actuator);
     props['actuators'][$actuator.text()] = $actuator.hasClass('green_actuator');
   }
   for (_k = 0, _len2 = $customprops.length; _k < _len2; _k++) {
-    $customprop = $customprops[_k];
+    customprop = $customprops[_k];
+    $customprop = $(customprop);
     props['customprops'][$customprop.text()] = $customprop.hasClass('green_customprop');
   }
   return props;
 };
 
 getSensors = function() {
-  var $sensor, $sensors, sensors, _i, _len;
+  var $sensor, $sensors, sensor, sensors, _i, _len;
   sensors = {};
   $sensors = $sensor_list.find('.sensor_button');
   for (_i = 0, _len = $sensors.length; _i < _len; _i++) {
-    $sensor = $sensors[_i];
+    sensor = $sensors[_i];
+    $sensor = $(sensor);
     sensors[$sensor.text()] = $sensor.hasClass('green_sensor');
   }
   return sensors;

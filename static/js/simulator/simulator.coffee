@@ -250,11 +250,14 @@ getProps = () ->
   props['customprops'] = {}
 
   # set dictionaries
-  for $sensor in $sensors
+  for sensor in $sensors
+    $sensor = $(sensor)
     props['sensors'][$sensor.text()] = $sensor.hasClass('green_sensor')
-  for $actuator in $actuators
+  for actuator in $actuators
+    $actuator = $(actuator)
     props['actuators'][$actuator.text()] = $actuator.hasClass('green_actuator')
-  for $customprop in $customprops
+  for customprop in $customprops
+    $customprop = $(customprop)
     props['customprops'][$customprop.text()] = $customprop.hasClass('green_customprop')
 
   props
@@ -265,7 +268,8 @@ getSensors = () ->
   $sensors = $sensor_list.find('.sensor_button')
   
   # set dictionary
-  for $sensor in $sensors
+  for sensor in $sensors
+    $sensor = $(sensor)
     sensors[$sensor.text()] = $sensor.hasClass('green_sensor')
   
   sensors

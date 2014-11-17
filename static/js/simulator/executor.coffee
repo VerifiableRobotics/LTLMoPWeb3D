@@ -1,10 +1,4 @@
 execute = (automaton, initialProps) ->
-
-  currentState = getInitialState(initialProps)
-  until currentState == false
-    currentState = getNextState(getSensors())
-    console.log(currentState)
-
   
   #
   # helper functions for searching inside automaton
@@ -72,6 +66,13 @@ execute = (automaton, initialProps) ->
     # end for
     alert "The current configuration of props does not match any possible state in the automaton"
     return false
+
+
+  # run the execution loop!
+  currentState = getInitialState(initialProps)
+  until currentState == false
+    currentState = getNextState(getSensors())
+    console.log(currentState)
 
 
 exports = {
