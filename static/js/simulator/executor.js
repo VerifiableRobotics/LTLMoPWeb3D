@@ -2,11 +2,6 @@ var execute, exports;
 
 execute = function(automaton, initialProps) {
   var currentState, getInitialState, getNextState;
-  currentState = getInitialState(initialProps);
-  while (currentState !== false) {
-    currentState = getNextState(getSensors());
-    console.log(currentState);
-  }
   getNextState = function(sensors) {
     var isActive, isValidSuccessorState, sensorName, successorState, _i, _len, _ref;
     if (automaton[currentState]["successors"].length < 1) {
@@ -34,7 +29,7 @@ execute = function(automaton, initialProps) {
     alert("None of the current state's successors can be reached with those sensor readings");
     return false;
   };
-  return getInitialState = function(props) {
+  getInitialState = function(props) {
     var actuatorName, custompropName, isActive, isValidInitialState, isValidSuccessorState, sensorName, state, stateName, _ref, _ref1, _ref2;
     for (stateName in automaton) {
       state = automaton[stateName];
@@ -85,4 +80,9 @@ execute = function(automaton, initialProps) {
     alert("The current configuration of props does not match any possible state in the automaton");
     return false;
   };
+  currentState = getInitialState(initialProps);
+  while (currentState !== false) {
+    currentState = getNextState(getSensors());
+    console.log(currentState);
+  }
 };
