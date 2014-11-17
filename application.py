@@ -61,11 +61,6 @@ def sendVelocityTheta():
   newTheta = random.uniform(0, math.pi/2)
   return jsonify(velocity = newVelocity, theta = newTheta)
 
-# send an array of sensor names
-@app.route('/simulator/getSensorList', methods=['GET'])
-def sendSensorList():
-  return jsonify(sensorArray = ["sensor1", "sensor2"])
-
 # -------------------- spec editor functions -----------------------------
 
 # creates a project instance and returns it

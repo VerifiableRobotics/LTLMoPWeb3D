@@ -5,12 +5,13 @@
   width: 85%;
   height: 75%;
 }
-
 #simulator_wrapper{
   width: 100%;
   height: calc(100% - 102px);
 }
-
+.center_wrapper{
+  text-align: center;
+}
 .upload_form{
   display: inline;
 }
@@ -22,26 +23,19 @@
   position: absolute;
 }
 
-#sensor_list{
-  list-style-type: none;
-}
-
-.center_wrapper{
-  text-align: center;
-}
-
 .right_wrapper{
   position: relative;
   text-align: right;
   width: 15%;
   float:right;
 }
-
-.sensor_button{
+#sensor_list, #actuator_list, #customprop_list{
+  list-style-type: none;
+}
+.sensor_button, .actuator_button, .customprop_button{
   background-color: red;
 }
-
-.green_sensor{
+.green_sensor, .green_actuator, .green_customprop{
   background-color: green;
 }
 

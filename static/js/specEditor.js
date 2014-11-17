@@ -188,7 +188,8 @@ $(document).ready(function() {
   function uploadFile(newthis, acceptedExtension, form, url, type, successFunc, errorFunc) {
     var file = newthis.files[0];
     var name = file.name;
-    var extension = name.split('.')[name.split('.').length - 1]
+    var nameSplit = name.split('.');
+    var extension = nameSplit[nameSplit.length - 1];
     // validation
     if(extension != acceptedExtension) {
       alert("This only accepts *." + acceptedExtension + "files!");

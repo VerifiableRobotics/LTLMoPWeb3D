@@ -12,6 +12,7 @@
 	<script type="text/javascript" src="static/js/simulator/initializePhysics.js"></script>
   <script type="text/javascript" src="static/js/simulator/specParser.js"></script>
   <script type="text/javascript" src="static/js/simulator/automatonParser.js"></script>
+  <script type="text/javascript" src="static/js/simulator/executor.js"></script> 
   <script type="text/javascript" src="static/js/simulator/simulator.js"></script>    
 </head>
 
@@ -23,7 +24,7 @@
       <a href="/regionEditor">Region Editor</a>
 	</div>
   <div class="center_wrapper">
-    <button type="button" id="get_vel_theta">Vel/Theta Button</button>
+    <button type="button" id="executor_start_button">Start</button>
   </div>
   <div class="center_wrapper">
     <form enctype="multipart/form-data" id="regions_upload_form" class="upload_form">
@@ -41,8 +42,14 @@
   </div>
   <div id="simulator_wrapper">
     <div class="right_wrapper">
-      <button type="button" id="get_sensors">Get Sensors</button>
+      <div>Sensors</div>
       <ul id="sensor_list">
+      </ul>
+      <div>Actuators</div>
+      <ul id="actuator_list">
+      </ul>
+      <div>Custom Propositions</div>
+      <ul id="customprop_list">
       </ul>
     </div>
     <div id="viewport"></div>

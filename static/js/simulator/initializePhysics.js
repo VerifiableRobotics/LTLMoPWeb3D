@@ -187,3 +187,37 @@ render = function() {
 
 // set the scene to initiliaze as soon as the window is loaded
 window.onload = initScene;
+
+
+// set some basic event handlers
+$(document).ready(function() {
+  // camera zooming and panning
+  $(document).keyup(function(event) {
+    console.log(event.which);
+    var zoomIncrement = 1.2; // zoom constant
+    var moveIncrement = 10; // move constant
+    if(event.which == 109 || event.which == 189) { // minus keys
+      camera.position.set(camera.position.x * zoomIncrement, camera.position.y * zoomIncrement, camera.position.z * zoomIncrement); // zoom out
+    }
+    else if(event.which == 107 || event.which == 187) { // plus keys
+      camera.position.set(camera.position.x / zoomIncrement, camera.position.y / zoomIncrement, camera.position.z / zoomIncrement); // zoom in
+    }
+    else if(event.which == 40) { // down arrow
+      camera.position.set(camera.position.x + moveIncrement, camera.position.y, camera.position.z + moveIncrement); // camera move back
+    }
+    else if(event.which == 38) { // up arrow
+      camera.position.set(camera.position.x - moveIncrement, camera.position.y, camera.position.z - moveIncrement); // camera move forward
+    }
+    else if(event.which == 37) { // left key
+      camera.position.set(camera.position.x - moveIncrement, camera.position.y, camera.position.z + moveIncrement); // pan left
+    }
+    else if(event.which == 39) { // right key
+      camera.position.set(camera.position.x + moveIncrement, camera.position.y, camera.position.z - moveIncrement); // pan right
+    }
+  }); // end keypress
+
+  // resize warning
+  $(window).resize(function() {
+    alert("The renderer has a fixed width, please refresh for simulator to have proper width and height");
+  });
+}); // end document ready

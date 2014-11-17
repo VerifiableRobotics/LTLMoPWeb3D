@@ -1,4 +1,4 @@
-var parseSpec;
+var exports, parseSpec;
 
 parseSpec = function(parse_string) {
   var currentOption, getCompileOption, getRegionMapping, getSensorActuator, getSpecOption, line, spec, _i, _len, _ref;
