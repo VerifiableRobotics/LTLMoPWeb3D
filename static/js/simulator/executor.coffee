@@ -40,7 +40,7 @@ execute = (automaton, initialProps) ->
           break
       # end for
       if not isValidInitialState
-        break
+        continue
       # check actuators
       for actuatorName, isActive of props.actuators
         if not state["props"]["actuators"].hasOwnProperty actuatorName
@@ -51,7 +51,7 @@ execute = (automaton, initialProps) ->
           break
       # end for
       if not isValidInitialState
-        break
+        continue
       # check customprops
       for custompropName, isActive of props.customprops
         if not state["props"]["customprops"].hasOwnProperty custompropName
@@ -70,9 +70,14 @@ execute = (automaton, initialProps) ->
 
   # run the execution loop!
   currentState = getInitialState(initialProps)
-  until currentState == false
-    currentState = getNextState(getSensors())
-    console.log(currentState)
+  callback = () ->
+    if currentState is not false
+      currentState = getNextState(getSensors())
+      console.log(currentState)
+  # get next state every 3 seconds
+  setInterval(callback, 3000)
+
+  return false
 
 
 exports = {

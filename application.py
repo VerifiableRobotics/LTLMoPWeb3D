@@ -1,6 +1,6 @@
 from flask import Flask, request, redirect, url_for, render_template, jsonify, Response, send_file, session
 from werkzeug.utils import secure_filename
-import random, math, os, sys, datetime, uuid, threading, zipfile
+import os, sys, datetime, uuid, threading, zipfile
                                                                                                                                                                                                                
 sys.path.append(os.path.join("LTLMoP","src","lib")) # add lib to path
 import regions, project, specCompiler
@@ -23,13 +23,15 @@ def deleteOldFiles():
     for file in filenames:
       curpath = os.path.join(dirpath, file)
       file_modified = datetime.datetime.fromtimestamp(os.path.getmtime(curpath))
-      if datetime.datetime.now() - file_modified > datetime.timedelta(hours=24):
+      if datetime.datetime.now() - file_modified > datetime.timedelta(hours=5):
         os.remove(curpath)
 
 # creates session if one does not already exist
 def createSession():
+  session.permanent = False # session should stop after browser close
   if 'username' not in session:
     session['username'] = str(uuid.uuid4()) # create session as a random unique string
+    os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], session['username'])) # create a directory for this session
   # delete old files asynchronously after each session creation
   threading.Thread(target=deleteOldFiles).start()
 
@@ -37,38 +39,34 @@ def createSession():
 def createRFI():
   return regions.RegionFileInterface()
 
+# returns a list of regions and the server path given a file
+@app.route('/simulator/uploadRegions', methods=['POST'])
+@app.route('/specEditor/uploadRegions', methods=['POST'])
+def uploadRegions():
+  file = request.files['file']
+  if file and allowed_file(file.filename):
+    createSession() # create one in case one currently doesn't exist
+    filename = secure_filename(file.filename)
+    newFilePath = os.path.join(app.config['UPLOAD_FOLDER'], session['username'], filename)
+    file.save(newFilePath)
+    session['regionsFilePath'] = newFilePath # store regions file path in session
+    newJSON = createRFI().extractJSONFromRegions(newFilePath)
+    return jsonify(theList = newJSON, thePath = newFilePath)
+  return jsonify(theBool = "False")
+
 # ----------------- simulator functions ------------------------------
 @app.route('/')
 def loadSimulator():
   return render_template('/simulator.html', name='simulator')
-
-# returns a list of regions given a .regions file
-@app.route('/simulator/uploadRegions', methods=['POST'])
-def simulatorUploadRegions():
-  file = request.files['file']
-  if file and allowed_file(file.filename):
-    createSession() # create one in case one currently doesn't exist
-    newFilePath = os.path.join(app.config['UPLOAD_FOLDER'], session['username'] + ".regions")
-    file.save(newFilePath)
-    newJSON = createRFI().extractJSONFromRegions(newFilePath)
-    return jsonify(theList = newJSON)
-  return jsonify(theBool = "False")
-
-# send velocity and theta
-@app.route('/simulator/getVelocityTheta', methods=['GET'])
-def sendVelocityTheta():
-  newVelocity = random.uniform(0, 30)
-  newTheta = random.uniform(0, math.pi/2)
-  return jsonify(velocity = newVelocity, theta = newTheta)
 
 # -------------------- spec editor functions -----------------------------
 
 # creates a project instance and returns it
 def createProject():
   proj = project.Project() # project instance
-  proj.project_root = app.config['UPLOAD_FOLDER'] # set root
+  proj.project_root = os.path.join(app.config['UPLOAD_FOLDER'], session['username']) # set root
   createSession()
-  proj.project_basename = session['username']
+  proj.project_basename = session['username'] # this might need to be something specific...?
   return proj
 
 # render the spec editor
@@ -103,86 +101,80 @@ def createSpec(dict):
   
   # store region path
   regionPath = dict.get('regionPath')
-  if regionPath is not None and regionPath != '': # make sure there is a path to region before rfi
+  if regionPath is not None and regionPath != '': # make sure there is a region path before rfi
     proj.rfi = createRFI()
     proj.rfi.readFile(dict.get('regionPath')) # 'uploads/floorplan.regions'
   
   # write spec, save spec, and return path
-  thepath = os.path.join(app.config['UPLOAD_FOLDER'], session['username'] + ".spec")
+  thepath = os.path.join(app.config['UPLOAD_FOLDER'], session['username'], session['username'] + ".spec")
   proj.writeSpecFile(thepath)
+  session['specFilePath'] = thepath
   return jsonify(theBool = "True")
 
 # sends the currently stored spec to the user
 @app.route('/specEditor/saveSpec', methods=['GET', 'POST'])
 def saveSpec():
   createSpec(request.args)
-  thepath = os.path.join(app.config['UPLOAD_FOLDER'], session['username'] + ".spec")
+  thepath = session['specFilePath']
   return send_file(thepath, as_attachment=True, mimetype='text/plain')
 
 # sends the currently stored regions to the user
 @app.route('/specEditor/saveRegions', methods=['GET', 'POST'])
 def saveRegions():
-  thepath = os.path.join(app.config['UPLOAD_FOLDER'], session['username'] + ".regions")
+  thepath = session['regionsFilePath']
   return send_file(thepath, as_attachment=True, mimetype='text/plain')
 
 # compiles the currently stored project and returns compiler log
 @app.route('/specEditor/compileSpec', methods=['GET'])
 def compileSpec():
   sc = specCompiler.SpecCompiler()
-  sc.loadSpec(os.path.join(app.config['UPLOAD_FOLDER'], session['username'] + ".spec"))
+  sc.loadSpec(session['specFilePath'])
   realizable, realizableFS, logString = sc.compile()
   # create zip of all files in the project
-  with ZipFile(os.path.join(app.config['UPLOAD_FOLDER'], session['username'] + ".zip"), 'w') as myzip:
-    myzip.write(os.path.join(app.config['UPLOAD_FOLDER'], session['username'] + ".spec"))
-    myzip.write(os.path.join(app.config['UPLOAD_FOLDER'], session['username'] + ".regions"))
-    myzip.write(os.path.join(app.config['UPLOAD_FOLDER'], session['username'] + ".aut"))
-    myzip.write(os.path.join(app.config['UPLOAD_FOLDER'], session['username'] + ".ltl"))
-    myzip.write(os.path.join(app.config['UPLOAD_FOLDER'], session['username'] + ".smv"))
-    myzip.write(os.path.join(app.config['UPLOAD_FOLDER'], session['username'] + "_decomposed.regions"))
+  with zipfile.ZipFile(os.path.join(app.config['UPLOAD_FOLDER'], session['username'], session['username'] + ".zip"), 'w') as myzip:
+    myzip.write(session['regionsFilePath'], os.path.basename(session['regionsFilePath']))
+    myzip.write(session['specFilePath'], os.path.basename(session['specFilePath']))
+    fileName, fileExtension = os.path.splitext(session['specFilePath']) # split extension
+    myzip.write(fileName + ".aut", os.path.basename(fileName + ".aut"))
+    myzip.write(fileName + ".ltl", os.path.basename(fileName + ".ltl"))
+    myzip.write(fileName + ".smv", os.path.basename(fileName + ".smv"))
+    myzip.write(fileName + "_decomposed.regions", os.path.basename(fileName + "_decomposed.regions"))
   # end create zip
   return jsonify(compilerLog = logString)
 
 # sends the currently stored aut to the user
 @app.route('/specEditor/saveAut')
 def saveAut():
-  thepath = os.path.join(app.config['UPLOAD_FOLDER'], session['username'] + ".aut")
+  fileName, fileExtension = os.path.splitext(session['specFilePath']) # split extension
+  thepath = fileName + ".aut"
   return send_file(thepath, as_attachment=True, mimetype='text/plain')
 
 # sends the currently stored ltl to the user
 @app.route('/specEditor/saveLTL')
 def saveLTL():
-  thepath = os.path.join(app.config['UPLOAD_FOLDER'], session['username'] + ".ltl")
+  fileName, fileExtension = os.path.splitext(session['specFilePath']) # split extension
+  thepath = fileName + ".ltl"
   return send_file(thepath, as_attachment=True, mimetype='text/plain')
 
 # sends the currently stored smv to the user
 @app.route('/specEditor/saveSMV')
 def saveSMV():
-  thepath = os.path.join(app.config['UPLOAD_FOLDER'], session['username'] + ".smv")
+  fileName, fileExtension = os.path.splitext(session['specFilePath']) # split extension
+  thepath = fileName + ".smv"
   return send_file(thepath, as_attachment=True, mimetype='text/plain')
 
 # sends the currently stored decomposed regions to the user
 @app.route('/specEditor/saveDecomposed')
 def saveDecomposed():
-  thepath = os.path.join(app.config['UPLOAD_FOLDER'], session['username'] + "_decomposed.regions")
+  fileName, fileExtension = os.path.splitext(session['specFilePath']) # split extension
+  thepath = fileName + "_decomposed.regions"
   return send_file(thepath, as_attachment=True, mimetype='text/plain')
 
 # sends the currently stored zipped project to the user
 @app.route('/specEditor/saveZip', methods=['GET', 'POST'])
 def saveZip():
-  thepath = os.path.join(app.config['UPLOAD_FOLDER'], session['username'] + ".zip")
+  thepath = os.path.join(app.config['UPLOAD_FOLDER'], session['username'], session['username'] + ".zip")
   return send_file(thepath, as_attachment=True, mimetype='text/plain')
-
-# returns a list of regions and the server path given a file
-@app.route('/specEditor/uploadRegions', methods=['POST'])
-def specEditorUploadRegions():
-  file = request.files['file']
-  if file and allowed_file(file.filename):
-    createSession() # create one in case one currently doesn't exist
-    newFilePath = os.path.join(app.config['UPLOAD_FOLDER'], session['username'] + ".regions")
-    file.save(newFilePath)
-    newJSON = createRFI().extractJSONFromRegions(newFilePath)
-    return jsonify(theList = newJSON, thePath = newFilePath)
-  return jsonify(theBool = "False")
 
 # returns data that specifies what to place into the spec editor
 @app.route('/specEditor/importSpec', methods=['POST'])
@@ -190,14 +182,13 @@ def specEditorImportSpec():
   proj = createProject()
   # get file and re-create project
   file = request.files['file']
-  if file and allowed_file(file.filename):
+  if file and allowed_file(file.filename) and 'regionsFilePath' in session: # make sure a regions file has been uploaded
     createSession() # create one in case one currently doesn't exist
-    newFilePath = os.path.join(app.config['UPLOAD_FOLDER'], session['username'] + ".spec")
-    regionsFilePath = os.path.join(app.config['UPLOAD_FOLDER'], session['username'] + ".regions")
+    filename = secure_filename(file.filename)
+    newFilePath = os.path.join(app.config['UPLOAD_FOLDER'], session['username'], filename)
     file.save(newFilePath)
+    session['specFilePath'] = newFilePath
     proj.loadProject(newFilePath)
-    proj.rfi = createRFI()
-    proj.rfi.readFile(regionsFilePath)
 
     # create JSON
     data = {}

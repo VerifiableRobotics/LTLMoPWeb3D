@@ -46,7 +46,7 @@ execute = function(automaton, initialProps) {
         }
       }
       if (!isValidInitialState) {
-        break;
+        continue;
       }
       _ref1 = props.actuators;
       for (actuatorName in _ref1) {
@@ -60,7 +60,7 @@ execute = function(automaton, initialProps) {
         }
       }
       if (!isValidInitialState) {
-        break;
+        continue;
       }
       _ref2 = props.customprops;
       for (custompropName in _ref2) {
@@ -81,10 +81,17 @@ execute = function(automaton, initialProps) {
     return false;
   };
   currentState = getInitialState(initialProps);
-  _results = [];
-  while (currentState !== false) {
-    currentState = getNextState(getSensors());
-    _results.push(console.log(currentState));
+  console.log(currentState);
+  console.log(getSensors());
+
+  var callback = function() {
+    if(currentState != false) {
+      currentState = getNextState(getSensors());
+      console.log(currentState);
+    }
   }
-  return _results;
-};
+  // get next state every 3 seconds
+  setInterval(callback, 3000);
+
+  return false;
+};  
