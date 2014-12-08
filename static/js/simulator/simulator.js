@@ -11,7 +11,7 @@ $actuator_list = [];
 $customprop_list = [];
 
 $(document).ready(function() {
-  var $automaton_upload_button, $automaton_upload_file, $executor_start_button, $regions_upload_button, $regions_upload_file, $spec_upload_button, $spec_upload_file;
+  var $automaton_upload_button, $automaton_upload_file, $executor_start_button, $regions_upload_button, $regions_upload_file, $spec_upload_button, $spec_upload_file, createRegionsFromJSON;
   $spec_upload_file = $('#spec_upload_file');
   $spec_upload_button = $('#spec_upload_button');
   $automaton_upload_file = $('#automaton_upload_file');
@@ -22,6 +22,47 @@ $(document).ready(function() {
   $sensor_list = $('#sensor_list');
   $actuator_list = $('#actuator_list');
   $customprop_list = $('#customprop_list');
+  createRegionsFromJSON = function(theList) {
+    var blue, green, height, holes, index, name, new_geometry, new_ground, new_ground_material, new_shape, point, red, region, width, xpos, ypos, _i, _j, _len, _len1, _ref, _results;
+    console.log(theList);
+    _results = [];
+    for (_i = 0, _len = theList.length; _i < _len; _i++) {
+      region = theList[_i];
+      name = region.name;
+      if (name === 'boundary') {
+        continue;
+      }
+      red = region.color[0];
+      green = region.color[1];
+      blue = region.color[2];
+      xpos = region.position[0];
+      ypos = region.position[1];
+      width = region.size[0];
+      height = region.size[1];
+      holes = region.holeList;
+      new_ground_material = Physijs.createMaterial(new THREE.MeshBasicMaterial({
+        color: "rgb(" + red + "," + green + "," + blue + ")",
+        side: THREE.DoubleSide
+      }), .5, 0);
+      new_shape = new THREE.Shape();
+      _ref = region.points;
+      for (index = _j = 0, _len1 = _ref.length; _j < _len1; index = ++_j) {
+        point = _ref[index];
+        if (index === 0) {
+          new_shape.moveTo(point[0], point[1]);
+        } else {
+          new_shape.lineTo(point[0], point[1]);
+        }
+      }
+      new_geometry = new_shape.makeGeometry();
+      new_ground = new Physijs.ConvexMesh(new_geometry, new_ground_material, 0);
+      new_ground.position.set(xpos, 0, -ypos);
+      new_ground.rotation.x = -Math.PI / 2;
+      car.body.position.y = -ypos/2;
+      _results.push(scene.add(new_ground));
+    }
+    return _results;
+  };
   $spec_upload_file.change(function() {
     var extension, file, nameSplit, reader;
     file = this.files[0];
@@ -60,6 +101,32 @@ $(document).ready(function() {
         };
         return reader.readAsText(file);
       }
+    }
+  });
+  $regions_upload_file.change(function() {
+    var extension, file, formData, nameSplit;
+    file = this.files[0];
+    nameSplit = file.name.split('.');
+    extension = nameSplit[nameSplit.length - 1];
+    if (extension !== "regions") {
+      return alert("This only accepts *.regions files!");
+    } else {
+      formData = new FormData($('#regions_upload_form')[0]);
+      return $.ajax({
+        url: '/simulator/uploadRegions',
+        type: 'POST',
+        success: function(data) {
+          return createRegionsFromJSON(data.theList);
+        },
+        error: function(xhr, status) {
+          console.error("regions upload failed");
+          return alert("Uploading regions failed, please try again with a different regions file");
+        },
+        data: formData,
+        cache: false,
+        contentType: false,
+        processData: false
+      });
     }
   });
   return $executor_start_button.click(function() {

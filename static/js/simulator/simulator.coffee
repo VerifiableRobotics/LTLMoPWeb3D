@@ -83,47 +83,63 @@ $(document).ready () ->
 
     
   # create regions from JSON
-  # function createRegionsFromJSON(theList) {
-  #   # loop through the region array
-  #   theList.forEach(function(region) {
-  #     # get name
-  #     var name = region.name;
-  #     # get rgb values
-  #     var red = region.color[0]; 
-  #     var green = region.color[1];
-  #     var blue = region.color[2];
-  #     # get position
-  #     var xpos = region.position[0];
-  #     var ypos = region.position[1];
-  #     # get size
-  #     var width = region.size[0];
-  #     var height = region.size[1];
+  createRegionsFromJSON = (theList) ->
+    # loop through the region array
+    console.log(theList)
+    for region in theList
+      # get name
+      name = region.name
+      # skip boundary
+      if name == 'boundary'
+        continue
+      # get rgb values
+      red = region.color[0]
+      green = region.color[1]
+      blue = region.color[2]
+      # get position
+      xpos = region.position[0]
+      ypos = region.position[1]
+      # get size/bounding box
+      width = region.size[0]
+      height = region.size[1]
+      # get holes
+      holes = region.holeList
 
-  #     # create the new ground material
-  #     var new_ground_material = Physijs.createMaterial(
-  #       new THREE.MeshBasicMaterial({color: "rgb(" + red + "," + green + "," + blue + ")"}),  # set color
-  #       .5, # high friction
-  #       0 # no restitution
-  #     );
-  #     # create the custom geometry
-  #     var new_geometry = new THREE.Geometry();
-  #     # add each point as a vertex of the new geometry
-  #     region.points.forEach(function(point) {
-  #       new_geometry.vertices.push(new THREE.Vector3(point[0], 0, point[1]));
-  #     })
-  #     # create the new ground
-  #     var new_ground = new Physijs.BoxMesh(
-  #       new_geometry,
-  #       new_ground_material,
-  #       0 # mass
-  #     );
-  #     new_ground.position.set(xpos, 0, ypos); # set position
+      # create the new ground material
+      new_ground_material = Physijs.createMaterial(
+        new THREE.MeshBasicMaterial(
+          color: "rgb(" + red + "," + green + "," + blue + ")"
+          side: THREE.DoubleSide
+        ), 
+        .5, # high friction
+        0 # no restitution
+      )
+      # create the custom geometry from a 2D shape
+      new_shape = new THREE.Shape()
+      # add each point as a vertex of the new shape
+      for point, index in region.points
+        if index == 0
+          new_shape.moveTo(point[0], point[1])
+        else
+          new_shape.lineTo(point[0], point[1])
+      # end for
+      new_geometry = new_shape.makeGeometry() # create 3D geometry out of 2D shape
+
+      # create the new ground
+      new_ground = new Physijs.ConvexMesh(
+        new_geometry,
+        new_ground_material,
+        0 # mass
+      )
+      # set the position and rotation
+      # note: makeGeometry creates shape on xy axis, this is putting it on xz
+      new_ground.position.set(xpos, 0, -ypos)
+      new_ground.rotation.x = -Math.PI/2
       
-  #     # add the new_ground to the scene
-  #     scene.add(new_ground);
-      
-  #   }) # end for each
-  # } # end create regions from JSON
+      # add the new_ground to the scene
+      scene.add(new_ground)
+    # end for each
+  # end create regions from JSON
 
 
   $spec_upload_file.change () ->
@@ -135,7 +151,7 @@ $(document).ready () ->
       if extension != "spec"
         alert "This only accepts *.spec files!"
       else 
-        reader = new FileReader();
+        reader = new FileReader()
         reader.onload = (ev) -> 
           spec = parseSpec(ev.target.result)
           console.log(spec)
@@ -158,7 +174,7 @@ $(document).ready () ->
       if extension != "aut"
         alert "This only accepts *.aut files!"
       else
-        reader = new FileReader();
+        reader = new FileReader()
         reader.onload = (ev) -> 
           automaton = parseAutomaton(ev.target.result, spec)
           console.log(automaton)
@@ -171,34 +187,33 @@ $(document).ready () ->
   # end change
 
   # bind to change event, partly borrowed from olanod on SO
-  # $regions_upload_file.change(function(){
-  #   var file = this.files[0];
-  #   var nameSplit = file.name.split('.');
-  #   var extension = nameSplit[nameSplit.length - 1];
-  #   # validation
-  #   if(extension != "regions") {
-  #     alert("This only accepts *.regions files!");
-  #   } else { # do upload
-  #     var formData = new FormData($('#regions_upload_form')[0]);
-  #     $.ajax({
-  #       url: '/simulator/uploadRegions',
-  #       type: 'POST',
-  #       # ajax callbacks 
-  #       success: function(data) {
-  #         createRegionsFromJSON(data.theList);
-  #       },
-  #       error: function(xhr, status) {
-  #         console.error("regions upload failed")
-  #       },
-  #       # form data to send
-  #       data: formData,
-  #       # options to tell jQuery not to process data or worry about content-type.
-  #       cache: false,
-  #       contentType: false,
-  #       processData: false
-  #     }); # end ajax
-  #   } # end else
-  # }); # end change
+  $regions_upload_file.change () ->
+    file = this.files[0]
+    nameSplit = file.name.split('.')
+    extension = nameSplit[nameSplit.length - 1]
+    # validation
+    if extension != "regions"
+      alert("This only accepts *.regions files!")
+    else # do upload
+      formData = new FormData($('#regions_upload_form')[0])
+      $.ajax
+        url: '/simulator/uploadRegions'
+        type: 'POST'
+        # ajax callbacks 
+        success: (data) ->
+          createRegionsFromJSON(data.theList)
+        error: (xhr, status) ->
+          console.error("regions upload failed")
+          alert("Uploading regions failed, please try again with a different regions file")
+        # form data to send
+        data: formData
+        # options to tell jQuery not to process data or worry about content-type.
+        cache: false
+        contentType: false
+        processData: false
+      # end ajax
+    # end else
+  # end change
   
   $executor_start_button.click () ->
     execute(automaton, getProps) # start execution

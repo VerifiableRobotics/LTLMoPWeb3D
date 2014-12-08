@@ -7,8 +7,8 @@ Physijs.scripts.worker = 'static/plugins/physijs/physijs_worker.js';
 Physijs.scripts.ammo = 'ammo.js';
 
 // declare objects
-var initScene, render,
-  ground_material, car_material, wheel_material, wheel_geometry,
+var initScene, render, animate,
+  ground_material, car_material, wheel_material, wheel_geometry, controls,
   projector, renderer, scene, ground_geometry, ground, light, camera,
   car = {};
 
@@ -49,6 +49,18 @@ initScene = function() {
   camera.position.set( 60, 50, 60 );
   camera.lookAt( scene.position );
   scene.add( camera );
+
+  // add trackball controls
+  controls = new THREE.TrackballControls( camera );
+  controls.rotateSpeed = 1.0;
+  controls.zoomSpeed = 1.2;
+  controls.panSpeed = 0.8;
+  controls.noZoom = false;
+  controls.noPan = false;
+  controls.staticMoving = true;
+  controls.dynamicDampingFactor = 0.3;
+  //controls.keys = [ 65, 83, 68 ];
+  controls.addEventListener( 'change', render );
   
   // create the lighting
   light = new THREE.DirectionalLight( 0xFFFFFF );
@@ -175,47 +187,29 @@ initScene = function() {
   car.wheel_br_constraint.setAngularLowerLimit({ x: 0, y: 0, z: 0 });
   car.wheel_br_constraint.setAngularUpperLimit({ x: 0, y: 0, z: 0 });    
   
-  requestAnimationFrame( render );
   scene.simulate();
 };
 // end initScene
 
 render = function() {
-  requestAnimationFrame( render );
   renderer.render( scene, camera );
 };
 
+animate = function() {
+  requestAnimationFrame( animate );
+  controls.update();
+  render();
+};
+
 // set the scene to initiliaze as soon as the window is loaded
-window.onload = initScene;
+window.onload = function() {
+  initScene();
+  animate();
+}
 
 
 // set some basic event handlers
 $(document).ready(function() {
-  // camera zooming and panning
-  $(document).keyup(function(event) {
-    console.log(event.which);
-    var zoomIncrement = 1.2; // zoom constant
-    var moveIncrement = 10; // move constant
-    if(event.which == 109 || event.which == 189) { // minus keys
-      camera.position.set(camera.position.x * zoomIncrement, camera.position.y * zoomIncrement, camera.position.z * zoomIncrement); // zoom out
-    }
-    else if(event.which == 107 || event.which == 187) { // plus keys
-      camera.position.set(camera.position.x / zoomIncrement, camera.position.y / zoomIncrement, camera.position.z / zoomIncrement); // zoom in
-    }
-    else if(event.which == 40) { // down arrow
-      camera.position.set(camera.position.x + moveIncrement, camera.position.y, camera.position.z + moveIncrement); // camera move back
-    }
-    else if(event.which == 38) { // up arrow
-      camera.position.set(camera.position.x - moveIncrement, camera.position.y, camera.position.z - moveIncrement); // camera move forward
-    }
-    else if(event.which == 37) { // left key
-      camera.position.set(camera.position.x - moveIncrement, camera.position.y, camera.position.z + moveIncrement); // pan left
-    }
-    else if(event.which == 39) { // right key
-      camera.position.set(camera.position.x + moveIncrement, camera.position.y, camera.position.z - moveIncrement); // pan right
-    }
-  }); // end keypress
-
   // resize warning
   $(window).resize(function() {
     alert("The renderer has a fixed width, please refresh for simulator to have proper width and height");
