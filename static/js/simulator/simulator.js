@@ -1,8 +1,10 @@
-var $actuator_list, $customprop_list, $sensor_list, addPropButtons, automaton, exports, getProps, getSensors, spec;
+var $actuator_list, $customprop_list, $sensor_list, addPropButtons, automaton, exports, getProps, getSensors, regions, spec;
 
 spec = {};
 
 automaton = {};
+
+regions = {};
 
 $sensor_list = [];
 
@@ -59,7 +61,6 @@ $(document).ready(function() {
   };
   createRegionsFromJSON = function(regions) {
     var blue, green, height, holes, name, new_geometry, new_ground, new_ground_material, new_shape, point, pointIndex, red, region, regionIndex, width, xpos, ypos, _i, _j, _len, _len1, _ref, _results;
-    console.log(regions);
     _results = [];
     for (regionIndex = _i = 0, _len = regions.length; _i < _len; regionIndex = ++_i) {
       region = regions[regionIndex];
@@ -146,29 +147,20 @@ $(document).ready(function() {
     }
   });
   $regions_upload_file.change(function() {
-    var extension, file, formData, nameSplit;
+    var extension, file, nameSplit, reader;
     file = this.files[0];
     nameSplit = file.name.split('.');
     extension = nameSplit[nameSplit.length - 1];
     if (extension !== "regions") {
       return alert("This only accepts *.regions files!");
     } else {
-      formData = new FormData($('#regions_upload_form')[0]);
-      return $.ajax({
-        url: '/simulator/uploadRegions',
-        type: 'POST',
-        success: function(data) {
-          return createRegionsFromJSON(data.theList);
-        },
-        error: function(xhr, status) {
-          console.error("regions upload failed");
-          return alert("Uploading regions failed, please try again with a different regions file");
-        },
-        data: formData,
-        cache: false,
-        contentType: false,
-        processData: false
-      });
+      reader = new FileReader();
+      reader.onload = function(ev) {
+        regions = parseRegions(ev.target.result);
+        console.log(regions);
+        return createRegionsFromJSON(regions.Regions);
+      };
+      return reader.readAsText(file);
     }
   });
   return $executor_start_button.click(function() {

@@ -1,5 +1,6 @@
 spec = {}
 automaton = {}
+regions = {}
 $sensor_list = []
 $actuator_list = []
 $customprop_list = []
@@ -65,7 +66,6 @@ $(document).ready () ->
   # create regions from JSON
   createRegionsFromJSON = (regions) ->
     # loop through the region array
-    console.log(regions)
     for region, regionIndex in regions
       # get name
       name = region.name
@@ -180,24 +180,14 @@ $(document).ready () ->
     # validation
     if extension != "regions"
       alert("This only accepts *.regions files!")
-    else # do upload
-      formData = new FormData($('#regions_upload_form')[0])
-      $.ajax
-        url: '/simulator/uploadRegions'
-        type: 'POST'
-        # ajax callbacks 
-        success: (data) ->
-          createRegionsFromJSON(data.theList)
-        error: (xhr, status) ->
-          console.error("regions upload failed")
-          alert("Uploading regions failed, please try again with a different regions file")
-        # form data to send
-        data: formData
-        # options to tell jQuery not to process data or worry about content-type.
-        cache: false
-        contentType: false
-        processData: false
-      # end ajax
+    else
+      reader = new FileReader()
+      reader.onload = (ev) -> 
+        regions = parseRegions(ev.target.result)
+        console.log(regions)
+        createRegionsFromJSON(regions.Regions)
+      # end onload
+      reader.readAsText(file)
     # end else
   # end change
   
