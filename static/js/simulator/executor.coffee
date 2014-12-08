@@ -70,12 +70,17 @@ execute = (automaton, initialProps) ->
 
   # run the execution loop!
   currentState = getInitialState(initialProps)
+  nextState = getNextState(getSensors())
   callback = () ->
-    if currentState is not false
-      currentState = getNextState(getSensors())
-      console.log(currentState)
+    console.log(currentState)
+    if currentState != false
+      nextState = getNextState(getSensors())
+      # currentState should only be set to nextState when region has been reached
+      currentState = nextState
+    else
+      clearInterval(executeInterval)
   # get next state every 3 seconds
-  setInterval(callback, 3000)
+  executeInterval = setInterval(callback, 300)
 
   return false
 

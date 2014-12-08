@@ -11,7 +11,7 @@ $actuator_list = [];
 $customprop_list = [];
 
 $(document).ready(function() {
-  var $automaton_upload_button, $automaton_upload_file, $executor_start_button, $regions_upload_button, $regions_upload_file, $spec_upload_button, $spec_upload_file, createRegionsFromJSON;
+  var $automaton_upload_button, $automaton_upload_file, $executor_start_button, $regions_upload_button, $regions_upload_file, $spec_upload_button, $spec_upload_file, createRegionsFromJSON, currentTheta, currentVelocity, setVelocityTheta, stopVelocityTheta;
   $spec_upload_file = $('#spec_upload_file');
   $spec_upload_button = $('#spec_upload_button');
   $automaton_upload_file = $('#automaton_upload_file');
@@ -22,12 +22,47 @@ $(document).ready(function() {
   $sensor_list = $('#sensor_list');
   $actuator_list = $('#actuator_list');
   $customprop_list = $('#customprop_list');
-  createRegionsFromJSON = function(theList) {
-    var blue, green, height, holes, index, name, new_geometry, new_ground, new_ground_material, new_shape, point, red, region, width, xpos, ypos, _i, _j, _len, _len1, _ref, _results;
-    console.log(theList);
+  currentVelocity = 0;
+  currentTheta = 0;
+  setVelocityTheta = function(velocity, theta) {
+    console.log("car position x:" + car.body.position.x);
+    console.log("car position z:" + car.body.position.z);
+    car.wheel_bl_constraint.configureAngularMotor(2, velocity, 0, velocity, 200000);
+    car.wheel_br_constraint.configureAngularMotor(2, velocity, 0, velocity, 200000);
+    car.wheel_fl_constraint.configureAngularMotor(2, velocity, 0, velocity, 200000);
+    car.wheel_fr_constraint.configureAngularMotor(2, velocity, 0, velocity, 200000);
+    car.wheel_bl_constraint.enableAngularMotor(2);
+    car.wheel_br_constraint.enableAngularMotor(2);
+    car.wheel_fl_constraint.enableAngularMotor(2);
+    car.wheel_fr_constraint.enableAngularMotor(2);
+    car.wheel_fl_constraint.configureAngularMotor(1, theta, 0, theta, 200);
+    car.wheel_fr_constraint.configureAngularMotor(1, theta, 0, theta, 200);
+    car.wheel_fl_constraint.enableAngularMotor(1);
+    car.wheel_fr_constraint.enableAngularMotor(1);
+    currentVelocity = velocity;
+    currentTheta = theta;
+    return console.log("velocity: " + velocity + " , theta: " + theta);
+  };
+  stopVelocityTheta = function() {
+    car.wheel_bl_constraint.configureAngularMotor(2, currentVelocity, -currentVelocity, -currentVelocity, 200000);
+    car.wheel_br_constraint.configureAngularMotor(2, currentVelocity, -currentVelocity, -currentVelocity, 200000);
+    car.wheel_fl_constraint.configureAngularMotor(2, currentVelocity, -currentVelocity, -currentVelocity, 200000);
+    car.wheel_fr_constraint.configureAngularMotor(2, currentVelocity, -currentVelocity, -currentVelocity, 200000);
+    car.wheel_bl_constraint.disableAngularMotor(2);
+    car.wheel_br_constraint.disableAngularMotor(2);
+    car.wheel_fl_constraint.disableAngularMotor(2);
+    car.wheel_fr_constraint.disableAngularMotor(2);
+    car.wheel_fl_constraint.configureAngularMotor(1, currentTheta, -currentTheta, -currentTheta, 200);
+    car.wheel_fr_constraint.configureAngularMotor(1, currentTheta, -currentTheta, -currentTheta, 200);
+    car.wheel_fl_constraint.disableAngularMotor(1);
+    return car.wheel_fr_constraint.disableAngularMotor(1);
+  };
+  createRegionsFromJSON = function(regions) {
+    var blue, green, height, holes, name, new_geometry, new_ground, new_ground_material, new_shape, point, pointIndex, red, region, regionIndex, width, xpos, ypos, _i, _j, _len, _len1, _ref, _results;
+    console.log(regions);
     _results = [];
-    for (_i = 0, _len = theList.length; _i < _len; _i++) {
-      region = theList[_i];
+    for (regionIndex = _i = 0, _len = regions.length; _i < _len; regionIndex = ++_i) {
+      region = regions[regionIndex];
       name = region.name;
       if (name === 'boundary') {
         continue;
@@ -46,9 +81,9 @@ $(document).ready(function() {
       }), .5, 0);
       new_shape = new THREE.Shape();
       _ref = region.points;
-      for (index = _j = 0, _len1 = _ref.length; _j < _len1; index = ++_j) {
-        point = _ref[index];
-        if (index === 0) {
+      for (pointIndex = _j = 0, _len1 = _ref.length; _j < _len1; pointIndex = ++_j) {
+        point = _ref[pointIndex];
+        if (pointIndex === 0) {
           new_shape.moveTo(point[0], point[1]);
         } else {
           new_shape.lineTo(point[0], point[1]);
@@ -58,8 +93,15 @@ $(document).ready(function() {
       new_ground = new Physijs.ConvexMesh(new_geometry, new_ground_material, 0);
       new_ground.position.set(xpos, 0, -ypos);
       new_ground.rotation.x = -Math.PI / 2;
-      car.body.position.y = -ypos/2;
-      _results.push(scene.add(new_ground));
+      new_ground.receiveShadow = true;
+      scene.add(new_ground);
+      if (regionIndex === 0) {
+        _results.push(createCar(xpos, 0, -ypos));
+      } else if (regionIndex === regions.length - 1) {
+        _results.push(setVelocityTheta(Math.random() * (30 - 1) + 1, Math.random() * Math.PI / 2));
+      } else {
+        _results.push(void 0);
+      }
     }
     return _results;
   };
@@ -140,21 +182,21 @@ $(document).ready(function() {
 });
 
 addPropButtons = function(spec) {
-  var actuatorName, className, custompropName, isActive, sensorName, _i, _len, _ref, _ref1, _ref2;
+  var actuatorName, custompropName, disabledText, isActive, sensorName, _i, _len, _ref, _ref1, _ref2;
   $sensor_list.empty();
   $actuator_list.empty();
   $customprop_list.empty();
   _ref = spec.Sensors;
   for (sensorName in _ref) {
     isActive = _ref[sensorName];
-    className = isActive ? "green_sensor" : "";
-    $sensor_list.append("<li><button type=\"button\" class=\"sensor_button " + className + "\">" + sensorName + "</button></li>");
+    disabledText = isActive ? "" : "disabled";
+    $sensor_list.append("<li><button " + disabledText + " type=\"button\" class=\"sensor_button\">" + sensorName + "</button></li>");
   }
   _ref1 = spec.Actions;
   for (actuatorName in _ref1) {
     isActive = _ref1[actuatorName];
-    className = isActive ? "green_actuator" : "";
-    $actuator_list.append("<li><button type=\"button\" class=\"actuator_button " + className + "\">" + actuatorName + "</button></li>");
+    disabledText = isActive ? "" : "disabled";
+    $actuator_list.append("<li><button " + disabledText + " type=\"button\" class=\"actuator_button\">" + actuatorName + "</button></li>");
   }
   _ref2 = spec.Customs;
   for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
@@ -175,9 +217,9 @@ addPropButtons = function(spec) {
 getProps = function() {
   var $actuator, $actuators, $customprop, $customprops, $sensor, $sensors, actuator, customprop, props, sensor, _i, _j, _k, _len, _len1, _len2;
   props = {};
-  $sensors = $sensor_list.find('.sensor_button');
-  $actuators = $actuator_list.find('.actuator_button');
-  $customprops = $customprop_list.find('.customprop_button');
+  $sensors = $sensor_list.find('.sensor_button:not([disabled])');
+  $actuators = $actuator_list.find('.actuator_button:not([disabled])');
+  $customprops = $customprop_list.find('.customprop_button:not([disabled])');
   props['sensors'] = {};
   props['actuators'] = {};
   props['customprops'] = {};
@@ -202,7 +244,7 @@ getProps = function() {
 getSensors = function() {
   var $sensor, $sensors, sensor, sensors, _i, _len;
   sensors = {};
-  $sensors = $sensor_list.find('.sensor_button');
+  $sensors = $sensor_list.find('.sensor_button:not([disabled])');
   for (_i = 0, _len = $sensors.length; _i < _len; _i++) {
     sensor = $sensors[_i];
     $sensor = $(sensor);

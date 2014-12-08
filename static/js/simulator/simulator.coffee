@@ -16,77 +16,57 @@ $(document).ready () ->
   $actuator_list = $('#actuator_list')
   $customprop_list = $('#customprop_list')
 
-  # $('#get_vel_theta').click(function(){
-  #   # ajax call for velocity/theta
-  #   var currentVelocity = 0; # stores current velocity
-  #   var currentTheta = 0; # stores current theta
-
-  #   console.log("clicked get_vel_theta");
-  #   getVelocityTheta();
+  currentVelocity = 0
+  currentTheta = 0
     
-  #   # ajax call for velocity theta
-  #   function getVelocityTheta() {
-  #     var x = car.body.position.x;
-  #     var y = car.body.position.z; # z-axis is the 'y-axis' in this case for simplicity
-  #     console.log("car position x:" + x);
-  #     console.log("car position z:" + y);
-  #     $.ajax({
-  #       url: '/simulator/getVelocityTheta',
-  #       type: 'GET',
-  #       datatype: "json",
-  #       data: {x: x, y: y},
-  #       success: function(data) {
-  #         # z-axis motor, upper limit, lower limit, target velocity, maximum force
-  #         car.wheel_bl_constraint.configureAngularMotor( 2, data.velocity, 0, data.velocity, 200000 );
-  #         car.wheel_br_constraint.configureAngularMotor( 2, data.velocity, 0, data.velocity, 200000 );
-  #         car.wheel_fl_constraint.configureAngularMotor( 2, data.velocity, 0, data.velocity, 200000 );
-  #         car.wheel_fr_constraint.configureAngularMotor( 2, data.velocity, 0, data.velocity, 200000 );
-  #         car.wheel_bl_constraint.enableAngularMotor( 2 ); # start z-axis motor
-  #         car.wheel_br_constraint.enableAngularMotor( 2 ); # start z-axis motor
-  #         car.wheel_fl_constraint.enableAngularMotor( 2 ); # start z-axis motor
-  #         car.wheel_fr_constraint.enableAngularMotor( 2 ); # start z-axis motor
+  # set the velocity and theta of the car
+  setVelocityTheta = (velocity, theta) ->
+    console.log("car position x:" + car.body.position.x)
+    console.log("car position z:" + car.body.position.z)
+    # z-axis motor, upper limit, lower limit, target velocity, maximum force
+    car.wheel_bl_constraint.configureAngularMotor( 2, velocity, 0, velocity, 200000 )
+    car.wheel_br_constraint.configureAngularMotor( 2, velocity, 0, velocity, 200000 )
+    car.wheel_fl_constraint.configureAngularMotor( 2, velocity, 0, velocity, 200000 )
+    car.wheel_fr_constraint.configureAngularMotor( 2, velocity, 0, velocity, 200000 )
+    car.wheel_bl_constraint.enableAngularMotor( 2 ) # start z-axis motor
+    car.wheel_br_constraint.enableAngularMotor( 2 ) # start z-axis motor
+    car.wheel_fl_constraint.enableAngularMotor( 2 ) # start z-axis motor
+    car.wheel_fr_constraint.enableAngularMotor( 2 ) # start z-axis motor
+    # x-axis motor, upper limit, lower limit, target velocity, maximum force
+    car.wheel_fl_constraint.configureAngularMotor( 1, theta, 0, theta, 200 )
+    car.wheel_fr_constraint.configureAngularMotor( 1, theta, 0, theta, 200 )
+    car.wheel_fl_constraint.enableAngularMotor( 1 ) # start x-axis motor
+    car.wheel_fr_constraint.enableAngularMotor( 1 ) # start x-axis motor
 
-  #         # x-axis motor, upper limit, lower limit, target velocity, maximum force
-  #         car.wheel_fl_constraint.configureAngularMotor( 1, data.theta, 0, data.theta, 200 );
-  #         car.wheel_fr_constraint.configureAngularMotor( 1, data.theta, 0, data.theta, 200 );
-  #         car.wheel_fl_constraint.enableAngularMotor( 1 ); # start x-axis motor
-  #         car.wheel_fr_constraint.enableAngularMotor( 1 ); # start x-axis motor
+    # set current velocity and theta in case of later stop
+    currentVelocity = velocity
+    currentTheta = theta
+    console.log("velocity: " + velocity + " , theta: " + theta)
+  # end setVelocityTheta
+  stopVelocityTheta = () ->
+    # set motor to opposite to "brake" the car
+    car.wheel_bl_constraint.configureAngularMotor( 2, currentVelocity, -currentVelocity, -currentVelocity, 200000 )
+    car.wheel_br_constraint.configureAngularMotor( 2, currentVelocity, -currentVelocity, -currentVelocity, 200000 )
+    car.wheel_fl_constraint.configureAngularMotor( 2, currentVelocity, -currentVelocity, -currentVelocity, 200000 )
+    car.wheel_fr_constraint.configureAngularMotor( 2, currentVelocity, -currentVelocity, -currentVelocity, 200000 )
+    car.wheel_bl_constraint.disableAngularMotor( 2 ) # stop z-axis motors
+    car.wheel_br_constraint.disableAngularMotor( 2 ) 
+    car.wheel_fl_constraint.disableAngularMotor( 2 ) 
+    car.wheel_fr_constraint.disableAngularMotor( 2 )
 
-  #         # set current velocity and theta in case of later error
-  #         currentVelocity = data.velocity;
-  #         currentTheta = data.theta;
-  #         var newstr = "velocity: " + data.velocity.toString() + " , theta: " + data.theta.toString();
-  #         console.log(newstr);
-  #       },
-  #       error: function(xhr, status) {
-  #         # set motor to opposite to "brake" the car
-  #         car.wheel_bl_constraint.configureAngularMotor( 2, currentVelocity, -currentVelocity, -currentVelocity, 200000 );
-  #         car.wheel_br_constraint.configureAngularMotor( 2, currentVelocity, -currentVelocity, -currentVelocity, 200000 );
-  #         car.wheel_fl_constraint.configureAngularMotor( 2, currentVelocity, -currentVelocity, -currentVelocity, 200000 );
-  #         car.wheel_fr_constraint.configureAngularMotor( 2, currentVelocity, -currentVelocity, -currentVelocity, 200000 );
-  #         car.wheel_bl_constraint.disableAngularMotor( 2 ); # stop z-axis motors
-  #         car.wheel_br_constraint.disableAngularMotor( 2 ); 
-  #         car.wheel_fl_constraint.disableAngularMotor( 2 ); 
-  #         car.wheel_fr_constraint.disableAngularMotor( 2 ); 
-
-  #         # set motor to opposite to move the wheels back to straight
-  #         car.wheel_fl_constraint.configureAngularMotor( 1, currentTheta, -currentTheta, -currentTheta, 200 );
-  #         car.wheel_fr_constraint.configureAngularMotor( 1, currentTheta, -currentTheta, -currentTheta, 200 );
-  #         car.wheel_fl_constraint.disableAngularMotor( 1 ); # stop x-axis motors
-  #         car.wheel_fr_constraint.disableAngularMotor( 1 ); 
-
-  #         console.error("velocity theta ajax error");
-  #       }
-  #     }); # end ajax
-  #   } # end func
-  # }); # end click
+    # set motor to opposite to move the wheels back to straight
+    car.wheel_fl_constraint.configureAngularMotor( 1, currentTheta, -currentTheta, -currentTheta, 200 )
+    car.wheel_fr_constraint.configureAngularMotor( 1, currentTheta, -currentTheta, -currentTheta, 200 )
+    car.wheel_fl_constraint.disableAngularMotor( 1 ) # stop x-axis motors
+    car.wheel_fr_constraint.disableAngularMotor( 1 )
+  # end stopVelocityTheta
 
     
   # create regions from JSON
-  createRegionsFromJSON = (theList) ->
+  createRegionsFromJSON = (regions) ->
     # loop through the region array
-    console.log(theList)
-    for region in theList
+    console.log(regions)
+    for region, regionIndex in regions
       # get name
       name = region.name
       # skip boundary
@@ -117,8 +97,8 @@ $(document).ready () ->
       # create the custom geometry from a 2D shape
       new_shape = new THREE.Shape()
       # add each point as a vertex of the new shape
-      for point, index in region.points
-        if index == 0
+      for point, pointIndex in region.points
+        if pointIndex == 0
           new_shape.moveTo(point[0], point[1])
         else
           new_shape.lineTo(point[0], point[1])
@@ -135,9 +115,15 @@ $(document).ready () ->
       # note: makeGeometry creates shape on xy axis, this is putting it on xz
       new_ground.position.set(xpos, 0, -ypos)
       new_ground.rotation.x = -Math.PI/2
-      
+      new_ground.receiveShadow = true
       # add the new_ground to the scene
       scene.add(new_ground)
+
+      # create car in first region
+      if regionIndex == 0
+        createCar(xpos, 0, -ypos)
+      else if regionIndex == regions.length - 1
+        setVelocityTheta(Math.random() * (30 - 1) + 1, Math.random() * Math.PI/2)
     # end for each
   # end create regions from JSON
 
@@ -234,12 +220,12 @@ addPropButtons = (spec) ->
   $customprop_list.empty()
   # add li/buttons to uls
   for sensorName, isActive of spec.Sensors
-    className = if isActive then "green_sensor" else ""
-    $sensor_list.append("<li><button type=\"button\" class=\"sensor_button " + className + "\">" + 
+    disabledText = if isActive then "" else "disabled"
+    $sensor_list.append("<li><button " + disabledText + " type=\"button\" class=\"sensor_button\">" + 
       sensorName + "</button></li>")
   for actuatorName, isActive of spec.Actions
-    className = if isActive then "green_actuator" else ""
-    $actuator_list.append("<li><button type=\"button\" class=\"actuator_button " + className + "\">" + 
+    disabledText = if isActive then "" else "disabled"
+    $actuator_list.append("<li><button " + disabledText + " type=\"button\" class=\"actuator_button\">" + 
       actuatorName + "</button></li>")
   # customs is just an array
   for custompropName in spec.Customs
@@ -256,9 +242,9 @@ addPropButtons = (spec) ->
 getProps = () ->
   props = {}
   # get buttons
-  $sensors = $sensor_list.find('.sensor_button')
-  $actuators = $actuator_list.find('.actuator_button')
-  $customprops = $customprop_list.find('.customprop_button')
+  $sensors = $sensor_list.find('.sensor_button:not([disabled])')
+  $actuators = $actuator_list.find('.actuator_button:not([disabled])')
+  $customprops = $customprop_list.find('.customprop_button:not([disabled])')
   
   props['sensors'] = {}
   props['actuators'] = {}
@@ -280,7 +266,7 @@ getProps = () ->
 getSensors = () ->
   sensors = {}
   # get buttons
-  $sensors = $sensor_list.find('.sensor_button')
+  $sensors = $sensor_list.find('.sensor_button:not([disabled])')
   
   # set dictionary
   for sensor in $sensors

@@ -1,7 +1,7 @@
 var execute, exports;
 
 execute = function(automaton, initialProps) {
-  var currentState, getInitialState, getNextState, _results;
+  var callback, currentState, executeInterval, getInitialState, getNextState, nextState;
   getNextState = function(sensors) {
     var isActive, isValidSuccessorState, sensorName, successorState, _i, _len, _ref;
     if (automaton[currentState]["successors"].length < 1) {
@@ -81,17 +81,16 @@ execute = function(automaton, initialProps) {
     return false;
   };
   currentState = getInitialState(initialProps);
-  console.log(currentState);
-  console.log(getSensors());
-
-  var callback = function() {
-    if(currentState != false) {
-      currentState = getNextState(getSensors());
-      console.log(currentState);
+  nextState = getNextState(getSensors());
+  callback = function() {
+    console.log(currentState);
+    if (currentState !== false) {
+      nextState = getNextState(getSensors());
+      return currentState = nextState;
+    } else {
+      return clearInterval(executeInterval);
     }
-  }
-  // get next state every 3 seconds
-  setInterval(callback, 3000);
-
+  };
+  executeInterval = setInterval(callback, 300);
   return false;
-};  
+};
