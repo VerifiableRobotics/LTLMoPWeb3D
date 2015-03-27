@@ -2,42 +2,49 @@ parseRegions = (parse_string) ->
 
   # helper functions to create regions object
   getRegionsOption = (str) ->
-    str.split(':')[0]
+    return str.split(':')[0]
   getCalibrationPoint = (str) ->
     calibrationPoint = {}
     calibrationPointSplit = str.split('\t')
     calibrationPoint[calibrationPointSplit[0]] = calibrationPointSplit[1].trim()
-    calibrationPoint
+    return calibrationPoint
   getObstacle = (str) ->
     obstacle = {}
     obstacle[str] = true
-    obstacle
+    return obstacle
   getTransition = (str) ->
-    transition = {}
+    transition = {} # dict from region -> region -> [points]
     transitionSplit = str.split('\t')
-    faceNum = 1
+    pointNum = 0
+    region1 = ''
+    region2 = ''
     for transitionPiece, i in transitionSplit
       switch i
         when 0
-          transition['region1'] = transitionPiece
+          # make the first region a dict if it is not already
+          region1 = transitionPiece.trim()
+          if !transition[region1]? 
+            transition[region1] = {}
         when 1
-          transition['region2'] = transitionPiece
+          # make the second region an array (of points)
+          region2 = transitionPiece.trim()
+          transition[region1][region2] = []
         else
-          # enumerate every four
-          switch (i + 2) % 4
+          # enumerate every two [x, y]
+          switch i % 2
             when 0
-              transition['face' + faceNum + '_x1'] = transitionPiece
+              # put in a new arr for the points and push x
+              transition[region1][region2].push([])
+              transition[region1][region2][pointNum].push(parseInt(transitionPiece))
             when 1
-              transition['face' + faceNum + '_y1'] = transitionPiece
-            when 2
-              transition['face' + faceNum + '_x2'] = transitionPiece
-            when 3
-              transition['face' + faceNum + '_y2'] = transitionPiece
-              faceNum++
+              # push y, increment pointNum
+              transition[region1][region2][pointNum].push(parseInt(transitionPiece))
+              pointNum++
+            
           # end switch
       # end switch
     # end for
-    transition
+    return transition
   # end getTransition
 
     
@@ -80,7 +87,7 @@ parseRegions = (parse_string) ->
   # parse regions string into actual JSON
   regions.Regions = JSON.parse(regions.Regions)
 
-  regions
+  return regions
 # end parseRegions
 
 exports = {

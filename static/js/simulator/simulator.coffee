@@ -119,11 +119,9 @@ $(document).ready () ->
       # add the new_ground to the scene
       scene.add(new_ground)
 
-      # create car in first region
+      # create car in the middle of the first region
       if regionIndex == 0
         createCar(xpos, 0, -ypos)
-      else if regionIndex == regions.length - 1
-        setVelocityTheta(Math.random() * (30 - 1) + 1, Math.random() * Math.PI/2)
     # end for each
   # end create regions from JSON
 

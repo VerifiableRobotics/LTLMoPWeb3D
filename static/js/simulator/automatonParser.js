@@ -13,11 +13,12 @@ parseAutomaton = function(parse_string, spec) {
     return parseInt(str.match(rankRegEx)[0]);
   };
   getProps = function(str) {
-    var prop, propSplit, props, _i, _len, _ref;
+    var bit, index, prop, propSplit, props, regionInt, _i, _j, _len, _len1, _ref, _ref1;
     props = {};
     props['sensors'] = {};
     props['actuators'] = {};
     props['customprops'] = {};
+    props['region'] = "";
     _ref = str.match(propRegEx);
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       prop = _ref[_i];
@@ -26,10 +27,19 @@ parseAutomaton = function(parse_string, spec) {
         props['sensors'][propSplit[0]] = parseInt(propSplit[1]);
       } else if (spec.Actions.hasOwnProperty(propSplit[0])) {
         props['actuators'][propSplit[0]] = parseInt(propSplit[1]);
-      } else {
+      } else if (spec.Customs.hasOwnProperty(propSplit[0])) {
         props['customprops'][propSplit[0]] = parseInt(propSplit[1]);
+      } else {
+        props['region'] += propSplit[0];
       }
     }
+    regionInt = 0;
+    _ref1 = props["region"];
+    for (index = _j = 0, _len1 = _ref1.length; _j < _len1; index = ++_j) {
+      bit = _ref1[index];
+      regionInt += parseInt(bit) * Math.pow(2, props["region"].length - index);
+    }
+    props["region"] = regionInt;
     return props;
   };
   getSuccessors = function(str) {

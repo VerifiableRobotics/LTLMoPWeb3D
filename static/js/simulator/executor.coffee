@@ -74,9 +74,14 @@ execute = (automaton, initialProps) ->
   callback = () ->
     console.log(currentState)
     if currentState != false
+      prevNextState = nextState
       nextState = getNextState(getSensors())
+      # if next state has changed
+      if prevNextState != nextState
+        plotCourse(nextState["props"]["region"])
       # currentState should only be set to nextState when region has been reached
-      currentState = nextState
+      if currentRegion == nextState["props"]["region"]
+        currentState = nextState
     else
       clearInterval(executeInterval)
   # get next state every 3 seconds

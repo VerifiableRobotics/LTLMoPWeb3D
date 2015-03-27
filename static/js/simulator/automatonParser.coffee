@@ -14,24 +14,38 @@ parseAutomaton = (parse_string, spec) ->
   getState = (str) ->
     str.match(stateRegEx)[0]
   getRank = (str) ->
-    parseInt(str.match(rankRegEx)[0])
+    return parseInt(str.match(rankRegEx)[0])
   getProps = (str) ->
     props = {}
     props['sensors'] = {}
     props['actuators'] = {}
     props['customprops'] = {}
+    props['region'] = "" # region bit string first, then convert to int
+
+    # match all props
     for prop in str.match(propRegEx)
+      # split by colon, name left, value right
       propSplit = prop.split(":")
+      # check if the prop exists in the spec 
       if spec.Sensors.hasOwnProperty propSplit[0]
         props['sensors'][propSplit[0]] = parseInt(propSplit[1])
       else if spec.Actions.hasOwnProperty propSplit[0]
         props['actuators'][propSplit[0]] = parseInt(propSplit[1])
-      else
+      else if spec.Customs.hasOwnProperty propSplit[0]
         props['customprops'][propSplit[0]] = parseInt(propSplit[1])
-    # end for
-    props
+      # not a proposition, must be a region bit
+      else
+        props['region'] += propSplit[0] #bit0 is first and is MSB
+    
+    # convert region bit string to int
+    regionInt = 0
+    for bit, index in props["region"]
+      regionInt += parseInt(bit) * 2 ** (props["region"].length - index)
+    props["region"] = regionInt
+
+    return props
   getSuccessors = (str) ->
-    str.match(successorRegEx)
+    return str.match(successorRegEx)
   isStateString = (str) ->
     if str.search(stateRegEx) >= 0 then true else false
   isSuccessorString = (str) ->
@@ -52,7 +66,7 @@ parseAutomaton = (parse_string, spec) ->
     # end else
   # end for
 
-  automaton
+  return automaton
 # end parseAutomaton
 
 exports = {
