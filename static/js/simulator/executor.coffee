@@ -1,3 +1,6 @@
+# publicly exposed currentRegion
+currentRegion = 0
+
 execute = (automaton, initialProps) ->
   
   #
@@ -70,9 +73,12 @@ execute = (automaton, initialProps) ->
 
   # run the execution loop!
   currentState = getInitialState(initialProps)
+  currentRegion = currentState["props"]["region"]
+  createCar(currentRegion) # create car in the centroid of the initial region
   nextState = getNextState(getSensors())
   callback = () ->
     console.log(currentState)
+    currentRegion = getCurrentRegion()
     if currentState != false
       prevNextState = nextState
       nextState = getNextState(getSensors())

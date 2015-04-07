@@ -89,7 +89,7 @@ animate = function() {
   render();
 };
 
-createCar = function(startX, startY, startZ) {
+create3DCar = function(startX, startY, startZ) {
   car_material = Physijs.createMaterial(
     new THREE.MeshLambertMaterial({ color: 0xff6666 }),
     .5, // high friction

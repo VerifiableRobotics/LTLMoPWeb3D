@@ -1,7 +1,7 @@
 spec = {}
 automaton = {}
 regions = {}
-regionsGraph = {}
+currentRegion = 0
 $sensor_list = []
 $actuator_list = []
 $customprop_list = []
@@ -67,7 +67,7 @@ $(document).ready () ->
   # create 3D regions from the region array
   create3DRegions = (regions_arr) ->
     # loop through the region array
-    for region, regionIndex in regions_arr
+    for region in regions_arr
       # get name
       name = region.name
       # skip boundary
@@ -120,29 +120,49 @@ $(document).ready () ->
       # add the new_ground to the scene
       scene.add(new_ground)
 
-      # create car in the centroid of the first region
-      if regionIndex == 0
-        # vars for getting centroid of first region
-        regionX = 0
-        regionY = 0
-        numPoints = region.points.length
-        for point in region.points
-          regionX += point[0]
-          regionY += point[1]
-        # create car at centroid
-        createCar(xpos + regionX / numPoints, 0, -ypos + regionY / numPoints)
     # end for each
-  # end create regions from JSON
+  # end create 3D regions
 
-  # create the regions graph
-  createRegionsGraph (regions) ->
-    # loop through region array to create a graph
-    # graph will be region -> {neighbors}
-    # in this case, neighbors will be transitions (and vice-versa for transitions)
-    for region in regions.Regions
-      regionGraph[region.name] = {}
-    for key, val of regions.Transitions
-      regionGraph[]
+  # given region object, get the centroid
+  getCentroid = (region) ->
+    # vars for getting centroid of region
+    regionX = 0
+    regionY = 0
+    numPoints = region.points.length
+    for point in region.points
+      regionX += point[0]
+      regionY += point[1]
+
+    return [regionX / numPoints, regionY / numPoints]
+
+  # given region number, creates the car at its centroid
+  createCar = (region_num) ->
+    region = regions.Regions[region_num]
+    xpos = region.position[0]
+    ypos = region.position[1]
+    centroid = getCentroid(region)
+    create3DCar(xpos + centroid[0], 0, -ypos + centroid[1])
+
+  # starts moving the car toward the destination
+  plotCourse = (region_num) ->
+    region = regions.Regions[region_num]
+
+  # get the current region the car is located in
+  getCurrentRegion = () ->
+    xpos = car.body.position.x
+    ypos = car.body.position.z
+    # loop through the region array
+    for region, index in regions.Regions
+      left = region.position[0]
+      right = region.position[0] + region.size[0]
+      bottom = region.position[1]
+      top = region.position[1] + region.size[1]
+      # check if inside bounding box
+      if xpos >= left and xpos <= right and ypos >= bottom and ypos <= top
+        return index
+    # not in a region currently    
+    return null
+        
 
 
   $spec_upload_file.change () ->
@@ -203,7 +223,6 @@ $(document).ready () ->
         regions = parseRegions(ev.target.result)
         console.log(regions)
         create3DRegions(regions.Regions)
-        createRegionsGraph(regions)
       # end onload
       reader.readAsText(file)
     # end else
@@ -285,4 +304,7 @@ getSensors = () ->
 
 exports = {
   getSensors: getSensors
+  createCar: createCar
+  plotCourse: plotCourse
+  getCurrentRegion: getCurrentRegion
 }
