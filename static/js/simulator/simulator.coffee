@@ -1,6 +1,7 @@
 spec = {}
 automaton = {}
 regions = {}
+regionsGraph = {}
 $sensor_list = []
 $actuator_list = []
 $customprop_list = []
@@ -63,10 +64,10 @@ $(document).ready () ->
   # end stopVelocityTheta
 
     
-  # create regions from JSON
-  createRegionsFromJSON = (regions) ->
+  # create 3D regions from the region array
+  create3DRegions = (regions_arr) ->
     # loop through the region array
-    for region, regionIndex in regions
+    for region, regionIndex in regions_arr
       # get name
       name = region.name
       # skip boundary
@@ -119,11 +120,29 @@ $(document).ready () ->
       # add the new_ground to the scene
       scene.add(new_ground)
 
-      # create car in the middle of the first region
+      # create car in the centroid of the first region
       if regionIndex == 0
-        createCar(xpos, 0, -ypos)
+        # vars for getting centroid of first region
+        regionX = 0
+        regionY = 0
+        numPoints = region.points.length
+        for point in region.points
+          regionX += point[0]
+          regionY += point[1]
+        # create car at centroid
+        createCar(xpos + regionX / numPoints, 0, -ypos + regionY / numPoints)
     # end for each
   # end create regions from JSON
+
+  # create the regions graph
+  createRegionsGraph (regions) ->
+    # loop through region array to create a graph
+    # graph will be region -> {neighbors}
+    # in this case, neighbors will be transitions (and vice-versa for transitions)
+    for region in regions.Regions
+      regionGraph[region.name] = {}
+    for key, val of regions.Transitions
+      regionGraph[]
 
 
   $spec_upload_file.change () ->
@@ -183,7 +202,8 @@ $(document).ready () ->
       reader.onload = (ev) -> 
         regions = parseRegions(ev.target.result)
         console.log(regions)
-        createRegionsFromJSON(regions.Regions)
+        create3DRegions(regions.Regions)
+        createRegionsGraph(regions)
       # end onload
       reader.readAsText(file)
     # end else
