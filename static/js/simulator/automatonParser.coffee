@@ -35,7 +35,7 @@ parseAutomaton = (parse_string, spec) ->
         props['customprops'][propSplit[0]] = parseInt(propSplit[1])
       # not a proposition, must be a region bit
       else
-        props['region'] += propSplit[0] #bit0 is first and is MSB
+        props['region'] += propSplit[1] #bit0 is first and is MSB
     
     # convert region bit string to int
     regionInt = 0

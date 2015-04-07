@@ -7,7 +7,7 @@ Physijs.scripts.worker = 'static/plugins/physijs/physijs_worker.js';
 Physijs.scripts.ammo = 'ammo.js';
 
 // declare objects
-var initScene, render, animate, createCar,
+var initScene, render, animate, create3DCar,
   ground_material, car_material, wheel_material, wheel_geometry, controls,
   projector, renderer, scene, ground_geometry, ground, light, camera,
   car = {};

@@ -81,7 +81,7 @@ execute = function(automaton, initialProps) {
     return false;
   };
   currentState = getInitialState(initialProps);
-  currentRegion = currentState["props"]["region"];
+  currentRegion = automaton[currentState]["props"]["region"];
   createCar(currentRegion);
   nextState = getNextState(getSensors());
   callback = function() {
@@ -92,9 +92,9 @@ execute = function(automaton, initialProps) {
       prevNextState = nextState;
       nextState = getNextState(getSensors());
       if (prevNextState !== nextState) {
-        plotCourse(nextState["props"]["region"]);
+        plotCourse(automaton[nextState]["props"]["region"]);
       }
-      if (currentRegion === nextState["props"]["region"]) {
+      if (currentRegion === automaton[nextState]["props"]["region"]) {
         return currentState = nextState;
       }
     } else {

@@ -70,7 +70,7 @@ execute = (automaton, initialProps) ->
 
   # run the execution loop!
   currentState = getInitialState(initialProps)
-  currentRegion = currentState["props"]["region"]
+  currentRegion = automaton[currentState]["props"]["region"]
   createCar(currentRegion) # create car in the centroid of the initial region
   nextState = getNextState(getSensors())
   callback = () ->
@@ -81,9 +81,9 @@ execute = (automaton, initialProps) ->
       nextState = getNextState(getSensors())
       # if next state has changed
       if prevNextState != nextState
-        plotCourse(nextState["props"]["region"])
+        plotCourse(automaton[nextState]["props"]["region"])
       # currentState should only be set to nextState when region has been reached
-      if currentRegion == nextState["props"]["region"]
+      if currentRegion == automaton[nextState]["props"]["region"]
         currentState = nextState
     else
       clearInterval(executeInterval)

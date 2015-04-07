@@ -30,7 +30,7 @@ parseAutomaton = function(parse_string, spec) {
       } else if (spec.Customs.hasOwnProperty(propSplit[0])) {
         props['customprops'][propSplit[0]] = parseInt(propSplit[1]);
       } else {
-        props['region'] += propSplit[0];
+        props['region'] += propSplit[1];
       }
     }
     regionInt = 0;
