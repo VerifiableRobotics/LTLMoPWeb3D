@@ -129,11 +129,12 @@ $(document).ready () ->
     regionX = 0
     regionY = 0
     numPoints = region.points.length
+    position = region.position
     for point in region.points
       regionX += point[0]
       regionY += point[1]
 
-    return [regionX / numPoints, regionY / numPoints]
+    return [position[0] + regionX / numPoints, -position[1] + regionY / numPoints]
 
   # given region number, creates the car at its centroid
   createCar = (region_num) ->
@@ -141,11 +142,15 @@ $(document).ready () ->
     xpos = region.position[0]
     ypos = region.position[1]
     centroid = getCentroid(region)
-    create3DCar(xpos + centroid[0], 0, -ypos + centroid[1])
+    create3DCar(centroid[0], 0, centroid[1])
 
   # starts moving the car toward the destination
   plotCourse = (region_num) ->
-    region = regions.Regions[region_num]
+    target = regions.Regions[region_num]
+    targetPosition = getCentroid(target)
+    currentPosition = [car.body.position.x, car.body.position.z]
+    targetTheta = Math.atan2(targetPosition[1] - currentPosition[1], targetPosition[0] - currentPosition[0])
+    setVelocityTheta(2, targetTheta) # arbitrary velocity, target theta 
 
   # get the current region the car is located in
   getCurrentRegion = () ->
