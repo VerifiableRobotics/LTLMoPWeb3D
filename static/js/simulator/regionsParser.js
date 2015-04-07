@@ -19,33 +19,34 @@ parseRegions = function(parse_string) {
     return obstacle;
   };
   getTransition = function(str) {
-    var faceNum, i, transition, transitionPiece, transitionSplit, _i, _len;
+    var i, pointNum, region1, region2, transition, transitionPiece, transitionSplit, _i, _len;
     transition = {};
     transitionSplit = str.split('\t');
-    faceNum = 1;
+    pointNum = 0;
+    region1 = '';
+    region2 = '';
     for (i = _i = 0, _len = transitionSplit.length; _i < _len; i = ++_i) {
       transitionPiece = transitionSplit[i];
       switch (i) {
         case 0:
-          transition['region1'] = transitionPiece;
+          region1 = transitionPiece.trim();
+          if (transition[region1] == null) {
+            transition[region1] = {};
+          }
           break;
         case 1:
-          transition['region2'] = transitionPiece;
+          region2 = transitionPiece.trim();
+          transition[region1][region2] = [];
           break;
         default:
-          switch ((i + 2) % 4) {
+          switch (i % 2) {
             case 0:
-              transition['face' + faceNum + '_x1'] = transitionPiece;
+              transition[region1][region2].push([]);
+              transition[region1][region2][pointNum].push(parseInt(transitionPiece));
               break;
             case 1:
-              transition['face' + faceNum + '_y1'] = transitionPiece;
-              break;
-            case 2:
-              transition['face' + faceNum + '_x2'] = transitionPiece;
-              break;
-            case 3:
-              transition['face' + faceNum + '_y2'] = transitionPiece;
-              faceNum++;
+              transition[region1][region2][pointNum].push(parseInt(transitionPiece));
+              pointNum++;
           }
       }
     }

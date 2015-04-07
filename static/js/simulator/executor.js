@@ -1,7 +1,7 @@
 var execute, exports;
 
 execute = function(automaton, initialProps) {
-  var callback, currentState, executeInterval, getInitialState, getNextState, nextState;
+  var callback, currentRegion, currentState, executeInterval, getInitialState, getNextState, nextState;
   getNextState = function(sensors) {
     var isActive, isValidSuccessorState, sensorName, successorState, _i, _len, _ref;
     if (automaton[currentState]["successors"].length < 1) {
@@ -81,12 +81,22 @@ execute = function(automaton, initialProps) {
     return false;
   };
   currentState = getInitialState(initialProps);
+  currentRegion = currentState["props"]["region"];
+  createCar(currentRegion);
   nextState = getNextState(getSensors());
   callback = function() {
+    var prevNextState;
     console.log(currentState);
+    currentRegion = getCurrentRegion();
     if (currentState !== false) {
+      prevNextState = nextState;
       nextState = getNextState(getSensors());
-      return currentState = nextState;
+      if (prevNextState !== nextState) {
+        plotCourse(nextState["props"]["region"]);
+      }
+      if (currentRegion === nextState["props"]["region"]) {
+        return currentState = nextState;
+      }
     } else {
       return clearInterval(executeInterval);
     }

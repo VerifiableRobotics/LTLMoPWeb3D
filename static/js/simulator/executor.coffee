@@ -1,6 +1,3 @@
-# publicly exposed currentRegion
-currentRegion = 0
-
 execute = (automaton, initialProps) ->
   
   #

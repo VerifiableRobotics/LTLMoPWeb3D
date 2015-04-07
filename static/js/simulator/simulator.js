@@ -1,10 +1,12 @@
-var $actuator_list, $customprop_list, $sensor_list, addPropButtons, automaton, exports, getProps, getSensors, regions, spec;
+var $actuator_list, $customprop_list, $sensor_list, addPropButtons, automaton, currentRegion, exports, getProps, getSensors, regions, spec;
 
 spec = {};
 
 automaton = {};
 
 regions = {};
+
+currentRegion = 0;
 
 $sensor_list = [];
 
@@ -13,7 +15,7 @@ $actuator_list = [];
 $customprop_list = [];
 
 $(document).ready(function() {
-  var $automaton_upload_button, $automaton_upload_file, $executor_start_button, $regions_upload_button, $regions_upload_file, $spec_upload_button, $spec_upload_file, createRegionsFromJSON, currentTheta, currentVelocity, setVelocityTheta, stopVelocityTheta;
+  var $automaton_upload_button, $automaton_upload_file, $executor_start_button, $regions_upload_button, $regions_upload_file, $spec_upload_button, $spec_upload_file, create3DRegions, createCar, currentTheta, currentVelocity, getCentroid, getCurrentRegion, plotCourse, setVelocityTheta, stopVelocityTheta;
   $spec_upload_file = $('#spec_upload_file');
   $spec_upload_button = $('#spec_upload_button');
   $automaton_upload_file = $('#automaton_upload_file');
@@ -59,11 +61,11 @@ $(document).ready(function() {
     car.wheel_fl_constraint.disableAngularMotor(1);
     return car.wheel_fr_constraint.disableAngularMotor(1);
   };
-  createRegionsFromJSON = function(regions) {
-    var blue, green, height, holes, name, new_geometry, new_ground, new_ground_material, new_shape, point, pointIndex, red, region, regionIndex, width, xpos, ypos, _i, _j, _len, _len1, _ref, _results;
+  create3DRegions = function(regions_arr) {
+    var blue, green, height, holes, name, new_geometry, new_ground, new_ground_material, new_shape, point, pointIndex, red, region, width, xpos, ypos, _i, _j, _len, _len1, _ref, _results;
     _results = [];
-    for (regionIndex = _i = 0, _len = regions.length; _i < _len; regionIndex = ++_i) {
-      region = regions[regionIndex];
+    for (_i = 0, _len = regions_arr.length; _i < _len; _i++) {
+      region = regions_arr[_i];
       name = region.name;
       if (name === 'boundary') {
         continue;
@@ -95,16 +97,56 @@ $(document).ready(function() {
       new_ground.position.set(xpos, 0, -ypos);
       new_ground.rotation.x = -Math.PI / 2;
       new_ground.receiveShadow = true;
-      scene.add(new_ground);
-      if (regionIndex === 0) {
-        _results.push(createCar(xpos, 0, -ypos));
-      } else if (regionIndex === regions.length - 1) {
-        _results.push(setVelocityTheta(Math.random() * (30 - 1) + 1, Math.random() * Math.PI / 2));
-      } else {
-        _results.push(void 0);
-      }
+      _results.push(scene.add(new_ground));
     }
     return _results;
+  };
+  getCentroid = function(region) {
+    var numPoints, point, position, regionX, regionY, _i, _len, _ref;
+    regionX = 0;
+    regionY = 0;
+    numPoints = region.points.length;
+    position = region.position;
+    _ref = region.points;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      point = _ref[_i];
+      regionX += point[0];
+      regionY += point[1];
+    }
+    return [position[0] + regionX / numPoints, -position[1] + regionY / numPoints];
+  };
+  createCar = function(region_num) {
+    var centroid, region, xpos, ypos;
+    region = regions.Regions[region_num];
+    xpos = region.position[0];
+    ypos = region.position[1];
+    centroid = getCentroid(region);
+    return create3DCar(centroid[0], 0, centroid[1]);
+  };
+  plotCourse = function(region_num) {
+    var currentPosition, target, targetPosition, targetTheta;
+    target = regions.Regions[region_num];
+    targetPosition = getCentroid(target);
+    currentPosition = [car.body.position.x, car.body.position.z];
+    targetTheta = Math.atan2(targetPosition[1] - currentPosition[1], targetPosition[0] - currentPosition[0]);
+    return setVelocityTheta(2, targetTheta);
+  };
+  getCurrentRegion = function() {
+    var bottom, index, left, region, right, top, xpos, ypos, _i, _len, _ref;
+    xpos = car.body.position.x;
+    ypos = car.body.position.z;
+    _ref = regions.Regions;
+    for (index = _i = 0, _len = _ref.length; _i < _len; index = ++_i) {
+      region = _ref[index];
+      left = region.position[0];
+      right = region.position[0] + region.size[0];
+      bottom = region.position[1];
+      top = region.position[1] + region.size[1];
+      if (xpos >= left && xpos <= right && ypos >= bottom && ypos <= top) {
+        return index;
+      }
+    }
+    return null;
   };
   $spec_upload_file.change(function() {
     var extension, file, nameSplit, reader;
@@ -158,7 +200,7 @@ $(document).ready(function() {
       reader.onload = function(ev) {
         regions = parseRegions(ev.target.result);
         console.log(regions);
-        return createRegionsFromJSON(regions.Regions);
+        return create3DRegions(regions.Regions);
       };
       return reader.readAsText(file);
     }
