@@ -18,51 +18,6 @@ $(document).ready () ->
   $actuator_list = $('#actuator_list')
   $customprop_list = $('#customprop_list')
 
-  currentVelocity = 0
-  currentTheta = 0
-    
-  # set the velocity and theta of the car
-  setVelocityTheta = (velocity, theta) ->
-    console.log("car position x:" + car.body.position.x)
-    console.log("car position z:" + car.body.position.z)
-    # z-axis motor, upper limit, lower limit, target velocity, maximum force
-    car.wheel_bl_constraint.configureAngularMotor( 2, velocity, 0, velocity, 200000 )
-    car.wheel_br_constraint.configureAngularMotor( 2, velocity, 0, velocity, 200000 )
-    car.wheel_fl_constraint.configureAngularMotor( 2, velocity, 0, velocity, 200000 )
-    car.wheel_fr_constraint.configureAngularMotor( 2, velocity, 0, velocity, 200000 )
-    car.wheel_bl_constraint.enableAngularMotor( 2 ) # start z-axis motor
-    car.wheel_br_constraint.enableAngularMotor( 2 ) # start z-axis motor
-    car.wheel_fl_constraint.enableAngularMotor( 2 ) # start z-axis motor
-    car.wheel_fr_constraint.enableAngularMotor( 2 ) # start z-axis motor
-    # x-axis motor, upper limit, lower limit, target velocity, maximum force
-    car.wheel_fl_constraint.configureAngularMotor( 1, theta, 0, theta, 200 )
-    car.wheel_fr_constraint.configureAngularMotor( 1, theta, 0, theta, 200 )
-    car.wheel_fl_constraint.enableAngularMotor( 1 ) # start x-axis motor
-    car.wheel_fr_constraint.enableAngularMotor( 1 ) # start x-axis motor
-
-    # set current velocity and theta in case of later stop
-    currentVelocity = velocity
-    currentTheta = theta
-    console.log("velocity: " + velocity + " , theta: " + theta)
-  # end setVelocityTheta
-  stopVelocityTheta = () ->
-    # set motor to opposite to "brake" the car
-    car.wheel_bl_constraint.configureAngularMotor( 2, currentVelocity, -currentVelocity, -currentVelocity, 200000 )
-    car.wheel_br_constraint.configureAngularMotor( 2, currentVelocity, -currentVelocity, -currentVelocity, 200000 )
-    car.wheel_fl_constraint.configureAngularMotor( 2, currentVelocity, -currentVelocity, -currentVelocity, 200000 )
-    car.wheel_fr_constraint.configureAngularMotor( 2, currentVelocity, -currentVelocity, -currentVelocity, 200000 )
-    car.wheel_bl_constraint.disableAngularMotor( 2 ) # stop z-axis motors
-    car.wheel_br_constraint.disableAngularMotor( 2 ) 
-    car.wheel_fl_constraint.disableAngularMotor( 2 ) 
-    car.wheel_fr_constraint.disableAngularMotor( 2 )
-
-    # set motor to opposite to move the wheels back to straight
-    car.wheel_fl_constraint.configureAngularMotor( 1, currentTheta, -currentTheta, -currentTheta, 200 )
-    car.wheel_fr_constraint.configureAngularMotor( 1, currentTheta, -currentTheta, -currentTheta, 200 )
-    car.wheel_fl_constraint.disableAngularMotor( 1 ) # stop x-axis motors
-    car.wheel_fr_constraint.disableAngularMotor( 1 )
-  # end stopVelocityTheta
-
     
   # create 3D regions from the region array
   create3DRegions = (regions_arr) ->
@@ -121,54 +76,7 @@ $(document).ready () ->
       scene.add(new_ground)
 
     # end for each
-  # end create 3D regions
-
-  # given region object, get the centroid
-  getCentroid = (region) ->
-    # vars for getting centroid of region
-    regionX = 0
-    regionY = 0
-    numPoints = region.points.length
-    position = region.position
-    for point in region.points
-      regionX += point[0]
-      regionY += point[1]
-
-    return [position[0] + regionX / numPoints, -position[1] + regionY / numPoints]
-
-  # given region number, creates the car at its centroid
-  createCar = (region_num) ->
-    region = regions.Regions[region_num]
-    xpos = region.position[0]
-    ypos = region.position[1]
-    centroid = getCentroid(region)
-    create3DCar(centroid[0], 0, centroid[1])
-
-  # starts moving the car toward the destination
-  plotCourse = (region_num) ->
-    target = regions.Regions[region_num]
-    targetPosition = getCentroid(target)
-    currentPosition = [car.body.position.x, car.body.position.z]
-    targetTheta = Math.atan2(targetPosition[1] - currentPosition[1], targetPosition[0] - currentPosition[0])
-    setVelocityTheta(2, targetTheta) # arbitrary velocity, target theta 
-
-  # get the current region the car is located in
-  getCurrentRegion = () ->
-    xpos = car.body.position.x
-    ypos = car.body.position.z
-    # loop through the region array
-    for region, index in regions.Regions
-      left = region.position[0]
-      right = region.position[0] + region.size[0]
-      bottom = region.position[1]
-      top = region.position[1] + region.size[1]
-      # check if inside bounding box
-      if xpos >= left and xpos <= right and ypos >= bottom and ypos <= top
-        return index
-    # not in a region currently    
-    return null
-        
-
+  # end create 3D regions      
 
   $spec_upload_file.change () ->
     file = this.files[0];
@@ -242,6 +150,95 @@ $(document).ready () ->
     $spec_upload_file.prop('disabled', true)
     $spec_upload_button.prop('disabled', true)
 
+currentVelocity = 0
+currentTheta = 0
+  
+# set the velocity and theta of the car
+setVelocityTheta = (velocity, theta) ->
+  console.log("car position x:" + car.body.position.x)
+  console.log("car position z:" + car.body.position.z)
+  # z-axis motor, upper limit, lower limit, target velocity, maximum force
+  car.wheel_bl_constraint.configureAngularMotor( 2, velocity, 0, velocity, 200000 )
+  car.wheel_br_constraint.configureAngularMotor( 2, velocity, 0, velocity, 200000 )
+  car.wheel_fl_constraint.configureAngularMotor( 2, velocity, 0, velocity, 200000 )
+  car.wheel_fr_constraint.configureAngularMotor( 2, velocity, 0, velocity, 200000 )
+  car.wheel_bl_constraint.enableAngularMotor( 2 ) # start z-axis motor
+  car.wheel_br_constraint.enableAngularMotor( 2 ) # start z-axis motor
+  car.wheel_fl_constraint.enableAngularMotor( 2 ) # start z-axis motor
+  car.wheel_fr_constraint.enableAngularMotor( 2 ) # start z-axis motor
+  # x-axis motor, upper limit, lower limit, target velocity, maximum force
+  car.wheel_fl_constraint.configureAngularMotor( 1, theta, 0, theta, 200 )
+  car.wheel_fr_constraint.configureAngularMotor( 1, theta, 0, theta, 200 )
+  car.wheel_fl_constraint.enableAngularMotor( 1 ) # start x-axis motor
+  car.wheel_fr_constraint.enableAngularMotor( 1 ) # start x-axis motor
+
+  # set current velocity and theta in case of later stop
+  currentVelocity = velocity
+  currentTheta = theta
+  console.log("velocity: " + velocity + " , theta: " + theta)
+# end setVelocityTheta
+stopVelocityTheta = () ->
+  # set motor to opposite to "brake" the car
+  car.wheel_bl_constraint.configureAngularMotor( 2, currentVelocity, -currentVelocity, -currentVelocity, 200000 )
+  car.wheel_br_constraint.configureAngularMotor( 2, currentVelocity, -currentVelocity, -currentVelocity, 200000 )
+  car.wheel_fl_constraint.configureAngularMotor( 2, currentVelocity, -currentVelocity, -currentVelocity, 200000 )
+  car.wheel_fr_constraint.configureAngularMotor( 2, currentVelocity, -currentVelocity, -currentVelocity, 200000 )
+  car.wheel_bl_constraint.disableAngularMotor( 2 ) # stop z-axis motors
+  car.wheel_br_constraint.disableAngularMotor( 2 ) 
+  car.wheel_fl_constraint.disableAngularMotor( 2 ) 
+  car.wheel_fr_constraint.disableAngularMotor( 2 )
+
+  # set motor to opposite to move the wheels back to straight
+  car.wheel_fl_constraint.configureAngularMotor( 1, currentTheta, -currentTheta, -currentTheta, 200 )
+  car.wheel_fr_constraint.configureAngularMotor( 1, currentTheta, -currentTheta, -currentTheta, 200 )
+  car.wheel_fl_constraint.disableAngularMotor( 1 ) # stop x-axis motors
+  car.wheel_fr_constraint.disableAngularMotor( 1 )
+# end stopVelocityTheta
+
+# given region object, get the centroid
+getCentroid = (region) ->
+  # vars for getting centroid of region
+  regionX = 0
+  regionY = 0
+  numPoints = region.points.length
+  position = region.position
+  for point in region.points
+    regionX += point[0]
+    regionY += point[1]
+
+  return [position[0] + regionX / numPoints, -position[1] + regionY / numPoints]  
+
+# given region number, creates the car at its centroid
+createCar = (region_num) ->
+  region = regions.Regions[region_num]
+  xpos = region.position[0]
+  ypos = region.position[1]
+  centroid = getCentroid(region)
+  create3DCar(centroid[0], 0, centroid[1])
+
+# starts moving the car toward the destination
+plotCourse = (region_num) ->
+  target = regions.Regions[region_num]
+  targetPosition = getCentroid(target)
+  currentPosition = [car.body.position.x, car.body.position.z]
+  targetTheta = Math.atan2(targetPosition[1] - currentPosition[1], targetPosition[0] - currentPosition[0])
+  setVelocityTheta(2, targetTheta) # arbitrary velocity, target theta 
+
+# get the current region the car is located in
+getCurrentRegion = () ->
+  xpos = car.body.position.x
+  ypos = car.body.position.z
+  # loop through the region array
+  for region, index in regions.Regions
+    left = region.position[0]
+    right = region.position[0] + region.size[0]
+    bottom = region.position[1]
+    top = region.position[1] + region.size[1]
+    # check if inside bounding box
+    if xpos >= left and xpos <= right and ypos >= bottom and ypos <= top
+      return index
+  # not in a region currently    
+  return null
 
 
 # add all prop buttons from the spec object

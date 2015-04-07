@@ -1,4 +1,4 @@
-var $actuator_list, $customprop_list, $sensor_list, addPropButtons, automaton, currentRegion, exports, getProps, getSensors, regions, spec;
+var $actuator_list, $customprop_list, $sensor_list, addPropButtons, automaton, createCar, currentRegion, currentTheta, currentVelocity, exports, getCentroid, getCurrentRegion, getProps, getSensors, plotCourse, regions, setVelocityTheta, spec, stopVelocityTheta;
 
 spec = {};
 
@@ -15,7 +15,7 @@ $actuator_list = [];
 $customprop_list = [];
 
 $(document).ready(function() {
-  var $automaton_upload_button, $automaton_upload_file, $executor_start_button, $regions_upload_button, $regions_upload_file, $spec_upload_button, $spec_upload_file, create3DRegions, createCar, currentTheta, currentVelocity, getCentroid, getCurrentRegion, plotCourse, setVelocityTheta, stopVelocityTheta;
+  var $automaton_upload_button, $automaton_upload_file, $executor_start_button, $regions_upload_button, $regions_upload_file, $spec_upload_button, $spec_upload_file, create3DRegions;
   $spec_upload_file = $('#spec_upload_file');
   $spec_upload_button = $('#spec_upload_button');
   $automaton_upload_file = $('#automaton_upload_file');
@@ -26,41 +26,6 @@ $(document).ready(function() {
   $sensor_list = $('#sensor_list');
   $actuator_list = $('#actuator_list');
   $customprop_list = $('#customprop_list');
-  currentVelocity = 0;
-  currentTheta = 0;
-  setVelocityTheta = function(velocity, theta) {
-    console.log("car position x:" + car.body.position.x);
-    console.log("car position z:" + car.body.position.z);
-    car.wheel_bl_constraint.configureAngularMotor(2, velocity, 0, velocity, 200000);
-    car.wheel_br_constraint.configureAngularMotor(2, velocity, 0, velocity, 200000);
-    car.wheel_fl_constraint.configureAngularMotor(2, velocity, 0, velocity, 200000);
-    car.wheel_fr_constraint.configureAngularMotor(2, velocity, 0, velocity, 200000);
-    car.wheel_bl_constraint.enableAngularMotor(2);
-    car.wheel_br_constraint.enableAngularMotor(2);
-    car.wheel_fl_constraint.enableAngularMotor(2);
-    car.wheel_fr_constraint.enableAngularMotor(2);
-    car.wheel_fl_constraint.configureAngularMotor(1, theta, 0, theta, 200);
-    car.wheel_fr_constraint.configureAngularMotor(1, theta, 0, theta, 200);
-    car.wheel_fl_constraint.enableAngularMotor(1);
-    car.wheel_fr_constraint.enableAngularMotor(1);
-    currentVelocity = velocity;
-    currentTheta = theta;
-    return console.log("velocity: " + velocity + " , theta: " + theta);
-  };
-  stopVelocityTheta = function() {
-    car.wheel_bl_constraint.configureAngularMotor(2, currentVelocity, -currentVelocity, -currentVelocity, 200000);
-    car.wheel_br_constraint.configureAngularMotor(2, currentVelocity, -currentVelocity, -currentVelocity, 200000);
-    car.wheel_fl_constraint.configureAngularMotor(2, currentVelocity, -currentVelocity, -currentVelocity, 200000);
-    car.wheel_fr_constraint.configureAngularMotor(2, currentVelocity, -currentVelocity, -currentVelocity, 200000);
-    car.wheel_bl_constraint.disableAngularMotor(2);
-    car.wheel_br_constraint.disableAngularMotor(2);
-    car.wheel_fl_constraint.disableAngularMotor(2);
-    car.wheel_fr_constraint.disableAngularMotor(2);
-    car.wheel_fl_constraint.configureAngularMotor(1, currentTheta, -currentTheta, -currentTheta, 200);
-    car.wheel_fr_constraint.configureAngularMotor(1, currentTheta, -currentTheta, -currentTheta, 200);
-    car.wheel_fl_constraint.disableAngularMotor(1);
-    return car.wheel_fr_constraint.disableAngularMotor(1);
-  };
   create3DRegions = function(regions_arr) {
     var blue, green, height, holes, name, new_geometry, new_ground, new_ground_material, new_shape, point, pointIndex, red, region, width, xpos, ypos, _i, _j, _len, _len1, _ref, _results;
     _results = [];
@@ -100,53 +65,6 @@ $(document).ready(function() {
       _results.push(scene.add(new_ground));
     }
     return _results;
-  };
-  getCentroid = function(region) {
-    var numPoints, point, position, regionX, regionY, _i, _len, _ref;
-    regionX = 0;
-    regionY = 0;
-    numPoints = region.points.length;
-    position = region.position;
-    _ref = region.points;
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      point = _ref[_i];
-      regionX += point[0];
-      regionY += point[1];
-    }
-    return [position[0] + regionX / numPoints, -position[1] + regionY / numPoints];
-  };
-  createCar = function(region_num) {
-    var centroid, region, xpos, ypos;
-    region = regions.Regions[region_num];
-    xpos = region.position[0];
-    ypos = region.position[1];
-    centroid = getCentroid(region);
-    return create3DCar(centroid[0], 0, centroid[1]);
-  };
-  plotCourse = function(region_num) {
-    var currentPosition, target, targetPosition, targetTheta;
-    target = regions.Regions[region_num];
-    targetPosition = getCentroid(target);
-    currentPosition = [car.body.position.x, car.body.position.z];
-    targetTheta = Math.atan2(targetPosition[1] - currentPosition[1], targetPosition[0] - currentPosition[0]);
-    return setVelocityTheta(2, targetTheta);
-  };
-  getCurrentRegion = function() {
-    var bottom, index, left, region, right, top, xpos, ypos, _i, _len, _ref;
-    xpos = car.body.position.x;
-    ypos = car.body.position.z;
-    _ref = regions.Regions;
-    for (index = _i = 0, _len = _ref.length; _i < _len; index = ++_i) {
-      region = _ref[index];
-      left = region.position[0];
-      right = region.position[0] + region.size[0];
-      bottom = region.position[1];
-      top = region.position[1] + region.size[1];
-      if (xpos >= left && xpos <= right && ypos >= bottom && ypos <= top) {
-        return index;
-      }
-    }
-    return null;
   };
   $spec_upload_file.change(function() {
     var extension, file, nameSplit, reader;
@@ -214,6 +132,96 @@ $(document).ready(function() {
     return $spec_upload_button.prop('disabled', true);
   });
 });
+
+currentVelocity = 0;
+
+currentTheta = 0;
+
+setVelocityTheta = function(velocity, theta) {
+  console.log("car position x:" + car.body.position.x);
+  console.log("car position z:" + car.body.position.z);
+  car.wheel_bl_constraint.configureAngularMotor(2, velocity, 0, velocity, 200000);
+  car.wheel_br_constraint.configureAngularMotor(2, velocity, 0, velocity, 200000);
+  car.wheel_fl_constraint.configureAngularMotor(2, velocity, 0, velocity, 200000);
+  car.wheel_fr_constraint.configureAngularMotor(2, velocity, 0, velocity, 200000);
+  car.wheel_bl_constraint.enableAngularMotor(2);
+  car.wheel_br_constraint.enableAngularMotor(2);
+  car.wheel_fl_constraint.enableAngularMotor(2);
+  car.wheel_fr_constraint.enableAngularMotor(2);
+  car.wheel_fl_constraint.configureAngularMotor(1, theta, 0, theta, 200);
+  car.wheel_fr_constraint.configureAngularMotor(1, theta, 0, theta, 200);
+  car.wheel_fl_constraint.enableAngularMotor(1);
+  car.wheel_fr_constraint.enableAngularMotor(1);
+  currentVelocity = velocity;
+  currentTheta = theta;
+  return console.log("velocity: " + velocity + " , theta: " + theta);
+};
+
+stopVelocityTheta = function() {
+  car.wheel_bl_constraint.configureAngularMotor(2, currentVelocity, -currentVelocity, -currentVelocity, 200000);
+  car.wheel_br_constraint.configureAngularMotor(2, currentVelocity, -currentVelocity, -currentVelocity, 200000);
+  car.wheel_fl_constraint.configureAngularMotor(2, currentVelocity, -currentVelocity, -currentVelocity, 200000);
+  car.wheel_fr_constraint.configureAngularMotor(2, currentVelocity, -currentVelocity, -currentVelocity, 200000);
+  car.wheel_bl_constraint.disableAngularMotor(2);
+  car.wheel_br_constraint.disableAngularMotor(2);
+  car.wheel_fl_constraint.disableAngularMotor(2);
+  car.wheel_fr_constraint.disableAngularMotor(2);
+  car.wheel_fl_constraint.configureAngularMotor(1, currentTheta, -currentTheta, -currentTheta, 200);
+  car.wheel_fr_constraint.configureAngularMotor(1, currentTheta, -currentTheta, -currentTheta, 200);
+  car.wheel_fl_constraint.disableAngularMotor(1);
+  return car.wheel_fr_constraint.disableAngularMotor(1);
+};
+
+getCentroid = function(region) {
+  var numPoints, point, position, regionX, regionY, _i, _len, _ref;
+  regionX = 0;
+  regionY = 0;
+  numPoints = region.points.length;
+  position = region.position;
+  _ref = region.points;
+  for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+    point = _ref[_i];
+    regionX += point[0];
+    regionY += point[1];
+  }
+  return [position[0] + regionX / numPoints, -position[1] + regionY / numPoints];
+};
+
+createCar = function(region_num) {
+  var centroid, region, xpos, ypos;
+  region = regions.Regions[region_num];
+  xpos = region.position[0];
+  ypos = region.position[1];
+  centroid = getCentroid(region);
+  return create3DCar(centroid[0], 0, centroid[1]);
+};
+
+plotCourse = function(region_num) {
+  var currentPosition, target, targetPosition, targetTheta;
+  target = regions.Regions[region_num];
+  targetPosition = getCentroid(target);
+  currentPosition = [car.body.position.x, car.body.position.z];
+  targetTheta = Math.atan2(targetPosition[1] - currentPosition[1], targetPosition[0] - currentPosition[0]);
+  return setVelocityTheta(2, targetTheta);
+};
+
+getCurrentRegion = function() {
+  var bottom, index, left, region, right, top, xpos, ypos, _i, _len, _ref;
+  xpos = car.body.position.x;
+  ypos = car.body.position.z;
+  _ref = regions.Regions;
+  for (index = _i = 0, _len = _ref.length; _i < _len; index = ++_i) {
+    region = _ref[index];
+    left = region.position[0];
+    right = region.position[0] + region.size[0];
+    bottom = region.position[1];
+    top = region.position[1] + region.size[1];
+    if (xpos >= left && xpos <= right && ypos >= bottom && ypos <= top) {
+      return index;
+    }
+  }
+  return null;
+};
 
 addPropButtons = function(spec) {
   var actuatorName, custompropName, disabledText, isActive, sensorName, _i, _len, _ref, _ref1, _ref2;
