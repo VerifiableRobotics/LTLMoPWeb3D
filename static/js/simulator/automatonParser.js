@@ -37,7 +37,7 @@ parseAutomaton = function(parse_string, spec) {
     _ref1 = props["region"];
     for (index = _j = 0, _len1 = _ref1.length; _j < _len1; index = ++_j) {
       bit = _ref1[index];
-      regionInt += parseInt(bit) * Math.pow(2, props["region"].length - index);
+      regionInt += parseInt(bit) * Math.pow(2, props["region"].length - index - 1);
     }
     props["region"] = regionInt;
     return props;

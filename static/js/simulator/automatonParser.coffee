@@ -40,7 +40,7 @@ parseAutomaton = (parse_string, spec) ->
     # convert region bit string to int
     regionInt = 0
     for bit, index in props["region"]
-      regionInt += parseInt(bit) * 2 ** (props["region"].length - index)
+      regionInt += parseInt(bit) * 2 ** (props["region"].length - index - 1)
     props["region"] = regionInt
 
     return props
