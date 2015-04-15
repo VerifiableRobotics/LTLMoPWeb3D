@@ -43,7 +43,7 @@ parseAutomaton = function(parse_string, spec) {
     return props;
   };
   getSuccessors = function(str) {
-    return str.match(successorRegEx);
+    return (str.match(successorRegEx));
   };
   isStateString = function(str) {
     if (str.search(stateRegEx) >= 0) {

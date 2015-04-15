@@ -59,8 +59,8 @@ $(document).ready(function() {
       }
       new_geometry = new_shape.makeGeometry();
       new_ground = new Physijs.ConvexMesh(new_geometry, new_ground_material, 0);
-      new_ground.position.set(xpos, 0, -ypos);
-      new_ground.rotation.x = -Math.PI / 2;
+      new_ground.position.set(xpos, 0, ypos);
+      new_ground.rotation.x = Math.PI / 2;
       new_ground.receiveShadow = true;
       _results.push(scene.add(new_ground));
     }
@@ -184,7 +184,7 @@ getCentroid = function(region) {
     regionX += point[0];
     regionY += point[1];
   }
-  return [position[0] + regionX / numPoints, -position[1] + regionY / numPoints];
+  return [position[0] + regionX / numPoints, position[1] + regionY / numPoints];
 };
 
 createCar = function(region_num) {
@@ -206,7 +206,7 @@ plotCourse = function(region_num) {
 };
 
 getCurrentRegion = function() {
-  var bottom, index, left, region, right, top, xpos, ypos, _i, _len, _ref;
+  var angle, angle_v1, angle_v2, bottom, i, index, left, length, point, region, right, sum, top, v1_x, v1_y, v2_x, v2_y, xpos, ypos, _i, _j, _len, _len1, _ref, _ref1;
   xpos = car.body.position.x;
   ypos = car.body.position.z;
   _ref = regions.Regions;
@@ -217,7 +217,29 @@ getCurrentRegion = function() {
     bottom = region.position[1];
     top = region.position[1] + region.size[1];
     if (xpos >= left && xpos <= right && ypos >= bottom && ypos <= top) {
-      return index;
+      sum = 0;
+      length = region.points.length;
+      _ref1 = region.points;
+      for (i = _j = 0, _len1 = _ref1.length; _j < _len1; i = ++_j) {
+        point = _ref1[i];
+        v1_y = region.points[i][1] - ypos;
+        v1_x = region.points[i][0] - xpos;
+        v2_y = region.points[(i + 1) % length][1] - ypos;
+        v2_x = region.points[(i + 1) % length][0] - xpos;
+        angle_v1 = Math.atan2(v1_y, v1_x);
+        angle_v2 = Math.atan2(v2_y, v2_x);
+        angle = angle_v2 - angle_v1;
+        while (angle > Math.PI) {
+          angle -= 2 * Math.PI;
+        }
+        while (angle < -Math.PI) {
+          angle += 2 * Math.PI;
+        }
+        sum += angle;
+      }
+      if (!(Math.abs(sum) < Math.PI)) {
+        return index;
+      }
     }
   }
   return null;

@@ -69,8 +69,8 @@ $(document).ready () ->
       )
       # set the position and rotation
       # note: makeGeometry creates shape on xy axis, this is putting it on xz
-      new_ground.position.set(xpos, 0, -ypos)
-      new_ground.rotation.x = -Math.PI/2
+      new_ground.position.set(xpos, 0, ypos)
+      new_ground.rotation.x = Math.PI/2
       new_ground.receiveShadow = true
       # add the new_ground to the scene
       scene.add(new_ground)
@@ -206,7 +206,7 @@ getCentroid = (region) ->
     regionX += point[0]
     regionY += point[1]
 
-  return [position[0] + regionX / numPoints, -position[1] + regionY / numPoints]  
+  return [position[0] + regionX / numPoints, position[1] + regionY / numPoints]  
 
 # given region number, creates the car at its centroid
 createCar = (region_num) ->
@@ -236,7 +236,25 @@ getCurrentRegion = () ->
     top = region.position[1] + region.size[1]
     # check if inside bounding box
     if xpos >= left and xpos <= right and ypos >= bottom and ypos <= top
-      return index
+      # if in bounding box, check if inside convex polygon
+      sum = 0
+      length = region.points.length
+      for point, i in region.points
+        v1_y = region.points[i][1] - ypos
+        v1_x = region.points[i][0] - xpos
+        v2_y = region.points[(i+1)%length][1] - ypos
+        v2_x = region.points[(i+1)%length][0] - xpos
+        angle_v1 = Math.atan2(v1_y, v1_x)
+        angle_v2 = Math.atan2(v2_y, v2_x)
+        angle = angle_v2 - angle_v1
+        while angle > Math.PI
+          angle -= 2 * Math.PI
+        while angle < -Math.PI 
+          angle += 2 * Math.PI
+        sum += angle
+
+      if not (Math.abs(sum) < Math.PI)
+        return index
   # not in a region currently    
   return null
 

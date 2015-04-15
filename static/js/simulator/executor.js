@@ -91,9 +91,10 @@ execute = function(automaton, initialProps) {
     if (currentState !== false) {
       prevNextState = nextState;
       nextState = getNextState(getSensors());
-      if (prevNextState !== nextState) {
+      console.log(nextState);
+      //if (prevNextState !== nextState) {
         plotCourse(automaton[nextState]["props"]["region"]);
-      }
+      //}
       if (currentRegion === automaton[nextState]["props"]["region"]) {
         return currentState = nextState;
       }
