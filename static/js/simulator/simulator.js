@@ -1,3 +1,4 @@
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 var $actuator_list, $customprop_list, $sensor_list, addPropButtons, automaton, createCar, currentRegion, currentTheta, currentVelocity, exports, getCentroid, getCurrentRegion, getProps, getSensors, plotCourse, regions, setVelocityTheta, spec, stopVelocityTheta;
 
 spec = {};
@@ -78,7 +79,7 @@ $(document).ready(function() {
         reader = new FileReader();
         reader.onload = function(ev) {
           spec = parseSpec(ev.target.result);
-          console.log(spec);
+          console.log("Spec Object: " + spec);
           $automaton_upload_file.prop('disabled', false);
           $automaton_upload_button.prop('disabled', false);
           return addPropButtons(spec);
@@ -99,7 +100,7 @@ $(document).ready(function() {
         reader = new FileReader();
         reader.onload = function(ev) {
           automaton = parseAutomaton(ev.target.result, spec);
-          console.log(automaton);
+          console.log("Automaton Object: " + automaton);
           return $executor_start_button.prop('disabled', false);
         };
         return reader.readAsText(file);
@@ -117,7 +118,7 @@ $(document).ready(function() {
       reader = new FileReader();
       reader.onload = function(ev) {
         regions = parseRegions(ev.target.result);
-        console.log(regions);
+        console.log("Regions Object: " + regions);
         return create3DRegions(regions.Regions);
       };
       return reader.readAsText(file);
@@ -139,7 +140,7 @@ currentTheta = 0;
 
 setVelocityTheta = function(velocity, theta) {
   console.log("car position x:" + car.body.position.x);
-  console.log("car position z:" + car.body.position.z);
+  console.log("car position y:" + car.body.position.z);
   car.wheel_bl_constraint.configureAngularMotor(2, velocity, 0, velocity, 200000);
   car.wheel_br_constraint.configureAngularMotor(2, velocity, 0, velocity, 200000);
   car.wheel_fl_constraint.configureAngularMotor(2, velocity, 0, velocity, 200000);
@@ -154,7 +155,9 @@ setVelocityTheta = function(velocity, theta) {
   car.wheel_fr_constraint.enableAngularMotor(1);
   currentVelocity = velocity;
   currentTheta = theta;
-  return console.log("velocity: " + velocity + " , theta: " + theta);
+  console.log("velocity: " + velocity);
+  console.log("car theta: " + car.body.quaternion._euler.y);
+  return console.log("wheel theta: " + theta);
 };
 
 stopVelocityTheta = function() {
@@ -202,11 +205,12 @@ plotCourse = function(region_num) {
   targetPosition = getCentroid(target);
   currentPosition = [car.body.position.x, car.body.position.z];
   targetTheta = Math.atan2(targetPosition[1] - currentPosition[1], targetPosition[0] - currentPosition[0]);
-  return setVelocityTheta(2, targetTheta);
+  console.log("target theta: " + targetTheta);
+  return setVelocityTheta(2, car.body.quaternion._euler.y + targetTheta);
 };
 
 getCurrentRegion = function() {
-  var angle, angle_v1, angle_v2, bottom, i, index, left, length, point, region, right, sum, top, v1_x, v1_y, v2_x, v2_y, xpos, ypos, _i, _j, _len, _len1, _ref, _ref1;
+  var bottom, i, index, j, left, point, points, region, result, right, top, xpos, ypos, _i, _j, _len, _len1, _ref, _ref1;
   xpos = car.body.position.x;
   ypos = car.body.position.z;
   _ref = regions.Regions;
@@ -217,27 +221,18 @@ getCurrentRegion = function() {
     bottom = region.position[1];
     top = region.position[1] + region.size[1];
     if (xpos >= left && xpos <= right && ypos >= bottom && ypos <= top) {
-      sum = 0;
-      length = region.points.length;
-      _ref1 = region.points;
+      points = region.points;
+      j = points.length - 1;
+      result = false;
+      _ref1 = points.length;
       for (i = _j = 0, _len1 = _ref1.length; _j < _len1; i = ++_j) {
         point = _ref1[i];
-        v1_y = region.points[i][1] - ypos;
-        v1_x = region.points[i][0] - xpos;
-        v2_y = region.points[(i + 1) % length][1] - ypos;
-        v2_x = region.points[(i + 1) % length][0] - xpos;
-        angle_v1 = Math.atan2(v1_y, v1_x);
-        angle_v2 = Math.atan2(v2_y, v2_x);
-        angle = angle_v2 - angle_v1;
-        while (angle > Math.PI) {
-          angle -= 2 * Math.PI;
+        if ((points[i][1] > ypos) !== (points[j][1] > ypos) && (xpos < (points[j][0] - points[i][0]) * (ypos - points[i][1]) / (points[j][1] - points[i][1]) + points[i][0])) {
+          result = !result;
         }
-        while (angle < -Math.PI) {
-          angle += 2 * Math.PI;
-        }
-        sum += angle;
+        j = index;
       }
-      if (!(Math.abs(sum) < Math.PI)) {
+      if (result) {
         return index;
       }
     }
@@ -316,3 +311,14 @@ getSensors = function() {
   }
   return sensors;
 };
+
+exports = {
+  getSensors: getSensors,
+  createCar: createCar,
+  plotCourse: plotCourse,
+  getCurrentRegion: getCurrentRegion
+};
+
+
+
+},{}]},{},[1]);

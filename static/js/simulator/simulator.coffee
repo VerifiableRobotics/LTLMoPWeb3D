@@ -90,7 +90,7 @@ $(document).ready () ->
         reader = new FileReader()
         reader.onload = (ev) -> 
           spec = parseSpec(ev.target.result)
-          console.log(spec)
+          console.log("Spec Object: " + spec)
           # enable uploading of automaton now
           $automaton_upload_file.prop('disabled', false)
           $automaton_upload_button.prop('disabled', false)
@@ -113,7 +113,7 @@ $(document).ready () ->
         reader = new FileReader()
         reader.onload = (ev) -> 
           automaton = parseAutomaton(ev.target.result, spec)
-          console.log(automaton)
+          console.log("Automaton Object: " + automaton)
           # enable executor execution now
           $executor_start_button.prop('disabled', false)
         # end onload
@@ -134,7 +134,7 @@ $(document).ready () ->
       reader = new FileReader()
       reader.onload = (ev) -> 
         regions = parseRegions(ev.target.result)
-        console.log(regions)
+        console.log("Regions Object: " + regions)
         create3DRegions(regions.Regions)
       # end onload
       reader.readAsText(file)
@@ -156,7 +156,7 @@ currentTheta = 0
 # set the velocity and theta of the car
 setVelocityTheta = (velocity, theta) ->
   console.log("car position x:" + car.body.position.x)
-  console.log("car position z:" + car.body.position.z)
+  console.log("car position y:" + car.body.position.z)
   # z-axis motor, upper limit, lower limit, target velocity, maximum force
   car.wheel_bl_constraint.configureAngularMotor( 2, velocity, 0, velocity, 200000 )
   car.wheel_br_constraint.configureAngularMotor( 2, velocity, 0, velocity, 200000 )
@@ -175,7 +175,9 @@ setVelocityTheta = (velocity, theta) ->
   # set current velocity and theta in case of later stop
   currentVelocity = velocity
   currentTheta = theta
-  console.log("velocity: " + velocity + " , theta: " + theta)
+  console.log("velocity: " + velocity)
+  console.log("car theta: " + car.body.quaternion._euler.y)
+  console.log("wheel theta: " + theta)
 # end setVelocityTheta
 stopVelocityTheta = () ->
   # set motor to opposite to "brake" the car
@@ -222,7 +224,9 @@ plotCourse = (region_num) ->
   targetPosition = getCentroid(target)
   currentPosition = [car.body.position.x, car.body.position.z]
   targetTheta = Math.atan2(targetPosition[1] - currentPosition[1], targetPosition[0] - currentPosition[0])
-  setVelocityTheta(2, targetTheta) # arbitrary velocity, target theta 
+  console.log("target theta: " + targetTheta)
+  # velocity based on distance to target, theta = diff b/t car body's theta and target theta
+  setVelocityTheta(2, car.body.quaternion._euler.y + targetTheta); 
 
 # get the current region the car is located in
 getCurrentRegion = () ->
@@ -237,23 +241,15 @@ getCurrentRegion = () ->
     # check if inside bounding box
     if xpos >= left and xpos <= right and ypos >= bottom and ypos <= top
       # if in bounding box, check if inside convex polygon
-      sum = 0
-      length = region.points.length
-      for point, i in region.points
-        v1_y = region.points[i][1] - ypos
-        v1_x = region.points[i][0] - xpos
-        v2_y = region.points[(i+1)%length][1] - ypos
-        v2_x = region.points[(i+1)%length][0] - xpos
-        angle_v1 = Math.atan2(v1_y, v1_x)
-        angle_v2 = Math.atan2(v2_y, v2_x)
-        angle = angle_v2 - angle_v1
-        while angle > Math.PI
-          angle -= 2 * Math.PI
-        while angle < -Math.PI 
-          angle += 2 * Math.PI
-        sum += angle
-
-      if not (Math.abs(sum) < Math.PI)
+      points = region.points
+      j = points.length - 1
+      result = false
+      for point, i in points.length
+        if (points[i][1] > ypos) != (points[j][1] > ypos) and (xpos < (points[j][0] - points[i][0]) * (ypos - points[i][1]) / (points[j][1] - points[i][1]) + points[i][0])
+          result = !result
+        j = index
+      # if in polygon, return the region's index
+      if result
         return index
   # not in a region currently    
   return null

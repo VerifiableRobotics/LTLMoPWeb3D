@@ -1,11 +1,9 @@
-execute = (automaton, initialProps) ->
-  
-  #
-  # helper functions for searching inside automaton
-  #
+## Helper functions for searching inside automaton
 
-  # finds a next state
-  getNextState = (sensors) ->
+
+Finds a next state
+  
+  getNextState = (automaton, currentState, sensors) ->
     if automaton[currentState]["successors"].length < 1
       alert "The current state has no successors"
       return false
@@ -26,8 +24,9 @@ execute = (automaton, initialProps) ->
     alert "None of the current state's successors can be reached with those sensor readings"
     return false
 
-  # finds an initial state
-  getInitialState = (props) ->
+Finds an initial state
+
+  getInitialState = (automaton, props) ->
     for stateName, state of automaton
       isValidInitialState = true
       # check sensors
@@ -68,31 +67,41 @@ execute = (automaton, initialProps) ->
     return false
 
 
-  # run the execution loop!
-  currentState = getInitialState(initialProps)
-  currentRegion = automaton[currentState]["props"]["region"]
-  createCar(currentRegion) # create car in the centroid of the initial region
-  nextState = getNextState(getSensors())
-  callback = () ->
-    console.log(currentState)
-    currentRegion = getCurrentRegion()
-    if currentState != false
-      prevNextState = nextState
-      nextState = getNextState(getSensors())
-      # if next state has changed
-      if prevNextState != nextState
-        plotCourse(automaton[nextState]["props"]["region"])
-      # currentState should only be set to nextState when region has been reached
-      if currentRegion == automaton[nextState]["props"]["region"]
-        currentState = nextState
-    else
-      clearInterval(executeInterval)
-  # get next state every 3 seconds
-  executeInterval = setInterval(callback, 300)
+## Executor function
 
-  return false
+  execute = (automaton, initialProps) ->
+    
+    # run the execution loop!
+    currentState = getInitialState(automaton, initialProps)
+    currentRegion = automaton[currentState]["props"]["region"]
+    createCar(currentRegion) # create car in the centroid of the initial region
+    nextState = getNextState(automaton, currentState, getSensors())
+    callback = () ->
+      console.log("current state: " + currentState)
+      currentRegion = getCurrentRegion()
+      console.log("current region: " + currentRegion)
+      if currentState != false
+        prevNextState = nextState
+        nextState = getNextState(automaton, currentState, getSensors())
+        console.log("next state: " + nextState)
+        # if there is a next state, go to it
+        if nextState != false
+          # constantly plot a path to the nextState  
+          plotCourse(automaton[nextState]["props"]["region"])
+          # currentState should only be set to nextState when region has been reached
+          if currentRegion == automaton[nextState]["props"]["region"]
+            currentState = nextState
+        # otherwise stop
+        else
+          stopVelocityTheta()
+      else
+        clearInterval(executeInterval)
+    # get next state every 3 seconds
+    executeInterval = setInterval(callback, 300)
+
+    return false
 
 
-exports = {
-  execute: execute
-}
+  exports = {
+    execute: execute
+  }
