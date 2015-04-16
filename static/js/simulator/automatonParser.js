@@ -44,7 +44,6 @@ getProps = function(str) {
     regionInt += parseInt(bit) * Math.pow(2, props["region"].length - index - 1);
   }
   props["region"] = regionInt;
-  console.log(props);
   return props;
 };
 
