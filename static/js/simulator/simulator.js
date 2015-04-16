@@ -1,5 +1,4 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var $actuator_list, $customprop_list, $sensor_list, addPropButtons, automaton, createCar, currentRegion, currentTheta, currentVelocity, exports, getCentroid, getCurrentRegion, getProps, getSensors, plotCourse, regions, setVelocityTheta, spec, stopVelocityTheta;
+var $actuator_list, $customprop_list, $sensor_list, addPropButtons, automaton, createCar, currentRegion, currentTheta, currentVelocity, getCentroid, getCurrentRegion, getInitialProps, getSensors, plotCourse, regions, setVelocityTheta, spec, stopVelocityTheta;
 
 spec = {};
 
@@ -79,7 +78,8 @@ $(document).ready(function() {
         reader = new FileReader();
         reader.onload = function(ev) {
           spec = parseSpec(ev.target.result);
-          console.log("Spec Object: " + spec);
+          console.log("Spec Object: ");
+          console.log(spec);
           $automaton_upload_file.prop('disabled', false);
           $automaton_upload_button.prop('disabled', false);
           return addPropButtons(spec);
@@ -100,7 +100,8 @@ $(document).ready(function() {
         reader = new FileReader();
         reader.onload = function(ev) {
           automaton = parseAutomaton(ev.target.result, spec);
-          console.log("Automaton Object: " + automaton);
+          console.log("Automaton Object: ");
+          console.log(automaton);
           return $executor_start_button.prop('disabled', false);
         };
         return reader.readAsText(file);
@@ -118,14 +119,15 @@ $(document).ready(function() {
       reader = new FileReader();
       reader.onload = function(ev) {
         regions = parseRegions(ev.target.result);
-        console.log("Regions Object: " + regions);
+        console.log("Regions Object: ");
+        console.log(regions);
         return create3DRegions(regions.Regions);
       };
       return reader.readAsText(file);
     }
   });
   return $executor_start_button.click(function() {
-    execute(automaton, getProps);
+    execute(automaton, getInitialProps);
     $executor_start_button.prop('disabled', true);
     $automaton_upload_file.prop('disabled', true);
     $automaton_upload_button.prop('disabled', true);
@@ -210,7 +212,7 @@ plotCourse = function(region_num) {
 };
 
 getCurrentRegion = function() {
-  var bottom, i, index, j, left, point, points, region, result, right, top, xpos, ypos, _i, _j, _len, _len1, _ref, _ref1;
+  var bottom, i, index, j, left, point, points, pos, region, result, right, top, xpos, ypos, _i, _j, _len, _len1, _ref, _ref1;
   xpos = car.body.position.x;
   ypos = car.body.position.z;
   _ref = regions.Regions;
@@ -222,15 +224,16 @@ getCurrentRegion = function() {
     top = region.position[1] + region.size[1];
     if (xpos >= left && xpos <= right && ypos >= bottom && ypos <= top) {
       points = region.points;
+      pos = region.position;
       j = points.length - 1;
       result = false;
-      _ref1 = points.length;
+      _ref1 = points;
       for (i = _j = 0, _len1 = _ref1.length; _j < _len1; i = ++_j) {
         point = _ref1[i];
-        if ((points[i][1] > ypos) !== (points[j][1] > ypos) && (xpos < (points[j][0] - points[i][0]) * (ypos - points[i][1]) / (points[j][1] - points[i][1]) + points[i][0])) {
+        if ((points[i][1] + pos[1] > ypos) !== (points[j][1] + pos[1] > ypos) && (xpos < (points[j][0] - points[i][0]) * (ypos - points[i][1] + pos[1]) / (points[j][1] - points[i][1]) + points[i][0] + pos[0])) {
           result = !result;
         }
-        j = index;
+        j = i;
       }
       if (result) {
         return index;
@@ -273,7 +276,7 @@ addPropButtons = function(spec) {
   });
 };
 
-getProps = function() {
+getInitialProps = function() {
   var $actuator, $actuators, $customprop, $customprops, $sensor, $sensors, actuator, customprop, props, sensor, _i, _j, _k, _len, _len1, _len2;
   props = {};
   $sensors = $sensor_list.find('.sensor_button:not([disabled])');
@@ -311,14 +314,3 @@ getSensors = function() {
   }
   return sensors;
 };
-
-exports = {
-  getSensors: getSensors,
-  createCar: createCar,
-  plotCourse: plotCourse,
-  getCurrentRegion: getCurrentRegion
-};
-
-
-
-},{}]},{},[1]);

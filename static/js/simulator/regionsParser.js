@@ -1,57 +1,61 @@
-var exports, parseRegions;
+var getCalibrationPoint, getObstacle, getRegionsOption, getTransition, parseRegions;
+
+getRegionsOption = function(str) {
+  return str.split(':')[0];
+};
+
+getCalibrationPoint = function(str) {
+  var calibrationPoint, calibrationPointSplit;
+  calibrationPoint = {};
+  calibrationPointSplit = str.split('\t');
+  calibrationPoint[calibrationPointSplit[0]] = calibrationPointSplit[1].trim();
+  return calibrationPoint;
+};
+
+getObstacle = function(str) {
+  var obstacle;
+  obstacle = {};
+  obstacle[str] = true;
+  return obstacle;
+};
+
+getTransition = function(str) {
+  var i, pointNum, region1, region2, transition, transitionPiece, transitionSplit, _i, _len;
+  transition = {};
+  transitionSplit = str.split('\t');
+  pointNum = 0;
+  region1 = '';
+  region2 = '';
+  for (i = _i = 0, _len = transitionSplit.length; _i < _len; i = ++_i) {
+    transitionPiece = transitionSplit[i];
+    switch (i) {
+      case 0:
+        region1 = transitionPiece.trim();
+        if (transition[region1] == null) {
+          transition[region1] = {};
+        }
+        break;
+      case 1:
+        region2 = transitionPiece.trim();
+        transition[region1][region2] = [];
+        break;
+      default:
+        switch (i % 2) {
+          case 0:
+            transition[region1][region2].push([]);
+            transition[region1][region2][pointNum].push(parseInt(transitionPiece));
+            break;
+          case 1:
+            transition[region1][region2][pointNum].push(parseInt(transitionPiece));
+            pointNum++;
+        }
+    }
+  }
+  return transition;
+};
 
 parseRegions = function(parse_string) {
-  var currentOption, getCalibrationPoint, getObstacle, getRegionsOption, getTransition, line, regions, _i, _len, _ref;
-  getRegionsOption = function(str) {
-    return str.split(':')[0];
-  };
-  getCalibrationPoint = function(str) {
-    var calibrationPoint, calibrationPointSplit;
-    calibrationPoint = {};
-    calibrationPointSplit = str.split('\t');
-    calibrationPoint[calibrationPointSplit[0]] = calibrationPointSplit[1].trim();
-    return calibrationPoint;
-  };
-  getObstacle = function(str) {
-    var obstacle;
-    obstacle = {};
-    obstacle[str] = true;
-    return obstacle;
-  };
-  getTransition = function(str) {
-    var i, pointNum, region1, region2, transition, transitionPiece, transitionSplit, _i, _len;
-    transition = {};
-    transitionSplit = str.split('\t');
-    pointNum = 0;
-    region1 = '';
-    region2 = '';
-    for (i = _i = 0, _len = transitionSplit.length; _i < _len; i = ++_i) {
-      transitionPiece = transitionSplit[i];
-      switch (i) {
-        case 0:
-          region1 = transitionPiece.trim();
-          if (transition[region1] == null) {
-            transition[region1] = {};
-          }
-          break;
-        case 1:
-          region2 = transitionPiece.trim();
-          transition[region1][region2] = [];
-          break;
-        default:
-          switch (i % 2) {
-            case 0:
-              transition[region1][region2].push([]);
-              transition[region1][region2][pointNum].push(parseInt(transitionPiece));
-              break;
-            case 1:
-              transition[region1][region2][pointNum].push(parseInt(transitionPiece));
-              pointNum++;
-          }
-      }
-    }
-    return transition;
-  };
+  var currentOption, line, regions, _i, _len, _ref;
   regions = {};
   currentOption = '';
   _ref = parse_string.trim().split("\n");

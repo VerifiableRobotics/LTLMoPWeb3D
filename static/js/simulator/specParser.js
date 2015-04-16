@@ -1,34 +1,38 @@
-var exports, parseSpec;
+var getCompileOption, getRegionMapping, getSensorActuator, getSpecOption, parseSpec;
+
+getSpecOption = function(str) {
+  return str.split(':')[0];
+};
+
+getCompileOption = function(str) {
+  var compileOption, compileOptionSplit;
+  compileOption = {};
+  compileOptionSplit = str.split(':');
+  compileOption[compileOptionSplit[0]] = compileOptionSplit[1].trim();
+  return compileOption;
+};
+
+getSensorActuator = function(str) {
+  var sensorActuatorSplit, sensorAcutator;
+  sensorAcutator = {};
+  sensorActuatorSplit = str.split(',');
+  sensorAcutator[sensorActuatorSplit[0]] = parseInt(sensorActuatorSplit[1].trim());
+  return sensorAcutator;
+};
+
+getRegionMapping = function(str) {
+  var regionMapping, regionMappingArr, regionMappingSplit;
+  regionMapping = {};
+  regionMappingSplit = str.split('=');
+  regionMappingArr = regionMappingSplit[1].trim().split(',').map(function(elem) {
+    return elem.trim();
+  });
+  regionMapping[regionMappingSplit[0].trim()] = regionMappingArr;
+  return regionMapping;
+};
 
 parseSpec = function(parse_string) {
-  var currentOption, getCompileOption, getRegionMapping, getSensorActuator, getSpecOption, line, spec, _i, _len, _ref;
-  getSpecOption = function(str) {
-    return str.split(':')[0];
-  };
-  getCompileOption = function(str) {
-    var compileOption, compileOptionSplit;
-    compileOption = {};
-    compileOptionSplit = str.split(':');
-    compileOption[compileOptionSplit[0]] = compileOptionSplit[1].trim();
-    return compileOption;
-  };
-  getSensorActuator = function(str) {
-    var sensorActuatorSplit, sensorAcutator;
-    sensorAcutator = {};
-    sensorActuatorSplit = str.split(',');
-    sensorAcutator[sensorActuatorSplit[0]] = parseInt(sensorActuatorSplit[1].trim());
-    return sensorAcutator;
-  };
-  getRegionMapping = function(str) {
-    var regionMapping, regionMappingArr, regionMappingSplit;
-    regionMapping = {};
-    regionMappingSplit = str.split('=');
-    regionMappingArr = regionMappingSplit[1].trim().split(',').map(function(elem) {
-      return elem.trim();
-    });
-    regionMapping[regionMappingSplit[0].trim()] = regionMappingArr;
-    return regionMapping;
-  };
+  var currentOption, line, spec, _i, _len, _ref;
   spec = {};
   currentOption = '';
   _ref = parse_string.trim().split("\n");
