@@ -16,7 +16,7 @@ Helper functions to create automaton object
     getRank = (str) ->
       return parseInt(str.match(rankRegEx)[0])
     
-    getProps = (str) ->
+    getProps = (str, spec) ->
       props = {}
       props['sensors'] = {}
       props['actuators'] = {}
@@ -32,7 +32,7 @@ Helper functions to create automaton object
           props['sensors'][propSplit[0]] = parseInt(propSplit[1])
         else if spec.Actions.hasOwnProperty propSplit[0]
           props['actuators'][propSplit[0]] = parseInt(propSplit[1])
-        else if spec.Customs.hasOwnProperty propSplit[0]
+        else if spec.Customs.indexOf propSplit[0] != -1
           props['customprops'][propSplit[0]] = parseInt(propSplit[1])
         # not a proposition, must be a region bit
         else
@@ -72,7 +72,7 @@ State 0 with rank 0 -> <person:0, hazardous_item:0, pick_up:0, drop:0, radio:0, 
       for line in parse_string.trim().split "\n"
         if isStateString(line)
           currentState = getState(line)
-          automaton[currentState] = "rank": getRank(line), "props": getProps(line), "successors": []
+          automaton[currentState] = "rank": getRank(line), "props": getProps(line, spec), "successors": []
         else if isSuccessorString(line)
           automaton[currentState]["successors"] = getSuccessors(line)
         else

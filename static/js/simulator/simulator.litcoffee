@@ -1,10 +1,10 @@
 Dependencies
 ------------
 
-    RegionsParser = require('./regionsParser')
-    SpecParser = require('./specParser')
-    AutomatonParser = require('./specParser')
-    Executor = require('./executor')
+    RegionsParser = require('./regionsParser.litcoffee')
+    SpecParser = require('./specParser.litcoffee')
+    AutomatonParser = require('./automatonParser.litcoffee')
+    Executor = require('./executor.litcoffee')
 
 Main Program
 ------------    
@@ -155,7 +155,10 @@ Main Program
       # end change
       
       $executor_start_button.click () ->
-        # initialize the execution loop
+        # initialize the execution loop        
+        counter = 0
+        executorInterval = 0
+
         executionLoop = () ->
           # if first execution
           if counter == 0
@@ -175,9 +178,8 @@ Main Program
               clearInterval(executorInterval)
         
         # start the execution loop
-        counter = 0
         executorInterval = setInterval(executionLoop, 300)
-        
+
         # disable buttons/uploads
         $executor_start_button.prop('disabled', true)
         $automaton_upload_file.prop('disabled', true)
@@ -348,13 +350,13 @@ Add all prop buttons from the spec object
       # set dictionaries
       for sensor in $sensors
         $sensor = $(sensor)
-        props['sensors'][$sensor.text()] = $sensor.hasClass('green_sensor')
+        props['sensors'][$sensor.text()] = if $sensor.hasClass('green_sensor') then 1 else 0
       for actuator in $actuators
         $actuator = $(actuator)
-        props['actuators'][$actuator.text()] = $actuator.hasClass('green_actuator')
+        props['actuators'][$actuator.text()] = if $actuator.hasClass('green_actuator') then 1 else 0
       for customprop in $customprops
         $customprop = $(customprop)
-        props['customprops'][$customprop.text()] = $customprop.hasClass('green_customprop')
+        props['customprops'][$customprop.text()] = if $customprop.hasClass('green_customprop') then 1 else 0
 
       props
 
@@ -366,6 +368,6 @@ Add all prop buttons from the spec object
       # set dictionary
       for sensor in $sensors
         $sensor = $(sensor)
-        sensors[$sensor.text()] = $sensor.hasClass('green_sensor')
+        sensors[$sensor.text()] = if $sensor.hasClass('green_sensor') then 1 else 0
       
       sensors

@@ -1,12 +1,355 @@
-var $actuator_list, $customprop_list, $sensor_list, addPropButtons, automaton, createCar, currentRegion, currentTheta, currentVelocity, getCentroid, getCurrentRegion, getInitialProps, getSensors, plotCourse, regions, setVelocityTheta, spec, stopVelocityTheta;
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+var getProps, getRank, getState, getSuccessors, isStateString, isSuccessorString, parseAutomaton, propRegEx, rankRegEx, stateRegEx, successorRegEx;
+
+stateRegEx = /\w+(?= with)/gi;
+
+rankRegEx = /\d+(?= ->)/gi;
+
+propRegEx = /\w+:\d(?=,|>)/gi;
+
+successorRegEx = /\w+(?=,|$)/gi;
+
+getState = function(str) {
+  return str.match(stateRegEx)[0];
+};
+
+getRank = function(str) {
+  return parseInt(str.match(rankRegEx)[0]);
+};
+
+getProps = function(str, spec) {
+  var bit, index, prop, propSplit, props, regionInt, _i, _j, _len, _len1, _ref, _ref1;
+  props = {};
+  props['sensors'] = {};
+  props['actuators'] = {};
+  props['customprops'] = {};
+  props['region'] = "";
+  _ref = str.match(propRegEx);
+  for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+    prop = _ref[_i];
+    propSplit = prop.split(":");
+    if (spec.Sensors.hasOwnProperty(propSplit[0])) {
+      props['sensors'][propSplit[0]] = parseInt(propSplit[1]);
+    } else if (spec.Actions.hasOwnProperty(propSplit[0])) {
+      props['actuators'][propSplit[0]] = parseInt(propSplit[1]);
+    } else if (spec.Customs.indexOf(propSplit[0] !== -1)) {
+      props['customprops'][propSplit[0]] = parseInt(propSplit[1]);
+    } else {
+      props['region'] += propSplit[1];
+    }
+  }
+  regionInt = 0;
+  _ref1 = props["region"];
+  for (index = _j = 0, _len1 = _ref1.length; _j < _len1; index = ++_j) {
+    bit = _ref1[index];
+    regionInt += parseInt(bit) * Math.pow(2, props["region"].length - index - 1);
+  }
+  props["region"] = regionInt;
+  return props;
+};
+
+getSuccessors = function(str) {
+  return str.match(successorRegEx);
+};
+
+isStateString = function(str) {
+  if (str.search(stateRegEx) >= 0) {
+    return true;
+  } else {
+    return false;
+  }
+};
+
+isSuccessorString = function(str) {
+  if (str.search(successorRegEx) >= 0) {
+    return true;
+  } else {
+    return false;
+  }
+};
+
+parseAutomaton = function(parse_string, spec) {
+  var automaton, currentState, line, _i, _len, _ref;
+  automaton = {};
+  currentState = '';
+  _ref = parse_string.trim().split("\n");
+  for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+    line = _ref[_i];
+    if (isStateString(line)) {
+      currentState = getState(line);
+      automaton[currentState] = {
+        "rank": getRank(line),
+        "props": getProps(line, spec),
+        "successors": []
+      };
+    } else if (isSuccessorString(line)) {
+      automaton[currentState]["successors"] = getSuccessors(line);
+    } else {
+      console.warn("Automaton Parsing: neither state nor successor string");
+    }
+  }
+  return automaton;
+};
+
+module.exports = {
+  parseAutomaton: parseAutomaton
+};
+
+
+
+},{}],2:[function(require,module,exports){
+var currentState, execute, getInitialState, getNextState, nextState;
+
+getNextState = function(automaton, currentState, sensors) {
+  var isActive, isValidSuccessorState, sensorName, successorState, _i, _len, _ref;
+  if (automaton[currentState]["successors"].length < 1) {
+    alert("The current state has no successors");
+    return false;
+  }
+  _ref = automaton[currentState]["successors"];
+  for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+    successorState = _ref[_i];
+    isValidSuccessorState = true;
+    for (sensorName in sensors) {
+      isActive = sensors[sensorName];
+      if (!automaton[successorState]["props"]["sensors"].hasOwnProperty(sensorName)) {
+        isValidSuccessorState = false;
+        break;
+      } else if (!automaton[successorState]["props"]["sensors"][sensorName] === isActive) {
+        isValidSuccessorState = false;
+        break;
+      }
+    }
+    if (isValidSuccessorState) {
+      return successorState;
+    }
+  }
+  alert("None of the current state's successors can be reached with those sensor readings");
+  return false;
+};
+
+getInitialState = function(automaton, props) {
+  var actuatorName, custompropName, isActive, isValidInitialState, isValidSuccessorState, sensorName, state, stateName, _ref, _ref1, _ref2;
+  for (stateName in automaton) {
+    state = automaton[stateName];
+    isValidInitialState = true;
+    _ref = props.sensors;
+    for (sensorName in _ref) {
+      isActive = _ref[sensorName];
+      if (!state["props"]["sensors"].hasOwnProperty(sensorName)) {
+        isValidInitialState = false;
+        break;
+      } else if (!state["props"]["sensors"][sensorName] === isActive) {
+        isValidSuccessorState = false;
+        break;
+      }
+    }
+    if (!isValidInitialState) {
+      continue;
+    }
+    _ref1 = props.actuators;
+    for (actuatorName in _ref1) {
+      isActive = _ref1[actuatorName];
+      if (!state["props"]["actuators"].hasOwnProperty(actuatorName)) {
+        isValidInitialState = false;
+        break;
+      } else if (!state["props"]["actuators"][actuatorName] === isActive) {
+        isValidSuccessorState = false;
+        break;
+      }
+    }
+    if (!isValidInitialState) {
+      continue;
+    }
+    _ref2 = props.customprops;
+    for (custompropName in _ref2) {
+      isActive = _ref2[custompropName];
+      if (!state["props"]["customprops"].hasOwnProperty(custompropName)) {
+        isValidInitialState = false;
+        break;
+      } else if (!state["props"]["customprops"][custompropName] === isActive) {
+        isValidSuccessorState = false;
+        break;
+      }
+    }
+    if (isValidInitialState) {
+      return stateName;
+    }
+  }
+  alert("The current configuration of props does not match any possible state in the automaton");
+  return false;
+};
+
+currentState = null;
+
+nextState = null;
+
+execute = function(automaton, initialProps, sensorReadings, currentRegion) {
+  var prevNextState;
+  if (currentState === null) {
+    currentState = getInitialState(automaton, initialProps);
+    nextState = getNextState(automaton, currentState, sensorReadings);
+    return automaton[currentState]["props"]["region"];
+  } else {
+    console.log("current state: " + currentState);
+    console.log("current region: " + currentRegion);
+    if (currentState !== false) {
+      prevNextState = nextState;
+      nextState = getNextState(automaton, currentState, sensorReadings);
+      console.log("next state: " + nextState);
+      if (nextState !== false) {
+        if (currentRegion === automaton[nextState]["props"]["region"]) {
+          currentState = nextState;
+        }
+        return automaton[nextState]["props"]["region"];
+      } else {
+        return null;
+      }
+    } else {
+      return false;
+    }
+  }
+};
+
+module.exports = {
+  execute: execute
+};
+
+
+
+},{}],3:[function(require,module,exports){
+var getCalibrationPoint, getObstacle, getRegionsOption, getTransition, parseRegions;
+
+getRegionsOption = function(str) {
+  return str.split(':')[0];
+};
+
+getCalibrationPoint = function(str) {
+  var calibrationPoint, calibrationPointSplit;
+  calibrationPoint = {};
+  calibrationPointSplit = str.split('\t');
+  calibrationPoint[calibrationPointSplit[0]] = calibrationPointSplit[1].trim();
+  return calibrationPoint;
+};
+
+getObstacle = function(str) {
+  var obstacle;
+  obstacle = {};
+  obstacle[str] = true;
+  return obstacle;
+};
+
+getTransition = function(str) {
+  var i, pointNum, region1, region2, transition, transitionPiece, transitionSplit, _i, _len;
+  transition = {};
+  transitionSplit = str.split('\t');
+  pointNum = 0;
+  region1 = '';
+  region2 = '';
+  for (i = _i = 0, _len = transitionSplit.length; _i < _len; i = ++_i) {
+    transitionPiece = transitionSplit[i];
+    switch (i) {
+      case 0:
+        region1 = transitionPiece.trim();
+        if (transition[region1] == null) {
+          transition[region1] = {};
+        }
+        break;
+      case 1:
+        region2 = transitionPiece.trim();
+        transition[region1][region2] = [];
+        break;
+      default:
+        switch (i % 2) {
+          case 0:
+            transition[region1][region2].push([]);
+            transition[region1][region2][pointNum].push(parseInt(transitionPiece));
+            break;
+          case 1:
+            transition[region1][region2][pointNum].push(parseInt(transitionPiece));
+            pointNum++;
+        }
+    }
+  }
+  return transition;
+};
+
+parseRegions = function(parse_string) {
+  var currentOption, line, regions, _i, _len, _ref;
+  regions = {};
+  currentOption = '';
+  _ref = parse_string.trim().split("\n");
+  for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+    line = _ref[_i];
+    line = line.trim();
+    if (line.length < 1 && currentOption !== 'Spec') {
+      currentOption = '';
+      continue;
+    }
+    switch (currentOption) {
+      case '':
+        currentOption = getRegionsOption(line);
+        break;
+      case 'Background':
+        if (regions.Background == null) {
+          regions.Background = "";
+        }
+        regions.Background += line;
+        break;
+      case 'CalibrationPoints':
+        if (regions.CalibrationPoints == null) {
+          regions.CalibrationPoints = [];
+        }
+        regions.CalibrationPoints.push(getCalibrationPoint(line));
+        break;
+      case 'Obstacles':
+        if (regions.Obstacles == null) {
+          regions.Obstacles = {};
+        }
+        $.extend(regions.Obstacles, getObstacle(line));
+        break;
+      case 'Regions':
+        if (regions.Regions == null) {
+          regions.Regions = "";
+        }
+        regions.Regions += line;
+        break;
+      case 'Transitions':
+        if (regions.Transitions == null) {
+          regions.Transitions = [];
+        }
+        regions.Transitions.push(getTransition(line));
+        break;
+      default:
+        console.warn("Regions Parsing: unrecognized regions option");
+    }
+  }
+  regions.Regions = JSON.parse(regions.Regions);
+  return regions;
+};
+
+module.exports = {
+  parseRegions: parseRegions
+};
+
+
+
+},{}],4:[function(require,module,exports){
+var $actuator_list, $customprop_list, $sensor_list, AutomatonParser, Executor, RegionsParser, SpecParser, addPropButtons, automaton, createCar, currentTheta, currentVelocity, getCentroid, getCurrentRegion, getInitialProps, getSensors, plotCourse, regions, setVelocityTheta, spec, stopVelocityTheta;
+
+RegionsParser = require('./regionsParser.litcoffee');
+
+SpecParser = require('./specParser.litcoffee');
+
+AutomatonParser = require('./automatonParser.litcoffee');
+
+Executor = require('./executor.litcoffee');
 
 spec = {};
 
 automaton = {};
 
 regions = {};
-
-currentRegion = 0;
 
 $sensor_list = [];
 
@@ -77,7 +420,7 @@ $(document).ready(function() {
       } else {
         reader = new FileReader();
         reader.onload = function(ev) {
-          spec = parseSpec(ev.target.result);
+          spec = SpecParser.parseSpec(ev.target.result);
           console.log("Spec Object: ");
           console.log(spec);
           $automaton_upload_file.prop('disabled', false);
@@ -99,7 +442,7 @@ $(document).ready(function() {
       } else {
         reader = new FileReader();
         reader.onload = function(ev) {
-          automaton = parseAutomaton(ev.target.result, spec);
+          automaton = AutomatonParser.parseAutomaton(ev.target.result, spec);
           console.log("Automaton Object: ");
           console.log(automaton);
           return $executor_start_button.prop('disabled', false);
@@ -118,7 +461,7 @@ $(document).ready(function() {
     } else {
       reader = new FileReader();
       reader.onload = function(ev) {
-        regions = parseRegions(ev.target.result);
+        regions = RegionsParser.parseRegions(ev.target.result);
         console.log("Regions Object: ");
         console.log(regions);
         return create3DRegions(regions.Regions);
@@ -127,7 +470,27 @@ $(document).ready(function() {
     }
   });
   return $executor_start_button.click(function() {
-    execute(automaton, getInitialProps);
+    var counter, executionLoop, executorInterval;
+    counter = 0;
+    executorInterval = 0;
+    executionLoop = function() {
+      var initialRegion, nextRegion;
+      if (counter === 0) {
+        initialRegion = Executor.execute(automaton, getInitialProps(), null, null);
+        createCar(initialRegion);
+        return counter = 1;
+      } else {
+        nextRegion = Executor.execute(automaton, null, getSensors(), getCurrentRegion());
+        if (nextRegion !== null) {
+          return plotCourse(nextRegion);
+        } else if (nextRegion !== false) {
+          return stopVelocityTheta();
+        } else {
+          return clearInterval(executorInterval);
+        }
+      }
+    };
+    executorInterval = setInterval(executionLoop, 300);
     $executor_start_button.prop('disabled', true);
     $automaton_upload_file.prop('disabled', true);
     $automaton_upload_button.prop('disabled', true);
@@ -212,7 +575,7 @@ plotCourse = function(region_num) {
 };
 
 getCurrentRegion = function() {
-  var bottom, i, index, j, left, point, points, pos, region, result, right, top, xpos, ypos, _i, _j, _len, _len1, _ref, _ref1;
+  var bottom, i, index, j, left, point, points, pos, region, result, right, top, xpos, ypos, _i, _j, _len, _len1, _ref;
   xpos = car.body.position.x;
   ypos = car.body.position.z;
   _ref = regions.Regions;
@@ -227,9 +590,8 @@ getCurrentRegion = function() {
       pos = region.position;
       j = points.length - 1;
       result = false;
-      _ref1 = points;
-      for (i = _j = 0, _len1 = _ref1.length; _j < _len1; i = ++_j) {
-        point = _ref1[i];
+      for (i = _j = 0, _len1 = points.length; _j < _len1; i = ++_j) {
+        point = points[i];
         if ((points[i][1] + pos[1] > ypos) !== (points[j][1] + pos[1] > ypos) && (xpos < (points[j][0] - points[i][0]) * (ypos - points[i][1] + pos[1]) / (points[j][1] - points[i][1]) + points[i][0] + pos[0])) {
           result = !result;
         }
@@ -288,17 +650,17 @@ getInitialProps = function() {
   for (_i = 0, _len = $sensors.length; _i < _len; _i++) {
     sensor = $sensors[_i];
     $sensor = $(sensor);
-    props['sensors'][$sensor.text()] = $sensor.hasClass('green_sensor');
+    props['sensors'][$sensor.text()] = $sensor.hasClass('green_sensor') ? 1 : 0;
   }
   for (_j = 0, _len1 = $actuators.length; _j < _len1; _j++) {
     actuator = $actuators[_j];
     $actuator = $(actuator);
-    props['actuators'][$actuator.text()] = $actuator.hasClass('green_actuator');
+    props['actuators'][$actuator.text()] = $actuator.hasClass('green_actuator') ? 1 : 0;
   }
   for (_k = 0, _len2 = $customprops.length; _k < _len2; _k++) {
     customprop = $customprops[_k];
     $customprop = $(customprop);
-    props['customprops'][$customprop.text()] = $customprop.hasClass('green_customprop');
+    props['customprops'][$customprop.text()] = $customprop.hasClass('green_customprop') ? 1 : 0;
   }
   return props;
 };
@@ -310,7 +672,122 @@ getSensors = function() {
   for (_i = 0, _len = $sensors.length; _i < _len; _i++) {
     sensor = $sensors[_i];
     $sensor = $(sensor);
-    sensors[$sensor.text()] = $sensor.hasClass('green_sensor');
+    sensors[$sensor.text()] = $sensor.hasClass('green_sensor') ? 1 : 0;
   }
   return sensors;
 };
+
+
+
+},{"./automatonParser.litcoffee":1,"./executor.litcoffee":2,"./regionsParser.litcoffee":3,"./specParser.litcoffee":5}],5:[function(require,module,exports){
+var getCompileOption, getRegionMapping, getSensorActuator, getSpecOption, parseSpec;
+
+getSpecOption = function(str) {
+  return str.split(':')[0];
+};
+
+getCompileOption = function(str) {
+  var compileOption, compileOptionSplit;
+  compileOption = {};
+  compileOptionSplit = str.split(':');
+  compileOption[compileOptionSplit[0]] = compileOptionSplit[1].trim();
+  return compileOption;
+};
+
+getSensorActuator = function(str) {
+  var sensorActuatorSplit, sensorAcutator;
+  sensorAcutator = {};
+  sensorActuatorSplit = str.split(',');
+  sensorAcutator[sensorActuatorSplit[0]] = parseInt(sensorActuatorSplit[1].trim());
+  return sensorAcutator;
+};
+
+getRegionMapping = function(str) {
+  var regionMapping, regionMappingArr, regionMappingSplit;
+  regionMapping = {};
+  regionMappingSplit = str.split('=');
+  regionMappingArr = regionMappingSplit[1].trim().split(',').map(function(elem) {
+    return elem.trim();
+  });
+  regionMapping[regionMappingSplit[0].trim()] = regionMappingArr;
+  return regionMapping;
+};
+
+parseSpec = function(parse_string) {
+  var currentOption, line, spec, _i, _len, _ref;
+  spec = {};
+  currentOption = '';
+  _ref = parse_string.trim().split("\n");
+  for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+    line = _ref[_i];
+    line = line.trim();
+    if (line.length < 1 && currentOption !== 'Spec') {
+      currentOption = '';
+      continue;
+    }
+    switch (currentOption) {
+      case '':
+        currentOption = getSpecOption(line);
+        break;
+      case 'Actions':
+        if (spec.Actions == null) {
+          spec.Actions = {};
+        }
+        $.extend(spec.Actions, getSensorActuator(line));
+        break;
+      case 'Sensors':
+        if (spec.Sensors == null) {
+          spec.Sensors = {};
+        }
+        $.extend(spec.Sensors, getSensorActuator(line));
+        break;
+      case 'Customs':
+        if (spec.Customs == null) {
+          spec.Customs = [];
+        }
+        spec.Customs.push(line);
+        break;
+      case 'CurrentConfigName':
+        if (spec.CurrentConfigName == null) {
+          spec.CurrentConfigName = '';
+        }
+        spec.CurrentConfigName += line;
+        break;
+      case 'RegionFile':
+        if (spec.RegionFile == null) {
+          spec.RegionFile = '';
+        }
+        spec.RegionFile += line;
+        break;
+      case 'CompileOptions':
+        if (spec.CompileOptions == null) {
+          spec.CompileOptions = {};
+        }
+        $.extend(spec.CompileOptions, getCompileOption(line));
+        break;
+      case 'RegionMapping':
+        if (spec.RegionMapping == null) {
+          spec.RegionMapping = {};
+        }
+        $.extend(spec.RegionMapping, getRegionMapping(line));
+        break;
+      case 'Spec':
+        if (spec.Spec == null) {
+          spec.Spec = '';
+        }
+        spec.Spec += line + '\n';
+        break;
+      default:
+        console.warn("Spec Parsing: unrecognized spec option");
+    }
+  }
+  return spec;
+};
+
+module.exports = {
+  parseSpec: parseSpec
+};
+
+
+
+},{}]},{},[4]);
