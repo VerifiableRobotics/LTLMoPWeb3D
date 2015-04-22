@@ -70,37 +70,40 @@ Finds an initial state
 Execute an automaton
 --------------------
 
-    execute = (automaton, initialProps) ->
+    # store the current and next states
+    currentState = null
+    nextState = null
+
+    # to be executed continuosly
+    execute = (automaton, initialProps, sensorReadings, currentRegion) ->
       
-      # run the execution loop!
-      currentState = getInitialState(automaton, initialProps)
-      currentRegion = automaton[currentState]["props"]["region"]
-      createCar(currentRegion) # create car in the centroid of the initial region
-      nextState = getNextState(automaton, currentState, getSensors())
-      callback = () ->
+      # if first execution
+      if currentState == null
+        currentState = getInitialState(automaton, initialProps)
+        nextState = getNextState(automaton, currentState, sensorReadings)
+        # return initial region
+        return automaton[currentState]["props"]["region"]
+      else
         console.log("current state: " + currentState)
-        currentRegion = getCurrentRegion()
         console.log("current region: " + currentRegion)
+        # if there is a current state
         if currentState != false
           prevNextState = nextState
-          nextState = getNextState(automaton, currentState, getSensors())
+          nextState = getNextState(automaton, currentState, sensorReadings)
           console.log("next state: " + nextState)
           # if there is a next state, go to it
           if nextState != false
-            # constantly plot a path to the nextState  
-            plotCourse(automaton[nextState]["props"]["region"])
             # currentState should only be set to nextState when region has been reached
             if currentRegion == automaton[nextState]["props"]["region"]
               currentState = nextState
-          # otherwise stop
+            # return next region to go to  
+            return automaton[nextState]["props"]["region"]
+          # otherwise stop and return null
           else
-            stopVelocityTheta()
+            return null
+        # if there is no current state, stop the execution loop and return false
         else
-          clearInterval(executeInterval)
-      # get next state every 3 seconds
-      executeInterval = setInterval(callback, 300)
-
-      return false
+          return false
 
 
 Export

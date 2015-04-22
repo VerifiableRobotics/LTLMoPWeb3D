@@ -1,7 +1,17 @@
+Dependencies
+------------
+
+    RegionsParser = require('./regionsParser')
+    SpecParser = require('./specParser')
+    AutomatonParser = require('./specParser')
+    Executor = require('./executor')
+
+Main Program
+------------    
+
     spec = {}
     automaton = {}
     regions = {}
-    currentRegion = 0
     $sensor_list = []
     $actuator_list = []
     $customprop_list = []
@@ -89,7 +99,7 @@
           else 
             reader = new FileReader()
             reader.onload = (ev) -> 
-              spec = parseSpec(ev.target.result)
+              spec = SpecParser.parseSpec(ev.target.result)
               console.log("Spec Object: ")
               console.log(spec)
               # enable uploading of automaton now
@@ -113,7 +123,7 @@
           else
             reader = new FileReader()
             reader.onload = (ev) -> 
-              automaton = parseAutomaton(ev.target.result, spec)
+              automaton = AutomatonParser.parseAutomaton(ev.target.result, spec)
               console.log("Automaton Object: ")
               console.log(automaton)
               # enable executor execution now
@@ -135,7 +145,7 @@
         else
           reader = new FileReader()
           reader.onload = (ev) -> 
-            regions = parseRegions(ev.target.result)
+            regions = RegionsParser.parseRegions(ev.target.result)
             console.log("Regions Object: ")
             console.log(regions)
             create3DRegions(regions.Regions)
@@ -145,7 +155,29 @@
       # end change
       
       $executor_start_button.click () ->
-        execute(automaton, getInitialProps) # start execution
+        # initialize the execution loop
+        executionLoop = () ->
+          # if first execution
+          if counter == 0
+            initialRegion = Executor.execute(automaton, getInitialProps(), null, null)
+            createCar(initialRegion)
+            counter = 1
+          else
+            nextRegion = Executor.execute(automaton, null, getSensors(), getCurrentRegion())
+            # if there is a next region, move to it
+            if nextRegion != null
+              plotCourse(nextRegion)
+            # if there isn't, stop moving
+            else if nextRegion != false
+              stopVelocityTheta()
+            # if there isn't a current state, stop the execution loop
+            else  
+              clearInterval(executorInterval)
+        
+        # start the execution loop
+        counter = 0
+        executorInterval = setInterval(executionLoop, 300)
+        
         # disable buttons/uploads
         $executor_start_button.prop('disabled', true)
         $automaton_upload_file.prop('disabled', true)
@@ -337,14 +369,3 @@ Add all prop buttons from the spec object
         sensors[$sensor.text()] = $sensor.hasClass('green_sensor')
       
       sensors
-
-
-Export
-------
-
-    module.exports = {
-      getSensors: getSensors
-      createCar: createCar
-      plotCourse: plotCourse
-      getCurrentRegion: getCurrentRegion
-    }

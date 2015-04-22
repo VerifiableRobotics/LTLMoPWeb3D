@@ -79,6 +79,9 @@ initScene = function() {
   // attempt ambient lighting...
   // light = new THREE.AmbientLight(0x404040);
   // scene.add(light);
+
+  // add window resizer
+  THREEx.WindowResize(renderer, camera);
   
   scene.simulate();
   animate();
@@ -194,10 +197,3 @@ create3DCar = function(startX, startY, startZ) {
 window.onload = function() {
   initScene();
 }
-// set some basic event handlers
-$(document).ready(function() {
-  // resize warning
-  $(window).resize(function() {
-    alert("The renderer has a fixed width, please refresh for simulator to have proper width and height");
-  });
-}); // end document ready
