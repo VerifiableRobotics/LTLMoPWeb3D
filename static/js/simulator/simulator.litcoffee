@@ -215,7 +215,9 @@ Set the velocity and theta of the car
       currentVelocity = velocity
       currentTheta = theta
       console.log("velocity: " + velocity)
-      console.log("car theta: " + car.body.quaternion._euler.y)
+      console.log("car x: " + car.body.quaternion._euler.x)
+      console.log("car y: " + car.body.quaternion._euler.y)
+      console.log("car z: " + car.body.quaternion._euler.z)
       console.log("wheel theta: " + theta)
 
     
@@ -274,7 +276,12 @@ Starts moving the car toward the destination
       targetTheta = Math.atan2(targetPosition[1] - currentPosition[1], targetPosition[0] - currentPosition[0])
       console.log("target theta: " + targetTheta)
       # velocity based on distance to target, theta = diff b/t car body's theta and target theta
-      setVelocityTheta(2, car.body.quaternion._euler.y + targetTheta); 
+      carTheta = car.body.quaternion._euler.y
+      if Math.abs(car.body.quaternion._euler.x) < Math.PI/2
+        carTheta = -(carTheta + Math.PI)
+      console.log("car theta: " + carTheta)
+      #distance = Math.abs(currentPosition[0] - targetPosition[0]) + Math.abs(currentPosition[1] - targetPosition[1])
+      setVelocityTheta(5, -(targetTheta - carTheta)) 
 
 
 Get the current region the car is located in

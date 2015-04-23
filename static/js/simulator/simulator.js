@@ -115,7 +115,7 @@ getNextState = function(automaton, currentState, sensors) {
       if (!automaton[successorState]["props"]["sensors"].hasOwnProperty(sensorName)) {
         isValidSuccessorState = false;
         break;
-      } else if (!automaton[successorState]["props"]["sensors"][sensorName] === isActive) {
+      } else if (automaton[successorState]["props"]["sensors"][sensorName] !== isActive) {
         isValidSuccessorState = false;
         break;
       }
@@ -139,7 +139,7 @@ getInitialState = function(automaton, props) {
       if (!state["props"]["sensors"].hasOwnProperty(sensorName)) {
         isValidInitialState = false;
         break;
-      } else if (!state["props"]["sensors"][sensorName] === isActive) {
+      } else if (state["props"]["sensors"][sensorName] !== isActive) {
         isValidSuccessorState = false;
         break;
       }
@@ -153,7 +153,7 @@ getInitialState = function(automaton, props) {
       if (!state["props"]["actuators"].hasOwnProperty(actuatorName)) {
         isValidInitialState = false;
         break;
-      } else if (!state["props"]["actuators"][actuatorName] === isActive) {
+      } else if (state["props"]["actuators"][actuatorName] !== isActive) {
         isValidSuccessorState = false;
         break;
       }
@@ -167,7 +167,7 @@ getInitialState = function(automaton, props) {
       if (!state["props"]["customprops"].hasOwnProperty(custompropName)) {
         isValidInitialState = false;
         break;
-      } else if (!state["props"]["customprops"][custompropName] === isActive) {
+      } else if (state["props"]["customprops"][custompropName] !== isActive) {
         isValidSuccessorState = false;
         break;
       }
@@ -521,7 +521,9 @@ setVelocityTheta = function(velocity, theta) {
   currentVelocity = velocity;
   currentTheta = theta;
   console.log("velocity: " + velocity);
-  console.log("car theta: " + car.body.quaternion._euler.y);
+  console.log("car x: " + car.body.quaternion._euler.x);
+  console.log("car y: " + car.body.quaternion._euler.y);
+  console.log("car z: " + car.body.quaternion._euler.z);
   return console.log("wheel theta: " + theta);
 };
 
@@ -565,13 +567,18 @@ createCar = function(region_num) {
 };
 
 plotCourse = function(region_num) {
-  var currentPosition, target, targetPosition, targetTheta;
+  var carTheta, currentPosition, target, targetPosition, targetTheta;
   target = regions.Regions[region_num];
   targetPosition = getCentroid(target);
   currentPosition = [car.body.position.x, car.body.position.z];
   targetTheta = Math.atan2(targetPosition[1] - currentPosition[1], targetPosition[0] - currentPosition[0]);
   console.log("target theta: " + targetTheta);
-  return setVelocityTheta(2, car.body.quaternion._euler.y + targetTheta);
+  carTheta = car.body.quaternion._euler.y;
+  if (Math.abs(car.body.quaternion._euler.x) < Math.PI / 2) {
+    carTheta = -(carTheta + Math.PI);
+  }
+  console.log("car theta: " + carTheta);
+  return setVelocityTheta(5, -(targetTheta - carTheta));
 };
 
 getCurrentRegion = function() {

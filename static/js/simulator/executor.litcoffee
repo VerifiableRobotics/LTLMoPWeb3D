@@ -14,7 +14,7 @@ Finds a next state
           if not automaton[successorState]["props"]["sensors"].hasOwnProperty sensorName
             isValidSuccessorState = false
             break
-          else if not automaton[successorState]["props"]["sensors"][sensorName] == isActive
+          else if automaton[successorState]["props"]["sensors"][sensorName] != isActive
             isValidSuccessorState = false
             break
         # end for
@@ -34,7 +34,7 @@ Finds an initial state
           if not state["props"]["sensors"].hasOwnProperty sensorName
             isValidInitialState = false
             break
-          else if not state["props"]["sensors"][sensorName] == isActive
+          else if state["props"]["sensors"][sensorName] != isActive
             isValidSuccessorState = false
             break
         # end for
@@ -45,7 +45,7 @@ Finds an initial state
           if not state["props"]["actuators"].hasOwnProperty actuatorName
             isValidInitialState = false
             break
-          else if not state["props"]["actuators"][actuatorName] == isActive
+          else if state["props"]["actuators"][actuatorName] != isActive
             isValidSuccessorState = false
             break
         # end for
@@ -56,7 +56,7 @@ Finds an initial state
           if not state["props"]["customprops"].hasOwnProperty custompropName
             isValidInitialState = false
             break
-          else if not state["props"]["customprops"][custompropName] == isActive
+          else if state["props"]["customprops"][custompropName] != isActive
             isValidSuccessorState = false
             break
         # end for
