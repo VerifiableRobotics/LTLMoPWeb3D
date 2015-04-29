@@ -318,7 +318,7 @@ parseRegions = function(parse_string) {
         if (regions.Transitions == null) {
           regions.Transitions = {};
         }
-        $.extend(regions.Transitions, getTransition(line));
+        $.extend(true, regions.Transitions, getTransition(line));
         break;
       default:
         console.warn("Regions Parsing: unrecognized regions option");
@@ -335,7 +335,7 @@ module.exports = {
 
 
 },{}],4:[function(require,module,exports){
-var $actuator_list, $customprop_list, $sensor_list, AutomatonParser, Executor, RegionsParser, SpecParser, addPropButtons, automaton, createCar, currentTheta, currentVelocity, getCentroid, getCurrentRegion, getInitialProps, getSensors, plotCourse, regions, setVelocityTheta, spec, stopVelocityTheta;
+var $actuator_list, $customprop_list, $sensor_list, AutomatonParser, Executor, RegionsParser, SpecParser, addPropButtons, automaton, createCar, currentTheta, currentVelocity, getCentroid, getCurrentRegion, getInitialProps, getSensors, getTransition, plotCourse, regions, setVelocityTheta, spec, stopVelocityTheta;
 
 RegionsParser = require('./regionsParser.litcoffee');
 
@@ -474,15 +474,20 @@ $(document).ready(function() {
     counter = 0;
     executorInterval = 0;
     executionLoop = function() {
-      var initialRegion, nextRegion;
+      var currentRegion, initialRegion, nextRegion;
       if (counter === 0) {
         initialRegion = Executor.execute(automaton, getInitialProps(), null, null);
         createCar(initialRegion);
         return counter = 1;
       } else {
-        nextRegion = Executor.execute(automaton, null, getSensors(), getCurrentRegion());
+        currentRegion = getCurrentRegion();
+        nextRegion = Executor.execute(automaton, null, getSensors(), currentRegion);
         if (nextRegion !== null) {
-          return plotCourse(nextRegion);
+          if (nextRegion === currentRegion) {
+            return stopVelocityTheta();
+          } else {
+            return plotCourse(nextRegion);
+          }
         } else if (nextRegion !== false) {
           return stopVelocityTheta();
         } else {
@@ -557,6 +562,16 @@ getCentroid = function(region) {
   return [position[0] + regionX / numPoints, position[1] + regionY / numPoints];
 };
 
+getTransition = function(region) {
+  var regionFromName, regionToName, transition;
+  regionToName = region.name;
+  regionFromName = regions.Regions[getCurrentRegion()].name;
+  console.log("regionFrom: " + regionFromName + " regionTo: " + regionToName);
+  transition = regions.Transitions[regionFromName] == null ? transition = regions.Transitions[regionToName][regionFromName] : regions.Transitions[regionFromName][regionToName];
+  console.log(transition);
+  return [(transition[0][0] + transition[1][0]) / 2, (transition[0][1] + transition[1][1]) / 2];
+};
+
 createCar = function(region_num) {
   var centroid, region, xpos, ypos;
   region = regions.Regions[region_num];
@@ -569,7 +584,7 @@ createCar = function(region_num) {
 plotCourse = function(region_num) {
   var carTheta, currentPosition, target, targetPosition, targetTheta;
   target = regions.Regions[region_num];
-  targetPosition = getCentroid(target);
+  targetPosition = getTransition(target);
   currentPosition = [car.body.position.x, car.body.position.z];
   targetTheta = Math.atan2(targetPosition[1] - currentPosition[1], targetPosition[0] - currentPosition[0]);
   console.log("target theta: " + targetTheta);

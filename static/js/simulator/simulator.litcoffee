@@ -166,10 +166,11 @@ Main Program
             createCar(initialRegion)
             counter = 1
           else
-            nextRegion = Executor.execute(automaton, null, getSensors(), getCurrentRegion())
+            currentRegion = getCurrentRegion()
+            nextRegion = Executor.execute(automaton, null, getSensors(), currentRegion)
             # if there is a next region, move to it
             if nextRegion != null
-              plotCourse(nextRegion)
+              if nextRegion == currentRegion then stopVelocityTheta() else plotCourse(nextRegion)
             # if there isn't, stop moving
             else if nextRegion != false
               stopVelocityTheta()
@@ -239,7 +240,6 @@ Stop the velocity and theta of the car (reverse acceleration?)
       car.wheel_fr_constraint.configureAngularMotor( 1, currentTheta, -currentTheta, -currentTheta, 200 )
       car.wheel_fl_constraint.disableAngularMotor( 1 ) # stop x-axis motors
       car.wheel_fr_constraint.disableAngularMotor( 1 )
-    # end stopVelocityTheta
 
 
 Given region object, get the centroid
@@ -254,7 +254,20 @@ Given region object, get the centroid
         regionX += point[0]
         regionY += point[1]
 
-      return [position[0] + regionX / numPoints, position[1] + regionY / numPoints]  
+      return [position[0] + regionX / numPoints, position[1] + regionY / numPoints]
+
+Given region object, get the midpoint of the transition from the current region to it
+
+    getTransition = (region) ->
+      regionToName = region.name
+      regionFromName = regions.Regions[getCurrentRegion()].name
+      console.log("regionFrom: " + regionFromName + " regionTo: " + regionToName)
+      # get correct transition array, could be ordered either way
+      transition = if !regions.Transitions[regionFromName]? 
+        transition = regions.Transitions[regionToName][regionFromName] 
+      else regions.Transitions[regionFromName][regionToName]
+      # return midpoint
+      return [(transition[0][0] + transition[1][0]) / 2, (transition[0][1] + transition[1][1]) / 2]
 
 
 Given region number, creates the car at its centroid
@@ -271,20 +284,20 @@ Starts moving the car toward the destination
 
     plotCourse = (region_num) ->
       target = regions.Regions[region_num]
-      targetPosition = getCentroid(target)
+      targetPosition = getTransition(target)
       currentPosition = [car.body.position.x, car.body.position.z]
       targetTheta = Math.atan2(targetPosition[1] - currentPosition[1], targetPosition[0] - currentPosition[0])
       console.log("target theta: " + targetTheta)
-      # velocity based on distance to target, theta = diff b/t car body's theta and target theta
+      # get proper car theta via transformations of euler angles
       carTheta = car.body.quaternion._euler.y
       if Math.abs(car.body.quaternion._euler.x) < Math.PI/2
         carTheta = -(carTheta + Math.PI)
       console.log("car theta: " + carTheta)
-      #distance = Math.abs(currentPosition[0] - targetPosition[0]) + Math.abs(currentPosition[1] - targetPosition[1])
+      # theta = diff b/t car body's theta and target theta
       setVelocityTheta(5, -(targetTheta - carTheta)) 
 
 
-Get the current region the car is located in
+Get the current region (number) the car is located in
 
     getCurrentRegion = () ->
       xpos = car.body.position.x

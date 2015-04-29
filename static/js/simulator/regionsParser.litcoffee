@@ -85,7 +85,7 @@ Parse the region file
           when 'Transitions'
             if not regions.Transitions?
               regions.Transitions = {}
-            $.extend(regions.Transitions, getTransition(line))
+            $.extend(true, regions.Transitions, getTransition(line)) # deep merge
           else
             console.warn("Regions Parsing: unrecognized regions option")
         # end else
