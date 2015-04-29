@@ -48,7 +48,6 @@ Helper functions to create regions object
         # end switch
       # end for
       return transition
-    # end getTransition
 
 
 Parse the region file
@@ -85,8 +84,8 @@ Parse the region file
             regions.Regions += line
           when 'Transitions'
             if not regions.Transitions?
-              regions.Transitions = []
-            regions.Transitions.push(getTransition(line))
+              regions.Transitions = {}
+            $.extend(regions.Transitions, getTransition(line))
           else
             console.warn("Regions Parsing: unrecognized regions option")
         # end else

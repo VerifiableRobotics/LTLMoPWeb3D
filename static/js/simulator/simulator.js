@@ -316,9 +316,9 @@ parseRegions = function(parse_string) {
         break;
       case 'Transitions':
         if (regions.Transitions == null) {
-          regions.Transitions = [];
+          regions.Transitions = {};
         }
-        regions.Transitions.push(getTransition(line));
+        $.extend(regions.Transitions, getTransition(line));
         break;
       default:
         console.warn("Regions Parsing: unrecognized regions option");
