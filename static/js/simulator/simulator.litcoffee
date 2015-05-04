@@ -226,21 +226,15 @@ Stop the velocity and theta of the car (reverse acceleration?)
 
     stopVelocityTheta = () ->
       # set motor to opposite to "brake" the car
-      car.wheel_bl_constraint.configureAngularMotor( 2, currentVelocity, -currentVelocity, -currentVelocity, 200000 )
-      car.wheel_br_constraint.configureAngularMotor( 2, currentVelocity, -currentVelocity, -currentVelocity, 200000 )
-      car.wheel_fl_constraint.configureAngularMotor( 2, currentVelocity, -currentVelocity, -currentVelocity, 200000 )
-      car.wheel_fr_constraint.configureAngularMotor( 2, currentVelocity, -currentVelocity, -currentVelocity, 200000 )
-      car.wheel_bl_constraint.disableAngularMotor( 2 ) # stop z-axis motors
-      car.wheel_br_constraint.disableAngularMotor( 2 ) 
-      car.wheel_fl_constraint.disableAngularMotor( 2 ) 
-      car.wheel_fr_constraint.disableAngularMotor( 2 )
-
+      car.wheel_bl_constraint.configureAngularMotor( 2, currentVelocity, -currentVelocity, 0, 200000 )
+      car.wheel_br_constraint.configureAngularMotor( 2, currentVelocity, -currentVelocity, 0, 200000 )
+      car.wheel_fl_constraint.configureAngularMotor( 2, currentVelocity, -currentVelocity, 0, 200000 )
+      car.wheel_fr_constraint.configureAngularMotor( 2, currentVelocity, -currentVelocity, 0, 200000 )
+      
       # set motor to opposite to move the wheels back to straight
-      car.wheel_fl_constraint.configureAngularMotor( 1, currentTheta, -currentTheta, -currentTheta, 200 )
-      car.wheel_fr_constraint.configureAngularMotor( 1, currentTheta, -currentTheta, -currentTheta, 200 )
-      car.wheel_fl_constraint.disableAngularMotor( 1 ) # stop x-axis motors
-      car.wheel_fr_constraint.disableAngularMotor( 1 )
-
+      car.wheel_fl_constraint.configureAngularMotor( 1, currentTheta, -currentTheta, 0, 200 )
+      car.wheel_fr_constraint.configureAngularMotor( 1, currentTheta, -currentTheta, 0, 200 )
+      
 
 Given region object, get the centroid
 
@@ -263,8 +257,8 @@ Given region object, get the midpoint of the transition from the current region 
       regionFromName = regions.Regions[getCurrentRegion()].name
       console.log("regionFrom: " + regionFromName + " regionTo: " + regionToName)
       # get correct transition array, could be ordered either way
-      transition = if !regions.Transitions[regionFromName]? 
-        transition = regions.Transitions[regionToName][regionFromName] 
+      transition = if !regions.Transitions[regionFromName]? or !regions.Transitions[regionFromName][regionToName]?
+        regions.Transitions[regionToName][regionFromName] 
       else regions.Transitions[regionFromName][regionToName]
       # return midpoint
       return [(transition[0][0] + transition[1][0]) / 2, (transition[0][1] + transition[1][1]) / 2]
@@ -294,7 +288,16 @@ Starts moving the car toward the destination
         carTheta = -(carTheta + Math.PI)
       console.log("car theta: " + carTheta)
       # theta = diff b/t car body's theta and target theta
-      setVelocityTheta(5, -(targetTheta - carTheta)) 
+      wheelTheta = -(targetTheta - carTheta)
+      if wheelTheta > Math.PI 
+        wheelTheta = Math.PI - wheelTheta
+      else if wheelTheta < -Math.PI 
+        wheelTheta = 2*Math.PI + wheelTheta
+      # if theta > PI/2, then slow turn
+      if wheelTheta > Math.PI/2 or wheelTheta < -Math.PI/2
+        setVelocityTheta(2, wheelTheta)
+      else
+        setVelocityTheta(10, wheelTheta) 
 
 
 Get the current region (number) the car is located in

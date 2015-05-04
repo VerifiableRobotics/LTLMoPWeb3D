@@ -533,18 +533,12 @@ setVelocityTheta = function(velocity, theta) {
 };
 
 stopVelocityTheta = function() {
-  car.wheel_bl_constraint.configureAngularMotor(2, currentVelocity, -currentVelocity, -currentVelocity, 200000);
-  car.wheel_br_constraint.configureAngularMotor(2, currentVelocity, -currentVelocity, -currentVelocity, 200000);
-  car.wheel_fl_constraint.configureAngularMotor(2, currentVelocity, -currentVelocity, -currentVelocity, 200000);
-  car.wheel_fr_constraint.configureAngularMotor(2, currentVelocity, -currentVelocity, -currentVelocity, 200000);
-  car.wheel_bl_constraint.disableAngularMotor(2);
-  car.wheel_br_constraint.disableAngularMotor(2);
-  car.wheel_fl_constraint.disableAngularMotor(2);
-  car.wheel_fr_constraint.disableAngularMotor(2);
-  car.wheel_fl_constraint.configureAngularMotor(1, currentTheta, -currentTheta, -currentTheta, 200);
-  car.wheel_fr_constraint.configureAngularMotor(1, currentTheta, -currentTheta, -currentTheta, 200);
-  car.wheel_fl_constraint.disableAngularMotor(1);
-  return car.wheel_fr_constraint.disableAngularMotor(1);
+  car.wheel_bl_constraint.configureAngularMotor(2, currentVelocity, -currentVelocity, 0, 200000);
+  car.wheel_br_constraint.configureAngularMotor(2, currentVelocity, -currentVelocity, 0, 200000);
+  car.wheel_fl_constraint.configureAngularMotor(2, currentVelocity, -currentVelocity, 0, 200000);
+  car.wheel_fr_constraint.configureAngularMotor(2, currentVelocity, -currentVelocity, 0, 200000);
+  car.wheel_fl_constraint.configureAngularMotor(1, currentTheta, -currentTheta, 0, 200);
+  return car.wheel_fr_constraint.configureAngularMotor(1, currentTheta, -currentTheta, 0, 200);
 };
 
 getCentroid = function(region) {
@@ -567,8 +561,7 @@ getTransition = function(region) {
   regionToName = region.name;
   regionFromName = regions.Regions[getCurrentRegion()].name;
   console.log("regionFrom: " + regionFromName + " regionTo: " + regionToName);
-  transition = regions.Transitions[regionFromName] == null ? transition = regions.Transitions[regionToName][regionFromName] : regions.Transitions[regionFromName][regionToName];
-  console.log(transition);
+  transition = (regions.Transitions[regionFromName] == null) || (regions.Transitions[regionFromName][regionToName] == null) ? regions.Transitions[regionToName][regionFromName] : regions.Transitions[regionFromName][regionToName];
   return [(transition[0][0] + transition[1][0]) / 2, (transition[0][1] + transition[1][1]) / 2];
 };
 
@@ -582,7 +575,7 @@ createCar = function(region_num) {
 };
 
 plotCourse = function(region_num) {
-  var carTheta, currentPosition, target, targetPosition, targetTheta;
+  var carTheta, currentPosition, target, targetPosition, targetTheta, wheelTheta;
   target = regions.Regions[region_num];
   targetPosition = getTransition(target);
   currentPosition = [car.body.position.x, car.body.position.z];
@@ -593,7 +586,17 @@ plotCourse = function(region_num) {
     carTheta = -(carTheta + Math.PI);
   }
   console.log("car theta: " + carTheta);
-  return setVelocityTheta(5, -(targetTheta - carTheta));
+  wheelTheta = -(targetTheta - carTheta);
+  if (wheelTheta > Math.PI) {
+    wheelTheta = Math.PI - wheelTheta;
+  } else if (wheelTheta < -Math.PI) {
+    wheelTheta = 2 * Math.PI + wheelTheta;
+  }
+  if (wheelTheta > Math.PI / 2 || wheelTheta < -Math.PI / 2) {
+    return setVelocityTheta(2, wheelTheta);
+  } else {
+    return setVelocityTheta(10, wheelTheta);
+  }
 };
 
 getCurrentRegion = function() {
