@@ -1,5 +1,11 @@
-Dependencies
-------------
+External Dependencies
+---------------------
+    
+    React = require('react')
+    { Map, List } = require('immutable')
+
+Internal Dependencies
+---------------------
 
     RegionsParser = require('./regionsParser.litcoffee')
     SpecParser = require('./specParser.litcoffee')
@@ -12,84 +18,45 @@ Main Program
     spec = {}
     automaton = {}
     regions = {}
-    $sensor_list = []
-    $actuator_list = []
-    $customprop_list = []
+    
+    React.render(<Simulator />, document.body);
 
-    $(document).ready () ->
-      $spec_upload_file = $('#spec_upload_file')
-      $spec_upload_button = $('#spec_upload_button')
-      $automaton_upload_file = $('#automaton_upload_file')
-      $automaton_upload_button = $('#automaton_upload_button')
-      $regions_upload_file = $('#regions_upload_file')
-      $regions_upload_button = $('#regions_upload_button')
-      $executor_start_button = $('#executor_start_button')
-      $sensor_list = $('#sensor_list')
-      $actuator_list = $('#actuator_list')
-      $customprop_list = $('#customprop_list')
-
-        
-      # create 3D regions from the region array
-      create3DRegions = (regions_arr) ->
-        # loop through the region array
-        for region in regions_arr
-          # get name
-          name = region.name
-          # skip boundary
-          if name == 'boundary'
-            continue
-          # get rgb values
-          red = region.color[0]
-          green = region.color[1]
-          blue = region.color[2]
-          # get position
-          xpos = region.position[0]
-          ypos = region.position[1]
-          # get size/bounding box
-          width = region.size[0]
-          height = region.size[1]
-          # get holes
-          holes = region.holeList
-
-          # create the new ground material
-          new_ground_material = Physijs.createMaterial(
-            new THREE.MeshBasicMaterial(
-              color: "rgb(" + red + "," + green + "," + blue + ")"
-              side: THREE.DoubleSide
-            ), 
-            .5, # high friction
-            0 # no restitution
-          )
-          # create the custom geometry from a 2D shape
-          new_shape = new THREE.Shape()
-          # add each point as a vertex of the new shape
-          for point, pointIndex in region.points
-            if pointIndex == 0
-              new_shape.moveTo(point[0], point[1])
-            else
-              new_shape.lineTo(point[0], point[1])
-          # end for
-          new_geometry = new_shape.makeGeometry() # create 3D geometry out of 2D shape
-
-          # create the new ground
-          new_ground = new Physijs.ConvexMesh(
-            new_geometry,
-            new_ground_material,
-            0 # mass
-          )
-          # set the position and rotation
-          # note: makeGeometry creates shape on xy axis, this is putting it on xz
-          new_ground.position.set(xpos, 0, ypos)
-          new_ground.rotation.x = Math.PI/2
-          new_ground.receiveShadow = true
-          # add the new_ground to the scene
-          scene.add(new_ground)
-
-        # end for each
-      # end create 3D regions      
-
-      $spec_upload_file.change () ->
-        file = this.files[0];
+    Simulator = React.createClass
+      getInitialState: () ->
+        return {disableAut: true, disableExec: true}
+      addPropButtons = (spec) ->
+        sensors = Map()
+        actuators = Map()
+        customs = Map()
+        # add elements to maps
+        for propName, isEnabled of spec.Sensors
+          sensors.set(propName, Map({disabled: !isEnabled, active: false}))
+        for propName, isEnabled of spec.Actions
+          actuators.set(propName, Map({disabled: !isEnabled, active: false}))
+        # customs is just an array
+        for propName in spec.Customs
+          customs.set(propName, Map({active: false}))
+        # set maps
+        @setState({sensors: sensors, actuators: actuators, customs: customs})
+      onRegionsUpload: (ev) ->
+        file = ev.target.files[0]
+        if file?
+          nameSplit = file.name.split('.')
+          extension = nameSplit[nameSplit.length - 1]
+          # validation
+          if extension != "regions"
+            alert("This only accepts *.regions files!")
+          else
+            reader = new FileReader()
+            reader.onload = (ev) -> 
+              regions = RegionsParser.parseRegions(ev.target.result)
+              console.log("Regions Object: ")
+              console.log(regions)
+              create3DRegions(regions.Regions)
+            # end onload
+            reader.readAsText(file)
+      onSpecUpload: (ev) ->
+        file = ev.target.files[0];
         if file?
           nameSplit = file.name.split('.')
           extension = nameSplit[nameSplit.length - 1]
@@ -103,17 +70,12 @@ Main Program
               console.log("Spec Object: ")
               console.log(spec)
               # enable uploading of automaton now
-              $automaton_upload_file.prop('disabled', false)
-              $automaton_upload_button.prop('disabled', false)
+              @setState({disableAut: false})
               addPropButtons(spec)
             # end onload
             reader.readAsText(file)
-          # end else
-        # end if
-      # end change
-
-      $automaton_upload_file.change () ->
-        file = this.files[0]
+      onAutUpload: (ev) ->
+        file = ev.target.files[0]
         if file? 
           nameSplit = file.name.split('.')
           extension = nameSplit[nameSplit.length - 1]
@@ -127,34 +89,10 @@ Main Program
               console.log("Automaton Object: ")
               console.log(automaton)
               # enable executor execution now
-              $executor_start_button.prop('disabled', false)
+              @setState({disableExec: false})
             # end onload
             reader.readAsText(file)
-          # end else
-        # end if
-      # end change
-
-      # bind to change event, partly borrowed from olanod on SO
-      $regions_upload_file.change () ->
-        file = this.files[0]
-        nameSplit = file.name.split('.')
-        extension = nameSplit[nameSplit.length - 1]
-        # validation
-        if extension != "regions"
-          alert("This only accepts *.regions files!")
-        else
-          reader = new FileReader()
-          reader.onload = (ev) -> 
-            regions = RegionsParser.parseRegions(ev.target.result)
-            console.log("Regions Object: ")
-            console.log(regions)
-            create3DRegions(regions.Regions)
-          # end onload
-          reader.readAsText(file)
-        # end else
-      # end change
-      
-      $executor_start_button.click () ->
+      startExecution: () ->
         # initialize the execution loop        
         counter = 0
         executorInterval = 0
@@ -182,12 +120,138 @@ Main Program
         executorInterval = setInterval(executionLoop, 300)
 
         # disable buttons/uploads
-        $executor_start_button.prop('disabled', true)
-        $automaton_upload_file.prop('disabled', true)
-        $automaton_upload_button.prop('disabled', true)
-        $spec_upload_file.prop('disabled', true)
-        $spec_upload_button.prop('disabled', true)
+        @setState({disableRegions: true, disableSpec: true, disableAut: true, disableExec: true})
 
+      render: () ->
+        <li>
+          <button type="button" class="prop_button" disabled={!isEnabled}>{propName}</button>
+        </li>  
+        # attach click handlers to li/buttons
+        $(".sensor_button").click (evt) ->
+          $(evt.target).toggleClass("green_sensor")
+        $(".actuator_button").click (evt) ->
+          $(evt.target).toggleClass("green_actuator")
+        $(".customprop_button").click (evt) ->
+          $(evt.target).toggleClass("green_customprop")
+        return <div id="heading">
+          <h1>LTLMoPWeb3D Simulator</h1>
+            <a href="/">Simulator</a>
+            <a href="/specEditor">Specification Editor</a>
+            <a href="/regionEditor">Region Editor</a>
+        </div>
+        <div className="center_wrapper">
+          <button type="button" onClick={startExecution} disabled={disableExec}>Start</button>
+        </div>
+        <div className="center_wrapper">
+          <form className="upload_form">
+            <input name="file" type="file" className="upload_file_overlay" onChange={onRegionsUpload} disabled={disableRegions}/>
+            <button type="button" disabled={disableRegions}>Upload Regions</button>
+          </form>
+          <form className="upload_form">
+            <input name="file" type="file" className="upload_file_overlay" onChange={onSpecUpload} disabled={disableSpec}/>
+            <button type="button" disabled={disableSpec}>Upload Spec</button>
+          </form>
+          <form className="upload_form">
+            <input name="file" type="file" className="upload_file_overlay" onChange={onAutUpload} disabled={disableAut} />
+            <button type="button" disabled={disableAut}>Upload Automaton</button>
+          </form>
+        </div>
+        <div id="simulator_wrapper">
+          <div className="right_wrapper">
+            <div>Sensors</div>
+            <ul id="sensor_list">
+              {@state.sensors.keySeq().map (name) ->
+                values = @state.sensors.get(name)
+                <li>
+                  <button type="button" className={if values.active then "prop_button_green" else "prop_button"} 
+                    disabled={!values.isEnabled}>{name}</button>
+                </li>
+              }
+            </ul>
+            <div>Actuators</div>
+            <ul id="actuator_list">
+              {@state.actuators.keySeq().map (name) ->
+                values = @state.actuators.get(name)
+                <li>
+                  <button type="button" className={if values.active then "prop_button_green" else "prop_button"} 
+                    disabled={!values.isEnabled}>{name}</button>
+                </li>
+              }
+            </ul>
+            <div>Custom Propositions</div>
+            <ul id="customprop_list">
+              {@state.customs.keySeq().map (name) ->
+                values = @state.customs.get(name)
+                <li>
+                  <button type="button" 
+                    className={if values.active then "prop_button_green" else "prop_button"}>{name}</button>
+                </li>
+              }
+            </ul>
+          </div>
+          <div id="viewport"></div>
+        </div>
+        
+    # create 3D regions from the region array
+    create3DRegions = (regions_arr) ->
+      # loop through the region array
+      for region in regions_arr
+        # get name
+        name = region.name
+        # skip boundary
+        if name == 'boundary'
+          continue
+        # get rgb values
+        red = region.color[0]
+        green = region.color[1]
+        blue = region.color[2]
+        # get position
+        xpos = region.position[0]
+        ypos = region.position[1]
+        # get size/bounding box
+        width = region.size[0]
+        height = region.size[1]
+        # get holes
+        holes = region.holeList
+
+        # create the new ground material
+        new_ground_material = Physijs.createMaterial(
+          new THREE.MeshBasicMaterial(
+            color: "rgb(" + red + "," + green + "," + blue + ")"
+            side: THREE.DoubleSide
+          ), 
+          .5, # high friction
+          0 # no restitution
+        )
+        # create the custom geometry from a 2D shape
+        new_shape = new THREE.Shape()
+        # add each point as a vertex of the new shape
+        for point, pointIndex in region.points
+          if pointIndex == 0
+            new_shape.moveTo(point[0], point[1])
+          else
+            new_shape.lineTo(point[0], point[1])
+        # end for
+        new_geometry = new_shape.makeGeometry() # create 3D geometry out of 2D shape
+
+        # create the new ground
+        new_ground = new Physijs.ConvexMesh(
+          new_geometry,
+          new_ground_material,
+          0 # mass
+        )
+        # set the position and rotation
+        # note: makeGeometry creates shape on xy axis, this is putting it on xz
+        new_ground.position.set(xpos, 0, ypos)
+        new_ground.rotation.x = Math.PI/2
+        new_ground.receiveShadow = true
+        # add the new_ground to the scene
+        scene.add(new_ground)
+
+      # end for each
+    # end create 3D regions      
+      
+      
     currentVelocity = 0
     currentTheta = 0
 
@@ -289,6 +353,7 @@ Starts moving the car toward the destination
       console.log("car theta: " + carTheta)
       # theta = diff b/t car body's theta and target theta
       wheelTheta = -(targetTheta - carTheta)
+      # properly transform when angle is too big/too small
       if wheelTheta > Math.PI 
         wheelTheta = Math.PI - wheelTheta
       else if wheelTheta < -Math.PI 
@@ -332,32 +397,6 @@ Get the current region (number) the car is located in
 
 
 Add all prop buttons from the spec object
-
-    addPropButtons = (spec) ->
-      # empty uls
-      $sensor_list.empty()
-      $actuator_list.empty()
-      $customprop_list.empty()
-      # add li/buttons to uls
-      for sensorName, isActive of spec.Sensors
-        disabledText = if isActive then "" else "disabled"
-        $sensor_list.append("<li><button " + disabledText + " type=\"button\" class=\"sensor_button\">" + 
-          sensorName + "</button></li>")
-      for actuatorName, isActive of spec.Actions
-        disabledText = if isActive then "" else "disabled"
-        $actuator_list.append("<li><button " + disabledText + " type=\"button\" class=\"actuator_button\">" + 
-          actuatorName + "</button></li>")
-      # customs is just an array
-      for custompropName in spec.Customs
-        $customprop_list.append("<li><button type=\"button\" class=\"customprop_button\">" + 
-          custompropName + "</button></li>")
-      # attach click handlers to li/buttons
-      $(".sensor_button").click (evt) ->
-        $(evt.target).toggleClass("green_sensor")
-      $(".actuator_button").click (evt) ->
-        $(evt.target).toggleClass("green_actuator")
-      $(".customprop_button").click (evt) ->
-        $(evt.target).toggleClass("green_customprop")
 
     getInitialProps = () ->
       props = {}

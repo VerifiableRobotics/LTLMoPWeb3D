@@ -32,10 +32,10 @@
 #sensor_list, #actuator_list, #customprop_list{
   list-style-type: none;
 }
-.sensor_button, .actuator_button, .customprop_button{
+.prop_button{
   background-color: red;
 }
-.green_sensor, .green_actuator, .green_customprop{
+.prop_button_green{
   background-color: green;
 }
 
