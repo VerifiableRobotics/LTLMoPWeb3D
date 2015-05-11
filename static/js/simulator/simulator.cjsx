@@ -74,6 +74,17 @@ Main Program
           console.log(automaton)
           # enable executor execution now
           @setState({disableExec: false})
+      getInitialProps: () ->
+        sensors = @state.sensors.keySeq().filter((name) -> !@state.sensors.get(name).get("disabled")).map (name) ->
+          if @state.sensors.get(name).get("active") then 1 else 0
+        actuators = @state.actuators.keySeq().filter((name) -> !@state.actuators.get(name).get("disabled")).map (name) ->
+          if @state.actuators.get(name).get("active") then 1 else 0
+        customs = @state.customs.keySeq().map (name) ->
+          if @state.customs.get(name).get("active") then 1 else 0
+        return {sensors: sensors, actuators: actuators, customs: customs}
+      getSensors: () ->
+        return @state.sensors.keySeq().filter((name) -> !@state.sensors.get(name).get("disabled")).map (name) ->
+          if @state.sensors.get(name).get("active") then 1 else 0
       startExecution: () ->
         # initialize the execution loop        
         counter = 0
@@ -81,12 +92,12 @@ Main Program
         executionLoop = () ->
           # if first execution
           if counter == 0
-            initialRegion = Executor.execute(automaton, getInitialProps(), null, null)
+            initialRegion = Executor.execute(automaton, @getInitialProps(), null, null)
             createCar(initialRegion)
             counter = 1
           else
             currentRegion = getCurrentRegion()
-            nextRegion = Executor.execute(automaton, null, getSensors(), currentRegion)
+            nextRegion = Executor.execute(automaton, null, @getSensors(), currentRegion)
             # if there is a next region, move to it
             if nextRegion != null
               if nextRegion == currentRegion then stopVelocityTheta() else plotCourse(nextRegion)
@@ -140,8 +151,8 @@ Main Program
               {@state.sensors.keySeq().map (name) ->
                 values = @state.sensors.get(name)
                 <li>
-                  <button type="button" className={if values.active then "prop_button_green" else "prop_button"} 
-                    onClick={@toggleActiveSensors(name)} disabled={values.disabled}>{name}</button>
+                  <button type="button" className={if values.get("active") then "prop_button_green" else "prop_button"} 
+                    onClick={@toggleActiveSensors(name)} disabled={values.get("disabled")}>{name}</button>
                 </li>
               }
             </ul>
@@ -150,8 +161,8 @@ Main Program
               {@state.actuators.keySeq().map (name) ->
                 values = @state.actuators.get(name)
                 <li>
-                  <button type="button" className={if values.active then "prop_button_green" else "prop_button"} 
-                    onClick={@toggleActiveActuators(name)} disabled={values.disabled}>{name}</button>
+                  <button type="button" className={if values.get("active") then "prop_button_green" else "prop_button"} 
+                    onClick={@toggleActiveActuators(name)} disabled={values.get("disabled")}>{name}</button>
                 </li>
               }
             </ul>
@@ -160,7 +171,7 @@ Main Program
               {@state.customs.keySeq().map (name) ->
                 values = @state.customs.get(name)
                 <li>
-                  <button type="button" className={if values.active then "prop_button_green" else "prop_button"}
+                  <button type="button" className={if values.get("active") then "prop_button_green" else "prop_button"}
                     onClick={@toggleActiveCustoms(name)}>{name}</button>
                 </li>
               }
@@ -263,7 +274,7 @@ Set the velocity and theta of the car
       console.log("wheel theta: " + theta)
 
     
-Stop the velocity and theta of the car (reverse acceleration?)
+Stop the velocity and theta of the car (reverse acceleration)
 
     stopVelocityTheta = () ->
       # set motor to opposite to "brake" the car
@@ -371,42 +382,3 @@ Get the current region (number) the car is located in
             return index
       # not in a region currently    
       return null
-
-
-Add all prop buttons from the spec object
-
-    getInitialProps = () ->
-      props = {}
-      # get buttons
-      $sensors = $sensor_list.find('.sensor_button:not([disabled])')
-      $actuators = $actuator_list.find('.actuator_button:not([disabled])')
-      $customprops = $customprop_list.find('.customprop_button:not([disabled])')
-      
-      props['sensors'] = {}
-      props['actuators'] = {}
-      props['customprops'] = {}
-
-      # set dictionaries
-      for sensor in $sensors
-        $sensor = $(sensor)
-        props['sensors'][$sensor.text()] = if $sensor.hasClass('green_sensor') then 1 else 0
-      for actuator in $actuators
-        $actuator = $(actuator)
-        props['actuators'][$actuator.text()] = if $actuator.hasClass('green_actuator') then 1 else 0
-      for customprop in $customprops
-        $customprop = $(customprop)
-        props['customprops'][$customprop.text()] = if $customprop.hasClass('green_customprop') then 1 else 0
-
-      props
-
-    getSensors = () ->
-      sensors = {}
-      # get buttons
-      $sensors = $sensor_list.find('.sensor_button:not([disabled])')
-      
-      # set dictionary
-      for sensor in $sensors
-        $sensor = $(sensor)
-        sensors[$sensor.text()] = if $sensor.hasClass('green_sensor') then 1 else 0
-      
-      sensors

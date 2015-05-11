@@ -20,7 +20,7 @@ Helper functions to create automaton object
       props = {}
       props['sensors'] = {}
       props['actuators'] = {}
-      props['customprops'] = {}
+      props['customs'] = {}
       props['region'] = "" # region bit string first, then convert to int
 
       # match all props
@@ -33,7 +33,7 @@ Helper functions to create automaton object
         else if spec.Actions.hasOwnProperty propSplit[0]
           props['actuators'][propSplit[0]] = parseInt(propSplit[1])
         else if spec.Customs.indexOf(propSplit[0]) != -1
-          props['customprops'][propSplit[0]] = parseInt(propSplit[1])
+          props['customs'][propSplit[0]] = parseInt(propSplit[1])
         # not a proposition, must be a region bit
         else
           props['region'] += propSplit[1] #bit0 is first and is MSB

@@ -51,12 +51,12 @@ Finds an initial state
         # end for
         if not isValidInitialState
           continue
-        # check customprops
-        for custompropName, isActive of props.customprops
-          if not state["props"]["customprops"].hasOwnProperty custompropName
+        # check customs
+        for customName, isActive of props.customs
+          if not state["props"]["customs"].hasOwnProperty customName
             isValidInitialState = false
             break
-          else if state["props"]["customprops"][custompropName] != isActive
+          else if state["props"]["customs"][customName] != isActive
             isValidSuccessorState = false
             break
         # end for
