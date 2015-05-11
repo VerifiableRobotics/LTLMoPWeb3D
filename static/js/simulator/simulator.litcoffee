@@ -38,65 +38,46 @@ Main Program
           customs.set(propName, Map({active: false}))
         # set maps
         @setState({sensors: sensors, actuators: actuators, customs: customs})
+      onUpload: (ev, ext, callback) ->
+        file = ev.target.files[0]
+        if file?
+          nameSplit = file.name.split('.')
+          extension = nameSplit[nameSplit.length - 1]
+          # validation
+          if extension != ext
+            alert("This only accepts *." + ext + " files!")
+          else
+            reader = new FileReader()
+            reader.onload = callback
+            reader.readAsText(file)
       onRegionsUpload: (ev) ->
-        file = ev.target.files[0]
-        if file?
-          nameSplit = file.name.split('.')
-          extension = nameSplit[nameSplit.length - 1]
-          # validation
-          if extension != "regions"
-            alert("This only accepts *.regions files!")
-          else
-            reader = new FileReader()
-            reader.onload = (ev) -> 
-              regions = RegionsParser.parseRegions(ev.target.result)
-              console.log("Regions Object: ")
-              console.log(regions)
-              create3DRegions(regions.Regions)
-            # end onload
-            reader.readAsText(file)
+        @onUpload(ev, "regions", callback)
+        callback = (ev) -> 
+          regions = RegionsParser.parseRegions(ev.target.result)
+          console.log("Regions Object: ")
+          console.log(regions)
+          create3DRegions(regions.Regions)
       onSpecUpload: (ev) ->
-        file = ev.target.files[0];
-        if file?
-          nameSplit = file.name.split('.')
-          extension = nameSplit[nameSplit.length - 1]
-          # validation
-          if extension != "spec"
-            alert "This only accepts *.spec files!"
-          else 
-            reader = new FileReader()
-            reader.onload = (ev) -> 
-              spec = SpecParser.parseSpec(ev.target.result)
-              console.log("Spec Object: ")
-              console.log(spec)
-              # enable uploading of automaton now
-              @setState({disableAut: false})
-              addPropButtons(spec)
-            # end onload
-            reader.readAsText(file)
+        @onUpload(ev, "spec", callback)
+        callback = (ev) -> 
+          spec = SpecParser.parseSpec(ev.target.result)
+          console.log("Spec Object: ")
+          console.log(spec)
+          # enable uploading of automaton now
+          @setState({disableAut: false})
+          @addPropButtons(spec)
       onAutUpload: (ev) ->
-        file = ev.target.files[0]
-        if file? 
-          nameSplit = file.name.split('.')
-          extension = nameSplit[nameSplit.length - 1]
-          # validation
-          if extension != "aut"
-            alert "This only accepts *.aut files!"
-          else
-            reader = new FileReader()
-            reader.onload = (ev) -> 
-              automaton = AutomatonParser.parseAutomaton(ev.target.result, spec)
-              console.log("Automaton Object: ")
-              console.log(automaton)
-              # enable executor execution now
-              @setState({disableExec: false})
-            # end onload
-            reader.readAsText(file)
+        @onUpload(ev, "aut", callback)
+        callback = (ev) -> 
+          automaton = AutomatonParser.parseAutomaton(ev.target.result, spec)
+          console.log("Automaton Object: ")
+          console.log(automaton)
+          # enable executor execution now
+          @setState({disableExec: false})
       startExecution: () ->
         # initialize the execution loop        
         counter = 0
         executorInterval = 0
-
         executionLoop = () ->
           # if first execution
           if counter == 0
@@ -115,24 +96,20 @@ Main Program
             # if there isn't a current state, stop the execution loop
             else  
               clearInterval(executorInterval)
-        
         # start the execution loop
         executorInterval = setInterval(executionLoop, 300)
-
         # disable buttons/uploads
         @setState({disableRegions: true, disableSpec: true, disableAut: true, disableExec: true})
-
+      toggleActiveSensors: (name) ->
+        return () ->
+          @setState((prev) -> {sensors: prev.sensors.update(name, (data) -> data.update("active", !data.active))})
+      toggleActiveActuators: (name) ->
+        return () ->
+          @setState((prev) -> {actuators: prev.actuators.update(name, (data) -> data.update("active", !data.active))})
+      toggleActiveCustoms: (name) ->
+        return () ->
+          @setState((prev) -> {customs: prev.customs.update(name, (data) -> data.update("active", !data.active))})
       render: () ->
-        <li>
-          <button type="button" class="prop_button" disabled={!isEnabled}>{propName}</button>
-        </li>  
-        # attach click handlers to li/buttons
-        $(".sensor_button").click (evt) ->
-          $(evt.target).toggleClass("green_sensor")
-        $(".actuator_button").click (evt) ->
-          $(evt.target).toggleClass("green_actuator")
-        $(".customprop_button").click (evt) ->
-          $(evt.target).toggleClass("green_customprop")
         return <div id="heading">
           <h1>LTLMoPWeb3D Simulator</h1>
             <a href="/">Simulator</a>
@@ -140,19 +117,19 @@ Main Program
             <a href="/regionEditor">Region Editor</a>
         </div>
         <div className="center_wrapper">
-          <button type="button" onClick={startExecution} disabled={disableExec}>Start</button>
+          <button type="button" onClick={@startExecution} disabled={disableExec}>Start</button>
         </div>
         <div className="center_wrapper">
           <form className="upload_form">
-            <input name="file" type="file" className="upload_file_overlay" onChange={onRegionsUpload} disabled={disableRegions}/>
+            <input name="file" type="file" className="upload_file_overlay" onChange={@onRegionsUpload} disabled={disableRegions}/>
             <button type="button" disabled={disableRegions}>Upload Regions</button>
           </form>
           <form className="upload_form">
-            <input name="file" type="file" className="upload_file_overlay" onChange={onSpecUpload} disabled={disableSpec}/>
+            <input name="file" type="file" className="upload_file_overlay" onChange={@onSpecUpload} disabled={disableSpec}/>
             <button type="button" disabled={disableSpec}>Upload Spec</button>
           </form>
           <form className="upload_form">
-            <input name="file" type="file" className="upload_file_overlay" onChange={onAutUpload} disabled={disableAut} />
+            <input name="file" type="file" className="upload_file_overlay" onChange={@onAutUpload} disabled={disableAut} />
             <button type="button" disabled={disableAut}>Upload Automaton</button>
           </form>
         </div>
@@ -164,7 +141,7 @@ Main Program
                 values = @state.sensors.get(name)
                 <li>
                   <button type="button" className={if values.active then "prop_button_green" else "prop_button"} 
-                    disabled={!values.isEnabled}>{name}</button>
+                    onClick={@toggleActiveSensors(name)} disabled={values.disabled}>{name}</button>
                 </li>
               }
             </ul>
@@ -174,7 +151,7 @@ Main Program
                 values = @state.actuators.get(name)
                 <li>
                   <button type="button" className={if values.active then "prop_button_green" else "prop_button"} 
-                    disabled={!values.isEnabled}>{name}</button>
+                    onClick={@toggleActiveActuators(name)} disabled={values.disabled}>{name}</button>
                 </li>
               }
             </ul>
@@ -183,8 +160,8 @@ Main Program
               {@state.customs.keySeq().map (name) ->
                 values = @state.customs.get(name)
                 <li>
-                  <button type="button" 
-                    className={if values.active then "prop_button_green" else "prop_button"}>{name}</button>
+                  <button type="button" className={if values.active then "prop_button_green" else "prop_button"}
+                    onClick={@toggleActiveCustoms(name)}>{name}</button>
                 </li>
               }
             </ul>
