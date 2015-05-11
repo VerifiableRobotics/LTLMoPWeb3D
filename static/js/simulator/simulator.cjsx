@@ -59,7 +59,7 @@ Main Program
           create3DRegions(regions.Regions)
       onSpecUpload: (ev) ->
         @onUpload(ev, "spec", callback)
-        callback = (ev) -> 
+        callback = (ev) => 
           spec = SpecParser.parseSpec(ev.target.result)
           console.log("Spec Object: ")
           console.log(spec)
@@ -68,28 +68,28 @@ Main Program
           @addPropButtons(spec)
       onAutUpload: (ev) ->
         @onUpload(ev, "aut", callback)
-        callback = (ev) -> 
+        callback = (ev) => 
           automaton = AutomatonParser.parseAutomaton(ev.target.result, spec)
           console.log("Automaton Object: ")
           console.log(automaton)
           # enable executor execution now
           @setState({disableExec: false})
       getInitialProps: () ->
-        sensors = @state.sensors.keySeq().filter((name) -> !@state.sensors.get(name).get("disabled")).map (name) ->
+        sensors = @state.sensors.keySeq().filter((name) => !@state.sensors.get(name).get("disabled")).map (name) =>
           if @state.sensors.get(name).get("active") then 1 else 0
-        actuators = @state.actuators.keySeq().filter((name) -> !@state.actuators.get(name).get("disabled")).map (name) ->
+        actuators = @state.actuators.keySeq().filter((name) => !@state.actuators.get(name).get("disabled")).map (name) =>
           if @state.actuators.get(name).get("active") then 1 else 0
-        customs = @state.customs.keySeq().map (name) ->
+        customs = @state.customs.keySeq().map (name) =>
           if @state.customs.get(name).get("active") then 1 else 0
         return {sensors: sensors, actuators: actuators, customs: customs}
       getSensors: () ->
-        return @state.sensors.keySeq().filter((name) -> !@state.sensors.get(name).get("disabled")).map (name) ->
+        return @state.sensors.keySeq().filter((name) => !@state.sensors.get(name).get("disabled")).map (name) =>
           if @state.sensors.get(name).get("active") then 1 else 0
       startExecution: () ->
         # initialize the execution loop        
         counter = 0
         executorInterval = 0
-        executionLoop = () ->
+        executionLoop = () =>
           # if first execution
           if counter == 0
             initialRegion = Executor.execute(automaton, @getInitialProps(), null, null)
@@ -112,13 +112,13 @@ Main Program
         # disable buttons/uploads
         @setState({disableRegions: true, disableSpec: true, disableAut: true, disableExec: true})
       toggleActiveSensors: (name) ->
-        return () ->
+        return () =>
           @setState((prev) -> {sensors: prev.sensors.update(name, (data) -> data.update("active", !data.active))})
       toggleActiveActuators: (name) ->
-        return () ->
+        return () =>
           @setState((prev) -> {actuators: prev.actuators.update(name, (data) -> data.update("active", !data.active))})
       toggleActiveCustoms: (name) ->
-        return () ->
+        return () =>
           @setState((prev) -> {customs: prev.customs.update(name, (data) -> data.update("active", !data.active))})
       render: () ->
         return <div id="heading">
@@ -148,7 +148,7 @@ Main Program
           <div className="right_wrapper">
             <div>Sensors</div>
             <ul id="sensor_list">
-              {@state.sensors.keySeq().map (name) ->
+              {@state.sensors.keySeq().map (name) =>
                 values = @state.sensors.get(name)
                 <li>
                   <button type="button" className={if values.get("active") then "prop_button_green" else "prop_button"} 
@@ -158,7 +158,7 @@ Main Program
             </ul>
             <div>Actuators</div>
             <ul id="actuator_list">
-              {@state.actuators.keySeq().map (name) ->
+              {@state.actuators.keySeq().map (name) =>
                 values = @state.actuators.get(name)
                 <li>
                   <button type="button" className={if values.get("active") then "prop_button_green" else "prop_button"} 
@@ -168,7 +168,7 @@ Main Program
             </ul>
             <div>Custom Propositions</div>
             <ul id="customprop_list">
-              {@state.customs.keySeq().map (name) ->
+              {@state.customs.keySeq().map (name) =>
                 values = @state.customs.get(name)
                 <li>
                   <button type="button" className={if values.get("active") then "prop_button_green" else "prop_button"}
