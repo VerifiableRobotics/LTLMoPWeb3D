@@ -15,172 +15,19 @@ Internal Dependencies
 Main Program
 ------------    
 
+Initial set up
+
     spec = {}
     automaton = {}
     regions = {}
+    currentVelocity = 0
+    currentTheta = 0
     
-    React.render(<Simulator />, document.body);
+    React.render(<Simulator />, document.body)
 
-    Simulator = React.createClass
-      getInitialState: () ->
-        return {disableAut: true, disableExec: true}
-      addPropButtons = (spec) ->
-        sensors = Map()
-        actuators = Map()
-        customs = Map()
-        # add elements to maps
-        for propName, isEnabled of spec.Sensors
-          sensors.set(propName, Map({disabled: !isEnabled, active: false}))
-        for propName, isEnabled of spec.Actions
-          actuators.set(propName, Map({disabled: !isEnabled, active: false}))
-        # customs is just an array
-        for propName in spec.Customs
-          customs.set(propName, Map({active: false}))
-        # set maps
-        @setState({sensors: sensors, actuators: actuators, customs: customs})
-      onUpload: (ev, ext, callback) ->
-        file = ev.target.files[0]
-        if file?
-          nameSplit = file.name.split('.')
-          extension = nameSplit[nameSplit.length - 1]
-          # validation
-          if extension != ext
-            alert("This only accepts *." + ext + " files!")
-          else
-            reader = new FileReader()
-            reader.onload = callback
-            reader.readAsText(file)
-      onRegionsUpload: (ev) ->
-        @onUpload(ev, "regions", callback)
-        callback = (ev) -> 
-          regions = RegionsParser.parseRegions(ev.target.result)
-          console.log("Regions Object: ")
-          console.log(regions)
-          create3DRegions(regions.Regions)
-      onSpecUpload: (ev) ->
-        @onUpload(ev, "spec", callback)
-        callback = (ev) => 
-          spec = SpecParser.parseSpec(ev.target.result)
-          console.log("Spec Object: ")
-          console.log(spec)
-          # enable uploading of automaton now
-          @setState({disableAut: false})
-          @addPropButtons(spec)
-      onAutUpload: (ev) ->
-        @onUpload(ev, "aut", callback)
-        callback = (ev) => 
-          automaton = AutomatonParser.parseAutomaton(ev.target.result, spec)
-          console.log("Automaton Object: ")
-          console.log(automaton)
-          # enable executor execution now
-          @setState({disableExec: false})
-      getInitialProps: () ->
-        sensors = @state.sensors.keySeq().filter((name) => !@state.sensors.get(name).get("disabled")).map (name) =>
-          if @state.sensors.get(name).get("active") then 1 else 0
-        actuators = @state.actuators.keySeq().filter((name) => !@state.actuators.get(name).get("disabled")).map (name) =>
-          if @state.actuators.get(name).get("active") then 1 else 0
-        customs = @state.customs.keySeq().map (name) =>
-          if @state.customs.get(name).get("active") then 1 else 0
-        return {sensors: sensors, actuators: actuators, customs: customs}
-      getSensors: () ->
-        return @state.sensors.keySeq().filter((name) => !@state.sensors.get(name).get("disabled")).map (name) =>
-          if @state.sensors.get(name).get("active") then 1 else 0
-      startExecution: () ->
-        # initialize the execution loop        
-        counter = 0
-        executorInterval = 0
-        executionLoop = () =>
-          # if first execution
-          if counter == 0
-            initialRegion = Executor.execute(automaton, @getInitialProps(), null, null)
-            createCar(initialRegion)
-            counter = 1
-          else
-            currentRegion = getCurrentRegion()
-            nextRegion = Executor.execute(automaton, null, @getSensors(), currentRegion)
-            # if there is a next region, move to it
-            if nextRegion != null
-              if nextRegion == currentRegion then stopVelocityTheta() else plotCourse(nextRegion)
-            # if there isn't, stop moving
-            else if nextRegion != false
-              stopVelocityTheta()
-            # if there isn't a current state, stop the execution loop
-            else  
-              clearInterval(executorInterval)
-        # start the execution loop
-        executorInterval = setInterval(executionLoop, 300)
-        # disable buttons/uploads
-        @setState({disableRegions: true, disableSpec: true, disableAut: true, disableExec: true})
-      toggleActiveSensors: (name) ->
-        return () =>
-          @setState((prev) -> {sensors: prev.sensors.update(name, (data) -> data.update("active", !data.active))})
-      toggleActiveActuators: (name) ->
-        return () =>
-          @setState((prev) -> {actuators: prev.actuators.update(name, (data) -> data.update("active", !data.active))})
-      toggleActiveCustoms: (name) ->
-        return () =>
-          @setState((prev) -> {customs: prev.customs.update(name, (data) -> data.update("active", !data.active))})
-      render: () ->
-        return <div id="heading">
-          <h1>LTLMoPWeb3D Simulator</h1>
-            <a href="/">Simulator</a>
-            <a href="/specEditor">Specification Editor</a>
-            <a href="/regionEditor">Region Editor</a>
-        </div>
-        <div className="center_wrapper">
-          <button type="button" onClick={@startExecution} disabled={disableExec}>Start</button>
-        </div>
-        <div className="center_wrapper">
-          <form className="upload_form">
-            <input name="file" type="file" className="upload_file_overlay" onChange={@onRegionsUpload} disabled={disableRegions}/>
-            <button type="button" disabled={disableRegions}>Upload Regions</button>
-          </form>
-          <form className="upload_form">
-            <input name="file" type="file" className="upload_file_overlay" onChange={@onSpecUpload} disabled={disableSpec}/>
-            <button type="button" disabled={disableSpec}>Upload Spec</button>
-          </form>
-          <form className="upload_form">
-            <input name="file" type="file" className="upload_file_overlay" onChange={@onAutUpload} disabled={disableAut} />
-            <button type="button" disabled={disableAut}>Upload Automaton</button>
-          </form>
-        </div>
-        <div id="simulator_wrapper">
-          <div className="right_wrapper">
-            <div>Sensors</div>
-            <ul id="sensor_list">
-              {@state.sensors.keySeq().map (name) =>
-                values = @state.sensors.get(name)
-                <li>
-                  <button type="button" className={if values.get("active") then "prop_button_green" else "prop_button"} 
-                    onClick={@toggleActiveSensors(name)} disabled={values.get("disabled")}>{name}</button>
-                </li>
-              }
-            </ul>
-            <div>Actuators</div>
-            <ul id="actuator_list">
-              {@state.actuators.keySeq().map (name) =>
-                values = @state.actuators.get(name)
-                <li>
-                  <button type="button" className={if values.get("active") then "prop_button_green" else "prop_button"} 
-                    onClick={@toggleActiveActuators(name)} disabled={values.get("disabled")}>{name}</button>
-                </li>
-              }
-            </ul>
-            <div>Custom Propositions</div>
-            <ul id="customprop_list">
-              {@state.customs.keySeq().map (name) =>
-                values = @state.customs.get(name)
-                <li>
-                  <button type="button" className={if values.get("active") then "prop_button_green" else "prop_button"}
-                    onClick={@toggleActiveCustoms(name)}>{name}</button>
-                </li>
-              }
-            </ul>
-          </div>
-          <div id="viewport"></div>
-        </div>
-        
-    # create 3D regions from the region array
+
+Create 3D regions from the region array
+
     create3DRegions = (regions_arr) ->
       # loop through the region array
       for region in regions_arr
@@ -234,14 +81,7 @@ Main Program
         new_ground.rotation.x = Math.PI/2
         new_ground.receiveShadow = true
         # add the new_ground to the scene
-        scene.add(new_ground)
-
-      # end for each
-    # end create 3D regions      
-      
-      
-    currentVelocity = 0
-    currentTheta = 0
+        scene.add(new_ground)     
 
       
 Set the velocity and theta of the car
@@ -301,6 +141,7 @@ Given region object, get the centroid
         regionY += point[1]
 
       return [position[0] + regionX / numPoints, position[1] + regionY / numPoints]
+
 
 Given region object, get the midpoint of the transition from the current region to it
 
@@ -382,3 +223,204 @@ Get the current region (number) the car is located in
             return index
       # not in a region currently    
       return null
+
+
+Simulator Component
+-------------------
+
+    Simulator = React.createClass
+      getInitialState: () ->
+        return {disableAut: true, disableExec: true}
+
+Add Buttons/State based on props in spec
+      
+      addPropButtons = (spec) ->
+        sensors = Map()
+        actuators = Map()
+        customs = Map()
+        # add elements to maps
+        for propName, isEnabled of spec.Sensors
+          sensors.set(propName, Map({disabled: !isEnabled, active: false}))
+        for propName, isEnabled of spec.Actions
+          actuators.set(propName, Map({disabled: !isEnabled, active: false}))
+        # customs is just an array
+        for propName in spec.Customs
+          customs.set(propName, Map({active: false}))
+        # set maps
+        @setState({sensors: sensors, actuators: actuators, customs: customs})
+      
+Helper function for uploading files, takes in the event, an extension, and the reader's callback'
+
+      onUpload: (ev, ext, callback) ->
+        file = ev.target.files[0]
+        if file?
+          nameSplit = file.name.split('.')
+          extension = nameSplit[nameSplit.length - 1]
+          # validation
+          if extension != ext
+            alert("This only accepts *." + ext + " files!")
+          else
+            reader = new FileReader()
+            reader.onload = callback
+            reader.readAsText(file)
+
+When a *.regions file is uploaded; specifically the decomposed one
+
+      onRegionsUpload: (ev) ->
+        @onUpload(ev, "regions", callback)
+        callback = (ev) -> 
+          regions = RegionsParser.parseRegions(ev.target.result)
+          console.log("Regions Object: ")
+          console.log(regions)
+          create3DRegions(regions.Regions)
+
+When a *.spec file is uploaded
+      
+      onSpecUpload: (ev) ->
+        @onUpload(ev, "spec", callback)
+        callback = (ev) => 
+          spec = SpecParser.parseSpec(ev.target.result)
+          console.log("Spec Object: ")
+          console.log(spec)
+          # enable uploading of automaton now
+          @setState({disableAut: false})
+          @addPropButtons(spec)
+
+When a *.aut file is uploaded
+
+      onAutUpload: (ev) ->
+        @onUpload(ev, "aut", callback)
+        callback = (ev) => 
+          automaton = AutomatonParser.parseAutomaton(ev.target.result, spec)
+          console.log("Automaton Object: ")
+          console.log(automaton)
+          # enable executor execution now
+          @setState({disableExec: false})
+      
+Gets the initial props (all of sensors, actuators, and customs) for the executor to determine initial state
+Outputs a {sensors, actuators, customs} dict of prop -> 1 or 0 (active or not), excluding disabled props      
+
+      getInitialProps: () ->
+        sensors = @state.sensors.keySeq().filter((name) => !@state.sensors.get(name).get("disabled")).map (name) =>
+          if @state.sensors.get(name).get("active") then 1 else 0
+        actuators = @state.actuators.keySeq().filter((name) => !@state.actuators.get(name).get("disabled")).map (name) =>
+          if @state.actuators.get(name).get("active") then 1 else 0
+        customs = @state.customs.keySeq().map (name) =>
+          if @state.customs.get(name).get("active") then 1 else 0
+        return {sensors: sensors, actuators: actuators, customs: customs}
+
+Gets sensor readings for the executor to determine next state
+Outputs a dict of prop -> 1 or 0 (active or not), excluding disabled props
+
+      getSensors: () ->
+        return @state.sensors.keySeq().filter((name) => !@state.sensors.get(name).get("disabled")).map (name) =>
+          if @state.sensors.get(name).get("active") then 1 else 0
+      
+Launch the executor
+
+      startExecution: () ->
+        # initialize the execution loop        
+        counter = 0
+        executorInterval = 0
+        executionLoop = () =>
+          # if first execution
+          if counter == 0
+            initialRegion = Executor.execute(automaton, @getInitialProps(), null, null)
+            createCar(initialRegion)
+            counter = 1
+          else
+            currentRegion = getCurrentRegion()
+            nextRegion = Executor.execute(automaton, null, @getSensors(), currentRegion)
+            # if there is a next region, move to it
+            if nextRegion != null
+              if nextRegion == currentRegion then stopVelocityTheta() else plotCourse(nextRegion)
+            # if there isn't, stop moving
+            else if nextRegion != false
+              stopVelocityTheta()
+            # if there isn't a current state, stop the execution loop
+            else  
+              clearInterval(executorInterval)
+        # start the execution loop
+        executorInterval = setInterval(executionLoop, 300)
+        # disable buttons/uploads
+        @setState({disableRegions: true, disableSpec: true, disableAut: true, disableExec: true})
+      
+Toggle for when a sensor is clicked
+
+      toggleActiveSensors: (name) ->
+        return () =>
+          @setState((prev) -> {sensors: prev.sensors.update(name, (data) -> data.update("active", !data.active))})
+
+Toggle for when an actuator is clicked
+
+      toggleActiveActuators: (name) ->
+        return () =>
+          @setState((prev) -> {actuators: prev.actuators.update(name, (data) -> data.update("active", !data.active))})
+
+Toggle for when an actuator is clicked
+
+      toggleActiveCustoms: (name) ->
+        return () =>
+          @setState((prev) -> {customs: prev.customs.update(name, (data) -> data.update("active", !data.active))})
+      
+Render the application
+
+      render: () ->
+        return <div id="heading">
+          <h1>LTLMoPWeb3D Simulator</h1>
+            <a href="/">Simulator</a>
+            <a href="/specEditor">Specification Editor</a>
+            <a href="/regionEditor">Region Editor</a>
+        </div>
+        <div className="center_wrapper">
+          <button type="button" onClick={@startExecution} disabled={disableExec}>Start</button>
+        </div>
+        <div className="center_wrapper">
+          <form className="upload_form">
+            <input name="file" type="file" className="upload_file_overlay" onChange={@onRegionsUpload} disabled={disableRegions}/>
+            <button type="button" disabled={disableRegions}>Upload Regions</button>
+          </form>
+          <form className="upload_form">
+            <input name="file" type="file" className="upload_file_overlay" onChange={@onSpecUpload} disabled={disableSpec}/>
+            <button type="button" disabled={disableSpec}>Upload Spec</button>
+          </form>
+          <form className="upload_form">
+            <input name="file" type="file" className="upload_file_overlay" onChange={@onAutUpload} disabled={disableAut} />
+            <button type="button" disabled={disableAut}>Upload Automaton</button>
+          </form>
+        </div>
+        <div id="simulator_wrapper">
+          <div className="right_wrapper">
+            <div>Sensors</div>
+            <ul id="sensor_list">
+              {@state.sensors.keySeq().map (name) =>
+                values = @state.sensors.get(name)
+                <li>
+                  <button type="button" className={if values.get("active") then "prop_button_green" else "prop_button"} 
+                    onClick={@toggleActiveSensors(name)} disabled={values.get("disabled")}>{name}</button>
+                </li>
+              }
+            </ul>
+            <div>Actuators</div>
+            <ul id="actuator_list">
+              {@state.actuators.keySeq().map (name) =>
+                values = @state.actuators.get(name)
+                <li>
+                  <button type="button" className={if values.get("active") then "prop_button_green" else "prop_button"} 
+                    onClick={@toggleActiveActuators(name)} disabled={values.get("disabled")}>{name}</button>
+                </li>
+              }
+            </ul>
+            <div>Custom Propositions</div>
+            <ul id="customprop_list">
+              {@state.customs.keySeq().map (name) =>
+                values = @state.customs.get(name)
+                <li>
+                  <button type="button" className={if values.get("active") then "prop_button_green" else "prop_button"}
+                    onClick={@toggleActiveCustoms(name)}>{name}</button>
+                </li>
+              }
+            </ul>
+          </div>
+          <div id="viewport"></div>
+        </div>
