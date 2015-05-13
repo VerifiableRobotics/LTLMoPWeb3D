@@ -5,54 +5,18 @@
 <head>
 	<title>LTLMoPWeb3D Simulator</title>
   <link rel="stylesheet" type="text/css" href="static/css/header.css" />
-	<link rel="stylesheet" type="text/css" href="static/css/simulator.css" />
-	<script type="text/javascript" src="static/plugins/threejs/three.min.js"></script>
-  <script type="text/javascript" src="static/plugins/threejs/three.trackballcontrols.js"></script>
-  <script type="text/javascript" src="static/plugins/threejs/threex.windowresize.js"></script>
-	<script type="text/javascript" src="static/plugins/physijs/physi.js"></script>
-	<script type="text/javascript" src="static/plugins/jquery/jquery-2.1.0.min.js"></script>
-	<script type="text/javascript" src="static/js/simulator/initializePhysics.js"></script>
-  <script type="text/javascript" src="static/js/simulator/simulator.js"></script>    
+	<link rel="stylesheet" type="text/css" href="static/css/simulator.css" />  
 </head>
 
 <body>
-	<div id="heading">
-	  <h1>LTLMoPWeb3D Simulator</h1>
-      <a href="/">Simulator</a>
-      <a href="/specEditor">Specification Editor</a>
-      <a href="/regionEditor">Region Editor</a>
-	</div>
-  <div class="center_wrapper">
-    <button type="button" id="executor_start_button">Start</button>
-  </div>
-  <div class="center_wrapper">
-    <form enctype="multipart/form-data" id="regions_upload_form" class="upload_form">
-      <input name="file" type="file" id="regions_upload_file" class="upload_file_overlay" />
-      <button type="button" id="regions_upload_button">Upload Regions</button>
-    </form>
-    <form id="spec_upload_form" class="upload_form">
-      <input name="file" type="file" id="spec_upload_file" class="upload_file_overlay" />
-      <button type="button" id="spec_upload_button">Upload Spec</button>
-    </form>
-    <form id="automaton_upload_form" class="upload_form">
-      <input name="file" type="file" id="automaton_upload_file" class="upload_file_overlay" disabled />
-      <button type="button" id="automaton_upload_button" disabled>Upload Automaton</button>
-    </form>
-  </div>
-  <div id="simulator_wrapper">
-    <div class="right_wrapper">
-      <div>Sensors</div>
-      <ul id="sensor_list">
-      </ul>
-      <div>Actuators</div>
-      <ul id="actuator_list">
-      </ul>
-      <div>Custom Propositions</div>
-      <ul id="customprop_list">
-      </ul>
-    </div>
-    <div id="viewport"></div>
-  </div>
 </body>
+
+<script type="text/javascript" src="static/plugins/threejs/three.min.js"></script>
+<script type="text/javascript" src="static/plugins/threejs/three.trackballcontrols.js"></script>
+<script type="text/javascript" src="static/plugins/threejs/threex.windowresize.js"></script>
+<script type="text/javascript" src="static/plugins/physijs/physi.js"></script>
+<script type="text/javascript" src="static/plugins/jquery/jquery-2.1.0.min.js"></script>
+<script type="text/javascript" src="static/js/simulator/initializePhysics.js"></script>
+<script type="text/javascript" src="static/js/simulator/simulator.js"></script>  
 
 </html>

@@ -11,6 +11,7 @@ Internal Dependencies
     SpecParser = require('./specParser.litcoffee')
     AutomatonParser = require('./automatonParser.litcoffee')
     Executor = require('./executor.litcoffee')
+    Header = require('../header.cjsx.md')
 
 Main Program
 ------------    
@@ -234,7 +235,7 @@ Simulator Component
 
 Add Buttons/State based on props in spec
       
-      addPropButtons = (spec) ->
+      addPropButtons: (spec) ->
         sensors = Map()
         actuators = Map()
         customs = Map()
@@ -267,17 +268,16 @@ Helper function for uploading files, takes in the event, an extension, and the r
 When a *.regions file is uploaded; specifically the decomposed one
 
       onRegionsUpload: (ev) ->
-        @onUpload(ev, "regions", callback)
         callback = (ev) -> 
           regions = RegionsParser.parseRegions(ev.target.result)
           console.log("Regions Object: ")
           console.log(regions)
           create3DRegions(regions.Regions)
+        @onUpload(ev, "regions", callback)
 
 When a *.spec file is uploaded
       
       onSpecUpload: (ev) ->
-        @onUpload(ev, "spec", callback)
         callback = (ev) => 
           spec = SpecParser.parseSpec(ev.target.result)
           console.log("Spec Object: ")
@@ -285,19 +285,20 @@ When a *.spec file is uploaded
           # enable uploading of automaton now
           @setState({disableAut: false})
           @addPropButtons(spec)
+        @onUpload(ev, "spec", callback)
 
 When a *.aut file is uploaded
 
       onAutUpload: (ev) ->
-        @onUpload(ev, "aut", callback)
         callback = (ev) => 
           automaton = AutomatonParser.parseAutomaton(ev.target.result, spec)
           console.log("Automaton Object: ")
           console.log(automaton)
           # enable executor execution now
           @setState({disableExec: false})
+        @onUpload(ev, "aut", callback)
       
-Gets the initial props (all of sensors, actuators, and customs) for the executor to determine initial state
+Gets the initial props (all of sensors, actuators, and customs) for the executor to determine initial state  
 Outputs a {sensors, actuators, customs} dict of prop -> 1 or 0 (active or not), excluding disabled props      
 
       getInitialProps: () ->
@@ -309,7 +310,7 @@ Outputs a {sensors, actuators, customs} dict of prop -> 1 or 0 (active or not), 
           if @state.customs.get(name).get("active") then 1 else 0
         return {sensors: sensors, actuators: actuators, customs: customs}
 
-Gets sensor readings for the executor to determine next state
+Gets sensor readings for the executor to determine next state  
 Outputs a dict of prop -> 1 or 0 (active or not), excluding disabled props
 
       getSensors: () ->
@@ -366,12 +367,7 @@ Toggle for when an actuator is clicked
 Render the application
 
       render: () ->
-        return <div id="heading">
-          <h1>LTLMoPWeb3D Simulator</h1>
-            <a href="/">Simulator</a>
-            <a href="/specEditor">Specification Editor</a>
-            <a href="/regionEditor">Region Editor</a>
-        </div>
+        return <Header />
         <div className="center_wrapper">
           <button type="button" onClick={@startExecution} disabled={disableExec}>Start</button>
         </div>
