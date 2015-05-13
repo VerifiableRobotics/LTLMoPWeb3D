@@ -23,9 +23,6 @@ Initial set up
     regions = {}
     currentVelocity = 0
     currentTheta = 0
-    
-    React.render(<Simulator />, document.body)
-
 
 Create 3D regions from the region array
 
@@ -231,22 +228,20 @@ Simulator Component
 
     Simulator = React.createClass
       getInitialState: () ->
-        return {disableAut: true, disableExec: true}
+        return {disableAut: true, disableExec: true, sensors: Map(), actuators: Map(), customs: Map()}
 
 Add Buttons/State based on props in spec
       
       addPropButtons: (spec) ->
-        sensors = Map()
-        actuators = Map()
-        customs = Map()
+        sensors = actuators = customs = Map()
         # add elements to maps
         for propName, isEnabled of spec.Sensors
-          sensors.set(propName, Map({disabled: !isEnabled, active: false}))
+          sensors = sensors.set(propName, Map({disabled: !isEnabled, active: false}))
         for propName, isEnabled of spec.Actions
-          actuators.set(propName, Map({disabled: !isEnabled, active: false}))
+          actuators = actuators.set(propName, Map({disabled: !isEnabled, active: false}))
         # customs is just an array
         for propName in spec.Customs
-          customs.set(propName, Map({active: false}))
+          customs = customs.set(propName, Map({active: false}))
         # set maps
         @setState({sensors: sensors, actuators: actuators, customs: customs})
       
@@ -302,14 +297,14 @@ Gets the initial props (all of sensors, actuators, and customs) for the executor
 Outputs a {sensors, actuators, customs} dict of prop -> 1 or 0 (active or not), excluding disabled props      
 
       getInitialProps: () ->
-        sensors = actuators = customs = {}
+        sensors = actuators = customs = Map()
         @state.sensors.keySeq().filter((name) => !@state.sensors.get(name).get("disabled")).forEach (name) =>
-          sensors[name] = if @state.sensors.get(name).get("active") then 1 else 0
+          sensors = sensors.set(name, if @state.sensors.get(name).get("active") then 1 else 0)
         @state.actuators.keySeq().filter((name) => !@state.actuators.get(name).get("disabled")).forEach (name) =>
-          actuators[name] = if @state.actuators.get(name).get("active") then 1 else 0
+          actuators = actuators.set(name, if @state.actuators.get(name).get("active") then 1 else 0)
         @state.customs.keySeq().forEach (name) =>
-          customs[name] = if @state.customs.get(name).get("active") then 1 else 0
-        return {sensors: sensors, actuators: actuators, customs: customs}
+          customs = customs.set(name, if @state.customs.get(name).get("active") then 1 else 0)
+        return {sensors: sensors.toJS(), actuators: actuators.toJS(), customs: customs.toJS()}
 
 Gets sensor readings for the executor to determine next state  
 Outputs a dict of prop -> 1 or 0 (active or not), excluding disabled props
@@ -353,73 +348,83 @@ Toggle for when a sensor is clicked
 
       toggleActiveSensors: (name) ->
         return () =>
-          @setState((prev) -> {sensors: prev.sensors.update(name, (data) -> data.update("active", !data.active))})
+          @setState((prev) -> {sensors: prev.sensors.update(name, (data) -> data.set("active", !data.get("active")))})
 
 Toggle for when an actuator is clicked
 
       toggleActiveActuators: (name) ->
         return () =>
-          @setState((prev) -> {actuators: prev.actuators.update(name, (data) -> data.update("active", !data.active))})
+          @setState((prev) -> {actuators: prev.actuators.update(name, (data) -> data.set("active", !data.get("active")))})
 
 Toggle for when an actuator is clicked
 
       toggleActiveCustoms: (name) ->
         return () =>
-          @setState((prev) -> {customs: prev.customs.update(name, (data) -> data.update("active", !data.active))})
+          @setState((prev) -> {customs: prev.customs.update(name, (data) -> data.set("active", !data.get("active")))})
       
 Render the application
 
       render: () ->
-        return <Header />
-        <div className="center_wrapper">
-          <button type="button" onClick={@startExecution} disabled={disableExec}>Start</button>
-        </div>
-        <div className="center_wrapper">
-          <form className="upload_form">
-            <input name="file" type="file" className="upload_file_overlay" onChange={@onRegionsUpload} disabled={disableRegions}/>
-            <button type="button" disabled={disableRegions}>Upload Regions</button>
-          </form>
-          <form className="upload_form">
-            <input name="file" type="file" className="upload_file_overlay" onChange={@onSpecUpload} disabled={disableSpec}/>
-            <button type="button" disabled={disableSpec}>Upload Spec</button>
-          </form>
-          <form className="upload_form">
-            <input name="file" type="file" className="upload_file_overlay" onChange={@onAutUpload} disabled={disableAut} />
-            <button type="button" disabled={disableAut}>Upload Automaton</button>
-          </form>
-        </div>
-        <div id="simulator_wrapper">
-          <div className="right_wrapper">
-            <div>Sensors</div>
-            <ul id="sensor_list">
-              {@state.sensors.keySeq().map (name) =>
-                values = @state.sensors.get(name)
-                <li>
-                  <button type="button" className={if values.get("active") then "prop_button_green" else "prop_button"} 
-                    onClick={@toggleActiveSensors(name)} disabled={values.get("disabled")}>{name}</button>
-                </li>
-              }
-            </ul>
-            <div>Actuators</div>
-            <ul id="actuator_list">
-              {@state.actuators.keySeq().map (name) =>
-                values = @state.actuators.get(name)
-                <li>
-                  <button type="button" className={if values.get("active") then "prop_button_green" else "prop_button"} 
-                    onClick={@toggleActiveActuators(name)} disabled={values.get("disabled")}>{name}</button>
-                </li>
-              }
-            </ul>
-            <div>Custom Propositions</div>
-            <ul id="customprop_list">
-              {@state.customs.keySeq().map (name) =>
-                values = @state.customs.get(name)
-                <li>
-                  <button type="button" className={if values.get("active") then "prop_button_green" else "prop_button"}
-                    onClick={@toggleActiveCustoms(name)}>{name}</button>
-                </li>
-              }
-            </ul>
+        return <div>
+          <Header />
+          <div className="center_wrapper">
+            <button type="button" onClick={@startExecution} disabled={@state.disableExec}>Start</button>
           </div>
-          <div id="viewport"></div>
+          <div className="center_wrapper">
+            <form className="upload_form">
+              <input name="file" type="file" className="upload_file_overlay" onChange={@onRegionsUpload} 
+                disabled={@state.disableRegions}/>
+              <button type="button" disabled={@state.disableRegions}>Upload Regions</button>
+            </form>
+            <form className="upload_form">
+              <input name="file" type="file" className="upload_file_overlay" onChange={@onSpecUpload} 
+                disabled={@state.disableSpec}/>
+              <button type="button" disabled={@state.disableSpec}>Upload Spec</button>
+            </form>
+            <form className="upload_form">
+              <input name="file" type="file" className="upload_file_overlay" onChange={@onAutUpload}
+                disabled={@state.disableAut} />
+              <button type="button" disabled={@state.disableAut}>Upload Automaton</button>
+            </form>
+          </div>
+          <div id="simulator_wrapper">
+            <div className="right_wrapper">
+              <div>Sensors</div>
+              <ul id="sensor_list">
+                {@state.sensors.keySeq().map (name) =>
+                  values = @state.sensors.get(name)
+                  <li>
+                    <button type="button" className={if values.get("active") then "prop_button_green" else "prop_button"} 
+                      onClick={@toggleActiveSensors(name)} disabled={values.get("disabled")}>{name}</button>
+                  </li>
+                }
+              </ul>
+              <div>Actuators</div>
+              <ul id="actuator_list">
+                {@state.actuators.keySeq().map (name) =>
+                  values = @state.actuators.get(name)
+                  <li>
+                    <button type="button" className={if values.get("active") then "prop_button_green" else "prop_button"} 
+                      onClick={@toggleActiveActuators(name)} disabled={values.get("disabled")}>{name}</button>
+                  </li>
+                }
+              </ul>
+              <div>Custom Propositions</div>
+              <ul id="customprop_list">
+                {@state.customs.keySeq().map (name) =>
+                  values = @state.customs.get(name)
+                  <li>
+                    <button type="button" className={if values.get("active") then "prop_button_green" else "prop_button"}
+                      onClick={@toggleActiveCustoms(name)}>{name}</button>
+                  </li>
+                }
+              </ul>
+            </div>
+            <div id="viewport"></div>
+          </div>
         </div>
+
+
+And render!
+
+    React.render(<Simulator />, document.body)
