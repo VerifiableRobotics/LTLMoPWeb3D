@@ -420,11 +420,10 @@ Render the application
                 }
               </ul>
             </div>
-            <div id="viewport"></div>
           </div>
         </div>
 
 
 And render!
 
-    React.render(<Simulator />, document.body)
+    React.render(<Simulator />, document.getElementById('simulator_body'))
