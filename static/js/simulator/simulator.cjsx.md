@@ -302,20 +302,23 @@ Gets the initial props (all of sensors, actuators, and customs) for the executor
 Outputs a {sensors, actuators, customs} dict of prop -> 1 or 0 (active or not), excluding disabled props      
 
       getInitialProps: () ->
-        sensors = @state.sensors.keySeq().filter((name) => !@state.sensors.get(name).get("disabled")).map (name) =>
-          if @state.sensors.get(name).get("active") then 1 else 0
-        actuators = @state.actuators.keySeq().filter((name) => !@state.actuators.get(name).get("disabled")).map (name) =>
-          if @state.actuators.get(name).get("active") then 1 else 0
-        customs = @state.customs.keySeq().map (name) =>
-          if @state.customs.get(name).get("active") then 1 else 0
+        sensors = actuators = customs = {}
+        @state.sensors.keySeq().filter((name) => !@state.sensors.get(name).get("disabled")).forEach (name) =>
+          sensors[name] = if @state.sensors.get(name).get("active") then 1 else 0
+        @state.actuators.keySeq().filter((name) => !@state.actuators.get(name).get("disabled")).forEach (name) =>
+          actuators[name] = if @state.actuators.get(name).get("active") then 1 else 0
+        @state.customs.keySeq().forEach (name) =>
+          customs[name] = if @state.customs.get(name).get("active") then 1 else 0
         return {sensors: sensors, actuators: actuators, customs: customs}
 
 Gets sensor readings for the executor to determine next state  
 Outputs a dict of prop -> 1 or 0 (active or not), excluding disabled props
 
       getSensors: () ->
-        return @state.sensors.keySeq().filter((name) => !@state.sensors.get(name).get("disabled")).map (name) =>
-          if @state.sensors.get(name).get("active") then 1 else 0
+        sensors = {}
+        @state.sensors.keySeq().filter((name) => !@state.sensors.get(name).get("disabled")).forEach (name) =>
+          sensors[name] = if @state.sensors.get(name).get("active") then 1 else 0
+        return sensors
       
 Launch the executor
 
