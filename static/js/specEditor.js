@@ -152,10 +152,10 @@ $(document).ready(function() {
     
     // set compilation options
     // checkboxes
-    $compilation_options_convexify.prop('checked', data['convexify'] == 'true');
-    $compilation_options_fastslow.prop('checked', data['fastslow'] == 'true'); 
-    $compilation_options_use_region_bit_encoding.prop('checked', data['use_region_bit_encoding'] == 'true');
-    $compilation_options_symbolic.prop('checked', data['symbolic'] == 'true');
+    $compilation_options_convexify.prop('checked', data['convexify']);
+    $compilation_options_fastslow.prop('checked', data['fastslow']); 
+    $compilation_options_use_region_bit_encoding.prop('checked', data['use_region_bit_encoding']);
+    $compilation_options_symbolic.prop('checked', data['symbolic']);
     // radio buttons
     $('.parser_mode_radio[value="' + data['parser'] + '"]').prop('checked', true);
     $('.synthesizer_radio[value="' + data['synthesizer'] + '"]').prop('checked', true);
