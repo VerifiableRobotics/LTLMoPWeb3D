@@ -26,6 +26,15 @@ def deleteOldFiles():
       if datetime.datetime.now() - file_modified > datetime.timedelta(hours=5):
         os.remove(curpath)
 
+# delete specific file
+def deleteFile(path):
+  dir_to_search = app.config['UPLOAD_FOLDER']
+  for dirpath, dirnames, filenames in os.walk(dir_to_search):
+    for file in filenames:
+      curpath = os.path.join(dirpath, file)
+      if curpath == path:
+        os.remove(curpath)
+
 # creates session if one does not already exist
 def createSession():
   session.permanent = False # session should stop after browser close
@@ -114,9 +123,10 @@ def createSpec(dict):
 # sends the currently stored spec to the user
 @app.route('/specEditor/saveSpec', methods=['GET', 'POST'])
 def saveSpec():
+  if session['specFilePath']:
+    deleteFile(session['specFilePath'])
   createSpec(request.args)
-  thepath = session['specFilePath']
-  return send_file(thepath, as_attachment=True, mimetype='text/plain')
+  return send_file(session['specFilePath'], as_attachment=True, mimetype='text/plain')
 
 # sends the currently stored regions to the user
 @app.route('/specEditor/saveRegions', methods=['GET', 'POST'])
