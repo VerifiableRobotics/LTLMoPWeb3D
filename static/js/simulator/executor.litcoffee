@@ -98,9 +98,9 @@ Execute an automaton
           if currentRegion == automaton[nextState]["props"]["region"]
             currentState = nextState
           # return next region to go to as well as the props of the current region
-          return region: automaton[nextState]["props"]["region"] 
-            actuators: automaton[currentState]["props"]["actuators"]
-            customs: automaton[currentState]["props"]["customs"]
+          return [automaton[nextState]["props"]["region"], 
+            automaton[currentState]["props"]["actuators"], 
+            automaton[currentState]["props"]["customs"]]
         # otherwise stop and return null
         else
           return null

@@ -20,7 +20,7 @@ Initial set up
 
     spec = {}
     automaton = {}
-    regions = {}
+    regionFile = {}
     currentVelocity = 0
     currentTheta = 0
 
@@ -145,12 +145,12 @@ Given region object, get the midpoint of the transition from the current region 
 
     getTransition = (region) ->
       regionToName = region.name
-      regionFromName = regions.Regions[getCurrentRegion()].name
+      regionFromName = regionFile.Regions[getCurrentRegion()].name
       console.log("regionFrom: " + regionFromName + " regionTo: " + regionToName)
       # get correct transition array, could be ordered either way
-      transition = if !regions.Transitions[regionFromName]? or !regions.Transitions[regionFromName][regionToName]?
-        regions.Transitions[regionToName][regionFromName] 
-      else regions.Transitions[regionFromName][regionToName]
+      transition = if !regionFile.Transitions[regionFromName]? or !regionFile.Transitions[regionFromName][regionToName]?
+        regionFile.Transitions[regionToName][regionFromName] 
+      else regionFile.Transitions[regionFromName][regionToName]
       # return midpoint
       return [(transition[0][0] + transition[1][0]) / 2, (transition[0][1] + transition[1][1]) / 2]
 
@@ -158,7 +158,7 @@ Given region object, get the midpoint of the transition from the current region 
 Given region number, creates the car at its centroid
 
     createCar = (region_num) ->
-      region = regions.Regions[region_num]
+      region = regionFile.Regions[region_num]
       xpos = region.position[0]
       ypos = region.position[1]
       centroid = getCentroid(region)
@@ -168,7 +168,7 @@ Given region number, creates the car at its centroid
 Starts moving the car toward the destination
 
     plotCourse = (region_num) ->
-      target = regions.Regions[region_num]
+      target = regionFile.Regions[region_num]
       targetPosition = getTransition(target)
       currentPosition = [car.body.position.x, car.body.position.z]
       targetTheta = Math.atan2(targetPosition[1] - currentPosition[1], targetPosition[0] - currentPosition[0])
@@ -198,7 +198,7 @@ Get the current region (number) the car is located in
       xpos = car.body.position.x
       ypos = car.body.position.z
       # loop through the region array
-      for region, index in regions.Regions
+      for region, index in regionFile.Regions
         left = region.position[0]
         right = region.position[0] + region.size[0]
         bottom = region.position[1]
@@ -248,12 +248,12 @@ Helper function for uploading files, takes in the event, an extension, and the r
 When a *.regions file is uploaded; specifically the decomposed one
 
       onRegionsUpload: (ev) ->
-        callback = (ev) -> 
-          regions = RegionsParser.parseRegions(ev.target.result)
+        callback = (ev) => 
+          regionFile = RegionsParser.parseRegions(ev.target.result)
           console.log("Regions Object: ")
-          console.log(regions)
-          create3DRegions(regions.Regions)
-          @addRegionButtons(regions.Regions)
+          console.log(regionFile)
+          create3DRegions(regionFile.Regions)
+          @addRegionButtons(regionFile.Regions)
         @onUpload(ev, "regions", callback)
 
 When a *.spec file is uploaded
@@ -285,8 +285,8 @@ Launch the executor
         executorInterval = 0 # timer ID
 
         # reset function in case initial props are invalid
-        resetExecution: () =>
-          @toggleEnabledProps() # re-enable all props
+        resetExecution = () =>
+          @setEnabledProps(true, spec, regionFile.Regions) # re-enable all props
           @setState({disableExec: false})
           clearInterval(executorInterval)
 
@@ -296,10 +296,10 @@ Launch the executor
           # if first execution
           if counter == 0
             # current region is the single active one
-            currentRegion = @state.regions.find((values) => values.get("active")).get("index")
+            currentRegion = @state.regions.find((values) -> values.get("active")).get("index")
+            createCar(currentRegion)
             if Executor.execute(automaton, @getInitialProps(), null, currentRegion)
-              @toggleEnabledProps() # disable all props
-              createCar(initialRegion)
+              @setEnabledProps(false, spec, regionFile.Regions) # disable all props
               counter = 1
             else
               resetExecution()
@@ -308,7 +308,7 @@ Launch the executor
             currentRegion = getCurrentRegion()
             @setActiveRegion(currentRegion)
             # get actuators, customs, and next region from executor's current state
-            {nextRegion, actuators, customs} = Executor.execute(automaton, null, @getSensors(), currentRegion)
+            [nextRegion, actuators, customs] = Executor.execute(automaton, null, @getSensors(), currentRegion)
             @setActiveProps(actuators, customs)
             # if there is a next region, move to it
             if nextRegion != null
@@ -329,11 +329,11 @@ Outputs a {sensors, actuators, customs} dict of prop -> 1 or 0 (active or not), 
 
       getInitialProps: () ->
         sensors = actuators = customs = Map()
-        @state.sensors.filter((values, name) => !values.get("disabled")).forEach (values, name) =>
+        @state.sensors.filter((values, name) -> !values.get("disabled")).forEach (values, name) ->
           sensors = sensors.set(name, if values.get("active") then 1 else 0)
-        @state.actuators.filter((values, name) => !values.get("disabled")).forEach (values, name) =>
+        @state.actuators.filter((values, name) -> !values.get("disabled")).forEach (values, name) ->
           actuators = actuators.set(name, if values.get("active") then 1 else 0)
-        @state.customs.forEach (values, name) =>
+        @state.customs.forEach (values, name) ->
           customs = customs.set(name, if values.get("active") then 1 else 0)
         return {sensors: sensors.toJS(), actuators: actuators.toJS(), customs: customs.toJS()}
 
@@ -342,7 +342,7 @@ Outputs a dict of prop -> 1 or 0 (active or not), excluding disabled props
 
       getSensors: () ->
         sensors = {}
-        @state.sensors.filter((values, name) => !values.get("disabled")).forEach (values, name) =>
+        @state.sensors.filter((values, name) -> !values.get("disabled")).forEach (values, name) ->
           sensors[name] = if values.get("active") then 1 else 0
         return sensors
 
@@ -354,7 +354,8 @@ Add Region buttons based on regions in region file
         for region, index in regions_arr
           regions = regions.set(region.name, Map({index: index, disabled: false, active: false}))
         # arbitrarily turn first region as active region
-        regions = regions.set(regions_arr[0], regions_arr[0].update("active", true))
+        regions = regions.setIn([regions_arr[0].name, "active"], true)
+        console.log(regions.toJS())
         @setState({regions: regions})
 
 
@@ -393,33 +394,25 @@ Toggle for when an actuator is clicked
 
 Toggle the enabled state of all actuators, customs, and regions (unless it were disabled in spec to begin with)
 
-      toggleEnabledProps: () ->
-        actuators = customs = regions = Map()
-        for propName, isEnabled of spec.Actions
-          # only toggle if it were not disabled in spec
-          if isEnabled 
-            actuators = @state.actuators.updateIn([propName, "disabled"], (val) -> !val)
-        for propName in spec.Customs
-          customs = @state.customs.updateIn([propName, "disabled"], (val) -> !val)
-        for region, index in regions.Regions
-          regions = @state.regions.updateIn([propName, "disabled"], (val) -> !val)
+      setEnabledProps: (enabled, spec, regions_arr) ->
+        # do not set to true if it were disabled in spec
+        actuators = @state.actuators.map((values, name) -> values.set("disabled", !enabled || spec.Actions[name] == 1))
+        customs = @state.customs.map((values) -> values.set("disabled", !enabled))
+        regions = @state.regions.map((values) -> values.set("disabled", !enabled))
         @setState({actuators: actuators, customs: customs, regions: regions})
 
 Set which region is active
 
       setActiveRegion: (regionNum) ->
         # set all to false, find the one with the correct index, set it to true
-        @setState({regions: @state.regions.map((values) => values.set("active", false))
-          .setIn([@state.regions.findKey((values) => values.get("index") == regionNum), "active"], true)})
+        @setState({regions: @state.regions.map((values) -> values.set("active", false))
+          .setIn([@state.regions.findKey((values) -> values.get("index") == regionNum), "active"], true)})
 
 Set which actuators and customs are active based on [0, 1] dict from executor
     
       setActiveProps: (actDict, custDict) ->
-        actuators = customs = Map()
-        for propName, isActive of actDict
-          actuators = @state.actuators.setIn([propName, "active"], isActive)
-        for propName, isActive in custDict
-          customs = @state.customs.setIn([propName, "active"], isActive)
+        actuators = @state.actuators.map((values, name) -> values.set("active", actDict[name] == 1))
+        customs = @state.customs.map((values, name) -> values.set("active", custDict[name] == 1))
         @setState({actuators: actuators, customs: customs})
 
 Render the application
@@ -451,38 +444,39 @@ Render the application
             <div className="right_wrapper">
               <div>Sensors</div>
               <ul className="simulator_lists">
-                {@state.sensors.map (values, name) =>
+                {@state.sensors.map((values, name) =>
                   <li>
                     <button type="button" className={if values.get("active") then "prop_button_green" else "prop_button"} 
                       onClick={@toggleActiveSensors(name)} disabled={values.get("disabled")}>{name}</button>
-                  </li>
+                  </li>).toSeq()
                 }
               </ul>
               <div>Actuators</div>
               <ul className="simulator_lists">
-                {@state.actuators.map (values, name) =>
+                {@state.actuators.map((values, name) =>
                   <li>
                     <button type="button" className={if values.get("active") then "prop_button_green" else "prop_button"} 
                       onClick={@toggleActiveActuators(name)} disabled={values.get("disabled")}>{name}</button>
-                  </li>
+                  </li>).toSeq()
                 }
               </ul>
               <div>Custom Propositions</div>
               <ul className="simulator_lists">
-                {@state.customs.map (values, name) =>
+                {@state.customs.map((values, name) =>
                   <li>
                     <button type="button" className={if values.get("active") then "prop_button_green" else "prop_button"}
                       onClick={@toggleActiveCustoms(name)} disabled={values.get("disabled")}>{name}</button>
-                  </li>
+                  </li>).toSeq()
                 }
               </ul>
               <div>Regions</div>
               <ul className="simulator_lists">
-                {@state.regions.map (values, name) =>
+                {@state.regions.map((values, name) =>
                   <li>
                     <button type="button" className={if values.get("active") then "prop_button_green" else "prop_button"}
-                      onClick={@setActiveRegion(values.get("index"))} disabled={values.get("disabled")}>{name}</button>
-                  </li>
+                      onClick={() => @setActiveRegion(values.get("index"))} 
+                      disabled={values.get("disabled")}>{name}</button>
+                  </li>).toSeq()
                 }
               </ul>
             </div>
