@@ -71,10 +71,10 @@
 	currentTheta = 0;
 
 	create3DRegions = function(regions_arr) {
-	  var blue, green, height, holes, k, l, len, len1, name, new_geometry, new_ground, new_ground_material, new_shape, point, pointIndex, red, ref1, region, results, width, xpos, ypos;
+	  var blue, green, height, holes, l, len, len1, m, name, new_geometry, new_ground, new_ground_material, new_shape, point, pointIndex, red, ref1, region, results, width, xpos, ypos;
 	  results = [];
-	  for (k = 0, len = regions_arr.length; k < len; k++) {
-	    region = regions_arr[k];
+	  for (l = 0, len = regions_arr.length; l < len; l++) {
+	    region = regions_arr[l];
 	    name = region.name;
 	    if (name === 'boundary') {
 	      continue;
@@ -93,7 +93,7 @@
 	    }), .5, 0);
 	    new_shape = new THREE.Shape();
 	    ref1 = region.points;
-	    for (pointIndex = l = 0, len1 = ref1.length; l < len1; pointIndex = ++l) {
+	    for (pointIndex = m = 0, len1 = ref1.length; m < len1; pointIndex = ++m) {
 	      point = ref1[pointIndex];
 	      if (pointIndex === 0) {
 	        new_shape.moveTo(point[0], point[1]);
@@ -145,14 +145,14 @@
 	};
 
 	getCentroid = function(region) {
-	  var k, len, numPoints, point, position, ref1, regionX, regionY;
+	  var l, len, numPoints, point, position, ref1, regionX, regionY;
 	  regionX = 0;
 	  regionY = 0;
 	  numPoints = region.points.length;
 	  position = region.position;
 	  ref1 = region.points;
-	  for (k = 0, len = ref1.length; k < len; k++) {
-	    point = ref1[k];
+	  for (l = 0, len = ref1.length; l < len; l++) {
+	    point = ref1[l];
 	    regionX += point[0];
 	    regionY += point[1];
 	  }
@@ -203,11 +203,11 @@
 	};
 
 	getCurrentRegion = function() {
-	  var bottom, i, index, j, k, l, left, len, len1, point, points, pos, ref1, region, result, right, top, xpos, ypos;
+	  var bottom, i, index, j, l, left, len, len1, m, point, points, pos, ref1, region, result, right, top, xpos, ypos;
 	  xpos = car.body.position.x;
 	  ypos = car.body.position.z;
 	  ref1 = regionFile.Regions;
-	  for (index = k = 0, len = ref1.length; k < len; index = ++k) {
+	  for (index = l = 0, len = ref1.length; l < len; index = ++l) {
 	    region = ref1[index];
 	    left = region.position[0];
 	    right = region.position[0] + region.size[0];
@@ -218,7 +218,7 @@
 	      pos = region.position;
 	      j = points.length - 1;
 	      result = false;
-	      for (i = l = 0, len1 = points.length; l < len1; i = ++l) {
+	      for (i = m = 0, len1 = points.length; m < len1; i = ++m) {
 	        point = points[i];
 	        if ((points[i][1] + pos[1] > ypos) !== (points[j][1] + pos[1] > ypos) && (xpos < (points[j][0] - points[i][0]) * (ypos - points[i][1] + pos[1]) / (points[j][1] - points[i][1]) + points[i][0] + pos[0])) {
 	          result = !result;
@@ -388,9 +388,9 @@
 	    return sensors;
 	  },
 	  addRegionButtons: function(regions_arr) {
-	    var index, k, len, region, regions;
+	    var index, l, len, region, regions;
 	    regions = Map();
-	    for (index = k = 0, len = regions_arr.length; k < len; index = ++k) {
+	    for (index = l = 0, len = regions_arr.length; l < len; index = ++l) {
 	      region = regions_arr[index];
 	      regions = regions.set(region.name, Map({
 	        index: index,
@@ -405,7 +405,7 @@
 	    });
 	  },
 	  addPropButtons: function(spec) {
-	    var actuators, customs, isEnabled, k, len, propName, ref1, ref2, ref3, sensors;
+	    var actuators, customs, isEnabled, l, len, propName, ref1, ref2, ref3, sensors;
 	    sensors = actuators = customs = Map();
 	    ref1 = spec.Sensors;
 	    for (propName in ref1) {
@@ -424,8 +424,8 @@
 	      }));
 	    }
 	    ref3 = spec.Customs;
-	    for (k = 0, len = ref3.length; k < len; k++) {
-	      propName = ref3[k];
+	    for (l = 0, len = ref3.length; l < len; l++) {
+	      propName = ref3[l];
 	      customs = customs.set(propName, Map({
 	        disabled: false,
 	        active: false
@@ -516,6 +516,18 @@
 	      actuators: actuators,
 	      customs: customs
 	    });
+	  },
+	  shouldComponentUpdate: function(nextProps, nextState) {
+	    var isEqual, k, v;
+	    isEqual = true;
+	    for (k in nextState) {
+	      v = nextState[k];
+	      if (v !== this.state[k]) {
+	        isEqual = false;
+	        break;
+	      }
+	    }
+	    return !isEqual;
 	  },
 	  render: function() {
 	    return React.createElement("div", null, React.createElement(Header, null), React.createElement("div", {

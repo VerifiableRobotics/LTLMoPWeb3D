@@ -355,7 +355,6 @@ Add Region buttons based on regions in region file
           regions = regions.set(region.name, Map({index: index, disabled: false, active: false}))
         # arbitrarily turn first region as active region
         regions = regions.setIn([regions_arr[0].name, "active"], true)
-        console.log(regions.toJS())
         @setState({regions: regions})
 
 
@@ -414,6 +413,16 @@ Set which actuators and customs are active based on [0, 1] dict from executor
         actuators = @state.actuators.map((values, name) -> values.set("active", actDict[name] == 1))
         customs = @state.customs.map((values, name) -> values.set("active", custDict[name] == 1))
         @setState({actuators: actuators, customs: customs})
+
+Optimize component speed because we have immutability!
+
+      shouldComponentUpdate: (nextProps, nextState) ->
+        isEqual = true
+        for k, v of nextState
+          if v != @state[k] 
+            isEqual = false
+            break
+        return !isEqual
 
 Render the application
 
