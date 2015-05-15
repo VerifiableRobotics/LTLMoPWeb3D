@@ -23,6 +23,7 @@ Initial set up
     regionFile = {}
     currentVelocity = 0
     currentTheta = 0
+    currentSimulator = {}
 
 Create 3D regions from the region array
 
@@ -185,11 +186,15 @@ Starts moving the car toward the destination
         wheelTheta = Math.PI - wheelTheta
       else if wheelTheta < -Math.PI 
         wheelTheta = 2*Math.PI + wheelTheta
-      # if theta > PI/2, then slow turn
+      maxVelocity = currentSimulator.state.velocity
+      if maxVelocity <= 0 then maxVelocity = 8 # default
+      # if theta > PI/4 or PI/2, then slower turn
       if wheelTheta > Math.PI/2 or wheelTheta < -Math.PI/2
-        setVelocityTheta(2, wheelTheta)
+        setVelocityTheta(maxVelocity / 4, wheelTheta)
+      else if wheelTheta > Math.PI/4 or wheelTheta < -Math.PI/4
+        setVelocityTheta(maxVelocity / 2, wheelTheta)
       else
-        setVelocityTheta(10, wheelTheta) 
+        setVelocityTheta(maxVelocity, wheelTheta) 
 
 
 Get the current region (number) the car is located in
@@ -228,7 +233,9 @@ Simulator Component
 
     Simulator = React.createClass
       getInitialState: () ->
-        return {disableAut: true, disableExec: true, sensors: Map(), actuators: Map(), customs: Map(), regions: Map()}
+        return {disableAut: true, disableExec: true, 
+        sensors: Map(), actuators: Map(), customs: Map(), regions: Map(),
+        velocity: 8}
       
 Helper function for uploading files, takes in the event, an extension, and the reader's callback'
 
@@ -414,6 +421,22 @@ Set which actuators and customs are active based on [0, 1] dict from executor
         customs = @state.customs.map((values, name) -> values.set("active", custDict[name] == 1))
         @setState({actuators: actuators, customs: customs})
 
+Set the velocity of the car
+      
+      setVelocity: (ev) ->
+        @setState({velocity: parseInt(ev.target.value)})
+
+Increase Velocity
+
+      increaseVelocity: () ->
+        @setState((prev) -> {velocity: prev.velocity + 2})
+
+Decrease Velocity
+      
+      decreaseVelocity: () ->
+        decremented = @state.velocity - 2
+        @setState({velocity: if decremented <= 0 then 1 else decremented})
+
 Optimize component speed because we have immutability!
 
       shouldComponentUpdate: (nextProps, nextState) ->
@@ -488,6 +511,10 @@ Render the application
                   </li>).toSeq()
                 }
               </ul>
+              <div>Maximum Velocity</div>
+              <input type="text" value={@state.velocity} onChange={@setVelocity} /> <br />
+              <button type="button" onClick={@increaseVelocity}>Increase</button>
+              <button type="button" onClick={@decreaseVelocity}>Decrease</button>
             </div>
           </div>
         </div>
@@ -495,4 +522,4 @@ Render the application
 
 And render!
 
-    React.render(<Simulator />, document.getElementById('simulator_body'))
+    currentSimulator = React.render(<Simulator />, document.getElementById('simulator_body'))

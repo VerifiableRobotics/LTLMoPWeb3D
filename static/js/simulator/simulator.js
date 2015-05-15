@@ -44,7 +44,7 @@
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var AutomatonParser, Executor, Header, List, Map, React, RegionsParser, Simulator, SpecParser, automaton, create3DRegions, createCar, currentTheta, currentVelocity, getCentroid, getCurrentRegion, getTransition, plotCourse, ref, regionFile, setVelocityTheta, spec, stopVelocityTheta;
+	var AutomatonParser, Executor, Header, List, Map, React, RegionsParser, Simulator, SpecParser, automaton, create3DRegions, createCar, currentSimulator, currentTheta, currentVelocity, getCentroid, getCurrentRegion, getTransition, plotCourse, ref, regionFile, setVelocityTheta, spec, stopVelocityTheta;
 
 	React = __webpack_require__(6);
 
@@ -69,6 +69,8 @@
 	currentVelocity = 0;
 
 	currentTheta = 0;
+
+	currentSimulator = {};
 
 	create3DRegions = function(regions_arr) {
 	  var blue, green, height, holes, l, len, len1, m, name, new_geometry, new_ground, new_ground_material, new_shape, point, pointIndex, red, ref1, region, results, width, xpos, ypos;
@@ -178,7 +180,7 @@
 	};
 
 	plotCourse = function(region_num) {
-	  var carTheta, currentPosition, target, targetPosition, targetTheta, wheelTheta;
+	  var carTheta, currentPosition, maxVelocity, target, targetPosition, targetTheta, wheelTheta;
 	  target = regionFile.Regions[region_num];
 	  targetPosition = getTransition(target);
 	  currentPosition = [car.body.position.x, car.body.position.z];
@@ -195,10 +197,16 @@
 	  } else if (wheelTheta < -Math.PI) {
 	    wheelTheta = 2 * Math.PI + wheelTheta;
 	  }
+	  maxVelocity = currentSimulator.state.velocity;
+	  if (maxVelocity <= 0) {
+	    maxVelocity = 8;
+	  }
 	  if (wheelTheta > Math.PI / 2 || wheelTheta < -Math.PI / 2) {
-	    return setVelocityTheta(2, wheelTheta);
+	    return setVelocityTheta(maxVelocity / 4, wheelTheta);
+	  } else if (wheelTheta > Math.PI / 4 || wheelTheta < -Math.PI / 4) {
+	    return setVelocityTheta(maxVelocity / 2, wheelTheta);
 	  } else {
-	    return setVelocityTheta(10, wheelTheta);
+	    return setVelocityTheta(maxVelocity, wheelTheta);
 	  }
 	};
 
@@ -241,7 +249,8 @@
 	      sensors: Map(),
 	      actuators: Map(),
 	      customs: Map(),
-	      regions: Map()
+	      regions: Map(),
+	      velocity: 8
 	    };
 	  },
 	  onUpload: function(ev, ext, callback) {
@@ -399,7 +408,6 @@
 	      }));
 	    }
 	    regions = regions.setIn([regions_arr[0].name, "active"], true);
-	    console.log(regions.toJS());
 	    return this.setState({
 	      regions: regions
 	    });
@@ -517,6 +525,25 @@
 	      customs: customs
 	    });
 	  },
+	  setVelocity: function(ev) {
+	    return this.setState({
+	      velocity: parseInt(ev.target.value)
+	    });
+	  },
+	  increaseVelocity: function() {
+	    return this.setState(function(prev) {
+	      return {
+	        velocity: prev.velocity + 2
+	      };
+	    });
+	  },
+	  decreaseVelocity: function() {
+	    var decremented;
+	    decremented = this.state.velocity - 2;
+	    return this.setState({
+	      velocity: decremented <= 0 ? 1 : decremented
+	    });
+	  },
 	  shouldComponentUpdate: function(nextProps, nextState) {
 	    var isEqual, k, v;
 	    isEqual = true;
@@ -621,11 +648,21 @@
 	          "disabled": values.get("disabled")
 	        }, name));
 	      };
-	    })(this)).toSeq()))));
+	    })(this)).toSeq()), React.createElement("div", null, "Maximum Velocity"), React.createElement("input", {
+	      "type": "text",
+	      "value": this.state.velocity,
+	      "onChange": this.setVelocity
+	    }), " ", React.createElement("br", null), React.createElement("button", {
+	      "type": "button",
+	      "onClick": this.increaseVelocity
+	    }, "Increase"), React.createElement("button", {
+	      "type": "button",
+	      "onClick": this.decreaseVelocity
+	    }, "Decrease"))));
 	  }
 	});
 
-	React.render(React.createElement(Simulator, null), document.getElementById('simulator_body'));
+	currentSimulator = React.render(React.createElement(Simulator, null), document.getElementById('simulator_body'));
 
 
 /***/ },
