@@ -143,28 +143,29 @@ def compileSpec():
   return jsonify(compilerLog = logString)
 
 # sends the currently stored aut to the user
-@app.route('/specEditor/saveAut')
+@app.route('/specEditor/saveAut', methods=['GET'])
 def saveAut():
   fileName, fileExtension = os.path.splitext(session['specFilePath']) # split extension
+  print "" + fileName
   thepath = fileName + ".aut"
   return send_file(thepath, as_attachment=True, mimetype='text/plain')
 
 # sends the currently stored ltl to the user
-@app.route('/specEditor/saveLTL')
+@app.route('/specEditor/saveLTL', methods=['GET'])
 def saveLTL():
   fileName, fileExtension = os.path.splitext(session['specFilePath']) # split extension
   thepath = fileName + ".ltl"
   return send_file(thepath, as_attachment=True, mimetype='text/plain')
 
 # sends the currently stored smv to the user
-@app.route('/specEditor/saveSMV')
+@app.route('/specEditor/saveSMV', methods=['GET'])
 def saveSMV():
   fileName, fileExtension = os.path.splitext(session['specFilePath']) # split extension
   thepath = fileName + ".smv"
   return send_file(thepath, as_attachment=True, mimetype='text/plain')
 
 # sends the currently stored decomposed regions to the user
-@app.route('/specEditor/saveDecomposed')
+@app.route('/specEditor/saveDecomposed', methods=['GET'])
 def saveDecomposed():
   fileName, fileExtension = os.path.splitext(session['specFilePath']) # split extension
   thepath = fileName + "_decomposed.regions"
