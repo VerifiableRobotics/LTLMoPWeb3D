@@ -228,22 +228,7 @@ Simulator Component
 
     Simulator = React.createClass
       getInitialState: () ->
-        return {disableAut: true, disableExec: true, sensors: Map(), actuators: Map(), customs: Map()}
-
-Add Buttons/State based on props in spec
-      
-      addPropButtons: (spec) ->
-        sensors = actuators = customs = Map()
-        # add elements to maps
-        for propName, isEnabled of spec.Sensors
-          sensors = sensors.set(propName, Map({disabled: !isEnabled, active: false}))
-        for propName, isEnabled of spec.Actions
-          actuators = actuators.set(propName, Map({disabled: !isEnabled, active: false}))
-        # customs is just an array
-        for propName in spec.Customs
-          customs = customs.set(propName, Map({active: false}))
-        # set maps
-        @setState({sensors: sensors, actuators: actuators, customs: customs})
+        return {disableAut: true, disableExec: true, sensors: Map(), actuators: Map(), customs: Map(), regions: Map()}
       
 Helper function for uploading files, takes in the event, an extension, and the reader's callback'
 
@@ -268,6 +253,7 @@ When a *.regions file is uploaded; specifically the decomposed one
           console.log("Regions Object: ")
           console.log(regions)
           create3DRegions(regions.Regions)
+          @addRegionButtons(regions.Regions)
         @onUpload(ev, "regions", callback)
 
 When a *.spec file is uploaded
@@ -293,43 +279,37 @@ When a *.aut file is uploaded
           @setState({disableExec: false})
         @onUpload(ev, "aut", callback)
       
-Gets the initial props (all of sensors, actuators, and customs) for the executor to determine initial state  
-Outputs a {sensors, actuators, customs} dict of prop -> 1 or 0 (active or not), excluding disabled props      
-
-      getInitialProps: () ->
-        sensors = actuators = customs = Map()
-        @state.sensors.keySeq().filter((name) => !@state.sensors.get(name).get("disabled")).forEach (name) =>
-          sensors = sensors.set(name, if @state.sensors.get(name).get("active") then 1 else 0)
-        @state.actuators.keySeq().filter((name) => !@state.actuators.get(name).get("disabled")).forEach (name) =>
-          actuators = actuators.set(name, if @state.actuators.get(name).get("active") then 1 else 0)
-        @state.customs.keySeq().forEach (name) =>
-          customs = customs.set(name, if @state.customs.get(name).get("active") then 1 else 0)
-        return {sensors: sensors.toJS(), actuators: actuators.toJS(), customs: customs.toJS()}
-
-Gets sensor readings for the executor to determine next state  
-Outputs a dict of prop -> 1 or 0 (active or not), excluding disabled props
-
-      getSensors: () ->
-        sensors = {}
-        @state.sensors.keySeq().filter((name) => !@state.sensors.get(name).get("disabled")).forEach (name) =>
-          sensors[name] = if @state.sensors.get(name).get("active") then 1 else 0
-        return sensors
-      
 Launch the executor
 
       startExecution: () ->
+        executorInterval = 0 # timer ID
+
+        # reset function in case initial props are invalid
+        resetExecution: () =>
+          @toggleEnabledProps() # re-enable all props
+          @setState({disableExec: false})
+          clearInterval(executorInterval)
+
         # initialize the execution loop        
         counter = 0
-        executorInterval = 0
         executionLoop = () =>
           # if first execution
           if counter == 0
-            initialRegion = Executor.execute(automaton, @getInitialProps(), null, null)
-            createCar(initialRegion)
-            counter = 1
+            # current region is the single active one
+            currentRegion = @state.regions.find((values) => values.get("active")).get("index")
+            if Executor.execute(automaton, @getInitialProps(), null, currentRegion)
+              @toggleEnabledProps() # disable all props
+              createCar(initialRegion)
+              counter = 1
+            else
+              resetExecution()
           else
+            # get current region and set it
             currentRegion = getCurrentRegion()
-            nextRegion = Executor.execute(automaton, null, @getSensors(), currentRegion)
+            @setActiveRegion(currentRegion)
+            # get actuators, customs, and next region from executor's current state
+            {nextRegion, actuators, customs} = Executor.execute(automaton, null, @getSensors(), currentRegion)
+            @setActiveProps(actuators, customs)
             # if there is a next region, move to it
             if nextRegion != null
               if nextRegion == currentRegion then stopVelocityTheta() else plotCourse(nextRegion)
@@ -338,30 +318,110 @@ Launch the executor
               stopVelocityTheta()
             # if there isn't a current state, stop the execution loop
             else  
-              clearInterval(executorInterval)
+              resetExecution()
         # start the execution loop
         executorInterval = setInterval(executionLoop, 300)
         # disable buttons/uploads
         @setState({disableRegions: true, disableSpec: true, disableAut: true, disableExec: true})
+
+Gets the initial props (all of sensors, actuators, and customs) for the executor to determine initial state  
+Outputs a {sensors, actuators, customs} dict of prop -> 1 or 0 (active or not), excluding disabled props      
+
+      getInitialProps: () ->
+        sensors = actuators = customs = Map()
+        @state.sensors.filter((values, name) => !values.get("disabled")).forEach (values, name) =>
+          sensors = sensors.set(name, if values.get("active") then 1 else 0)
+        @state.actuators.filter((values, name) => !values.get("disabled")).forEach (values, name) =>
+          actuators = actuators.set(name, if values.get("active") then 1 else 0)
+        @state.customs.forEach (values, name) =>
+          customs = customs.set(name, if values.get("active") then 1 else 0)
+        return {sensors: sensors.toJS(), actuators: actuators.toJS(), customs: customs.toJS()}
+
+Gets sensor readings for the executor to determine next state  
+Outputs a dict of prop -> 1 or 0 (active or not), excluding disabled props
+
+      getSensors: () ->
+        sensors = {}
+        @state.sensors.filter((values, name) => !values.get("disabled")).forEach (values, name) =>
+          sensors[name] = if values.get("active") then 1 else 0
+        return sensors
+
+Add Region buttons based on regions in region file
+
+      addRegionButtons: (regions_arr) ->
+        regions = Map()
+        # add names to map
+        for region, index in regions_arr
+          regions = regions.set(region.name, Map({index: index, disabled: false, active: false}))
+        # arbitrarily turn first region as active region
+        regions = regions.set(regions_arr[0], regions_arr[0].update("active", true))
+        @setState({regions: regions})
+
+
+Add Buttons/State based on props in spec
+      
+      addPropButtons: (spec) ->
+        sensors = actuators = customs = Map()
+        # add elements to maps
+        for propName, isEnabled of spec.Sensors
+          sensors = sensors.set(propName, Map({disabled: !isEnabled, active: false}))
+        for propName, isEnabled of spec.Actions
+          actuators = actuators.set(propName, Map({disabled: !isEnabled, active: false}))
+        # customs is just an array, always enabled in spec
+        for propName in spec.Customs
+          customs = customs.set(propName, Map({disabled: false, active: false}))
+        # set maps
+        @setState({sensors: sensors, actuators: actuators, customs: customs})
       
 Toggle for when a sensor is clicked
 
       toggleActiveSensors: (name) ->
         return () =>
-          @setState((prev) -> {sensors: prev.sensors.update(name, (data) -> data.set("active", !data.get("active")))})
+          @setState((prev) -> {sensors: prev.sensors.updateIn([name, "active"], (val) -> !val)})
 
 Toggle for when an actuator is clicked
 
       toggleActiveActuators: (name) ->
         return () =>
-          @setState((prev) -> {actuators: prev.actuators.update(name, (data) -> data.set("active", !data.get("active")))})
+          @setState((prev) -> {actuators: prev.actuators.updateIn([name, "active"], (val) -> !val)})
 
 Toggle for when an actuator is clicked
 
       toggleActiveCustoms: (name) ->
         return () =>
-          @setState((prev) -> {customs: prev.customs.update(name, (data) -> data.set("active", !data.get("active")))})
-      
+          @setState((prev) -> {customs: prev.customs.updateIn([name, "active"], (val) -> !val)})
+
+Toggle the enabled state of all actuators, customs, and regions (unless it were disabled in spec to begin with)
+
+      toggleEnabledProps: () ->
+        actuators = customs = regions = Map()
+        for propName, isEnabled of spec.Actions
+          # only toggle if it were not disabled in spec
+          if isEnabled 
+            actuators = @state.actuators.updateIn([propName, "disabled"], (val) -> !val)
+        for propName in spec.Customs
+          customs = @state.customs.updateIn([propName, "disabled"], (val) -> !val)
+        for region, index in regions.Regions
+          regions = @state.regions.updateIn([propName, "disabled"], (val) -> !val)
+        @setState({actuators: actuators, customs: customs, regions: regions})
+
+Set which region is active
+
+      setActiveRegion: (regionNum) ->
+        # set all to false, find the one with the correct index, set it to true
+        @setState({regions: @state.regions.map((values) => values.set("active", false))
+          .setIn([@state.regions.findKey((values) => values.get("index") == regionNum), "active"], true)})
+
+Set which actuators and customs are active based on [0, 1] dict from executor
+    
+      setActiveProps: (actDict, custDict) ->
+        actuators = customs = Map()
+        for propName, isActive of actDict
+          actuators = @state.actuators.setIn([propName, "active"], isActive)
+        for propName, isActive in custDict
+          customs = @state.customs.setIn([propName, "active"], isActive)
+        @setState({actuators: actuators, customs: customs})
+
 Render the application
 
       render: () ->
@@ -390,9 +450,8 @@ Render the application
           <div id="simulator_wrapper">
             <div className="right_wrapper">
               <div>Sensors</div>
-              <ul id="sensor_list">
-                {@state.sensors.keySeq().map (name) =>
-                  values = @state.sensors.get(name)
+              <ul className="simulator_lists">
+                {@state.sensors.map (values, name) =>
                   <li>
                     <button type="button" className={if values.get("active") then "prop_button_green" else "prop_button"} 
                       onClick={@toggleActiveSensors(name)} disabled={values.get("disabled")}>{name}</button>
@@ -400,9 +459,8 @@ Render the application
                 }
               </ul>
               <div>Actuators</div>
-              <ul id="actuator_list">
-                {@state.actuators.keySeq().map (name) =>
-                  values = @state.actuators.get(name)
+              <ul className="simulator_lists">
+                {@state.actuators.map (values, name) =>
                   <li>
                     <button type="button" className={if values.get("active") then "prop_button_green" else "prop_button"} 
                       onClick={@toggleActiveActuators(name)} disabled={values.get("disabled")}>{name}</button>
@@ -410,12 +468,20 @@ Render the application
                 }
               </ul>
               <div>Custom Propositions</div>
-              <ul id="customprop_list">
-                {@state.customs.keySeq().map (name) =>
-                  values = @state.customs.get(name)
+              <ul className="simulator_lists">
+                {@state.customs.map (values, name) =>
                   <li>
                     <button type="button" className={if values.get("active") then "prop_button_green" else "prop_button"}
-                      onClick={@toggleActiveCustoms(name)}>{name}</button>
+                      onClick={@toggleActiveCustoms(name)} disabled={values.get("disabled")}>{name}</button>
+                  </li>
+                }
+              </ul>
+              <div>Regions</div>
+              <ul className="simulator_lists">
+                {@state.regions.map (values, name) =>
+                  <li>
+                    <button type="button" className={if values.get("active") then "prop_button_green" else "prop_button"}
+                      onClick={@setActiveRegion(values.get("index"))} disabled={values.get("disabled")}>{name}</button>
                   </li>
                 }
               </ul>

@@ -29,7 +29,7 @@
   width: 15%;
   float:right;
 }
-#sensor_list, #actuator_list, #customprop_list{
+.simulator_lists{
   list-style-type: none;
 }
 .prop_button{
