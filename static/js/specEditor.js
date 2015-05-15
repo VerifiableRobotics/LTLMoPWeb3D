@@ -95,6 +95,20 @@ $(document).ready(function() {
       }
     });
   });
+
+  $('#spec_editor_analyze').click(function() {
+    $.ajax({
+      type: 'GET',
+      url: 'specEditor/analyzeSpec',
+      success: function(data) {
+        alert(data.analyzeLog);
+      },
+      error: function() {
+        console.error("analyze spec failed");
+        alert("Spec analysis failed!");
+      }
+    });
+  });
   
   // click about handler 
   $('#about_spec_editor').click(function() {

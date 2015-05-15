@@ -142,6 +142,15 @@ def compileSpec():
   # end create zip
   return jsonify(compilerLog = logString)
 
+# analyzes the spec and sends back the output
+@app.route('/specEditor/analyzeSpec', methods=['GET'])
+def analyzeSpec():
+  sc = specCompiler.SpecCompiler()
+  sc.loadSpec(session['specFilePath'])
+  #realizable, realizableFS, logString = sc.compile()
+  realizable, unsat, nonTrivial, to_highlight, output = sc._analyze()
+  return jsonify(analyzeLog = output)
+
 # sends the currently stored aut to the user
 @app.route('/specEditor/saveAut', methods=['GET'])
 def saveAut():
