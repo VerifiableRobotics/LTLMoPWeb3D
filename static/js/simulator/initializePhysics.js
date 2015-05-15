@@ -44,7 +44,7 @@ initScene = function() {
     35,
     window.innerWidth / window.innerHeight,
     1,
-    1000
+    10000
   );
   camera.position.set( 60, 50, 60 );
   camera.lookAt( scene.position );

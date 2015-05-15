@@ -1134,7 +1134,7 @@
 	    return React.createElement("div", {
 	      "id": "heading"
 	    }, React.createElement("h1", null, "LTLMoPWeb3D Simulator"), React.createElement("a", {
-	      "href": "/"
+	      "href": "/simulator"
 	    }, "Simulator"), React.createElement("a", {
 	      "href": "/specEditor"
 	    }, "Specification Editor"), React.createElement("a", {
@@ -8627,7 +8627,7 @@
 	var ReactElement = __webpack_require__(15);
 	var ReactElementValidator = __webpack_require__(16);
 
-	var mapObject = __webpack_require__(48);
+	var mapObject = __webpack_require__(52);
 
 	/**
 	 * Create a factory that creates HTML tag elements.
@@ -8806,13 +8806,13 @@
 
 	'use strict';
 
-	var DOMPropertyOperations = __webpack_require__(49);
+	var DOMPropertyOperations = __webpack_require__(48);
 	var ReactComponentBrowserEnvironment =
-	  __webpack_require__(50);
-	var ReactDOMComponent = __webpack_require__(51);
+	  __webpack_require__(49);
+	var ReactDOMComponent = __webpack_require__(50);
 
 	var assign = __webpack_require__(26);
-	var escapeTextContentForBrowser = __webpack_require__(52);
+	var escapeTextContentForBrowser = __webpack_require__(51);
 
 	/**
 	 * Text nodes violate a couple assumptions that React makes about components:
@@ -8937,9 +8937,9 @@
 	var ReactBrowserComponentMixin = __webpack_require__(60);
 	var ReactClass = __webpack_require__(12);
 	var ReactComponentBrowserEnvironment =
-	  __webpack_require__(50);
+	  __webpack_require__(49);
 	var ReactDefaultBatchingStrategy = __webpack_require__(61);
-	var ReactDOMComponent = __webpack_require__(51);
+	var ReactDOMComponent = __webpack_require__(50);
 	var ReactDOMButton = __webpack_require__(62);
 	var ReactDOMForm = __webpack_require__(63);
 	var ReactDOMImg = __webpack_require__(64);
@@ -12803,63 +12803,6 @@
 /* 48 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/**
-	 * Copyright 2013-2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule mapObject
-	 */
-
-	'use strict';
-
-	var hasOwnProperty = Object.prototype.hasOwnProperty;
-
-	/**
-	 * Executes the provided `callback` once for each enumerable own property in the
-	 * object and constructs a new object from the results. The `callback` is
-	 * invoked with three arguments:
-	 *
-	 *  - the property value
-	 *  - the property name
-	 *  - the object being traversed
-	 *
-	 * Properties that are added after the call to `mapObject` will not be visited
-	 * by `callback`. If the values of existing properties are changed, the value
-	 * passed to `callback` will be the value at the time `mapObject` visits them.
-	 * Properties that are deleted before being visited are not visited.
-	 *
-	 * @grep function objectMap()
-	 * @grep function objMap()
-	 *
-	 * @param {?object} object
-	 * @param {function} callback
-	 * @param {*} context
-	 * @return {?object}
-	 */
-	function mapObject(object, callback, context) {
-	  if (!object) {
-	    return null;
-	  }
-	  var result = {};
-	  for (var name in object) {
-	    if (hasOwnProperty.call(object, name)) {
-	      result[name] = callback.call(context, object[name], name, object);
-	    }
-	  }
-	  return result;
-	}
-
-	module.exports = mapObject;
-
-
-/***/ },
-/* 49 */
-/***/ function(module, exports, __webpack_require__) {
-
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
 	 * All rights reserved.
@@ -13052,7 +12995,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(30)))
 
 /***/ },
-/* 50 */
+/* 49 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -13103,7 +13046,7 @@
 
 
 /***/ },
-/* 51 */
+/* 50 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -13124,16 +13067,16 @@
 
 	var CSSPropertyOperations = __webpack_require__(96);
 	var DOMProperty = __webpack_require__(81);
-	var DOMPropertyOperations = __webpack_require__(49);
+	var DOMPropertyOperations = __webpack_require__(48);
 	var ReactBrowserEventEmitter = __webpack_require__(82);
 	var ReactComponentBrowserEnvironment =
-	  __webpack_require__(50);
+	  __webpack_require__(49);
 	var ReactMount = __webpack_require__(21);
 	var ReactMultiChild = __webpack_require__(97);
 	var ReactPerf = __webpack_require__(22);
 
 	var assign = __webpack_require__(26);
-	var escapeTextContentForBrowser = __webpack_require__(52);
+	var escapeTextContentForBrowser = __webpack_require__(51);
 	var invariant = __webpack_require__(32);
 	var isEventSupported = __webpack_require__(98);
 	var keyOf = __webpack_require__(44);
@@ -13616,7 +13559,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(30)))
 
 /***/ },
-/* 52 */
+/* 51 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -13657,6 +13600,63 @@
 	}
 
 	module.exports = escapeTextContentForBrowser;
+
+
+/***/ },
+/* 52 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright 2013-2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule mapObject
+	 */
+
+	'use strict';
+
+	var hasOwnProperty = Object.prototype.hasOwnProperty;
+
+	/**
+	 * Executes the provided `callback` once for each enumerable own property in the
+	 * object and constructs a new object from the results. The `callback` is
+	 * invoked with three arguments:
+	 *
+	 *  - the property value
+	 *  - the property name
+	 *  - the object being traversed
+	 *
+	 * Properties that are added after the call to `mapObject` will not be visited
+	 * by `callback`. If the values of existing properties are changed, the value
+	 * passed to `callback` will be the value at the time `mapObject` visits them.
+	 * Properties that are deleted before being visited are not visited.
+	 *
+	 * @grep function objectMap()
+	 * @grep function objMap()
+	 *
+	 * @param {?object} object
+	 * @param {function} callback
+	 * @param {*} context
+	 * @return {?object}
+	 */
+	function mapObject(object, callback, context) {
+	  if (!object) {
+	    return null;
+	  }
+	  var result = {};
+	  for (var name in object) {
+	    if (hasOwnProperty.call(object, name)) {
+	      result[name] = callback.call(context, object[name], name, object);
+	    }
+	  }
+	  return result;
+	}
+
+	module.exports = mapObject;
 
 
 /***/ },
@@ -15342,7 +15342,7 @@
 
 	var CSSPropertyOperations = __webpack_require__(96);
 	var DOMChildrenOperations = __webpack_require__(110);
-	var DOMPropertyOperations = __webpack_require__(49);
+	var DOMPropertyOperations = __webpack_require__(48);
 	var ReactMount = __webpack_require__(21);
 	var ReactPerf = __webpack_require__(22);
 
@@ -15558,7 +15558,7 @@
 	'use strict';
 
 	var AutoFocusMixin = __webpack_require__(108);
-	var DOMPropertyOperations = __webpack_require__(49);
+	var DOMPropertyOperations = __webpack_require__(48);
 	var LinkedValueUtils = __webpack_require__(111);
 	var ReactBrowserComponentMixin = __webpack_require__(60);
 	var ReactClass = __webpack_require__(12);
@@ -15975,7 +15975,7 @@
 	'use strict';
 
 	var AutoFocusMixin = __webpack_require__(108);
-	var DOMPropertyOperations = __webpack_require__(49);
+	var DOMPropertyOperations = __webpack_require__(48);
 	var LinkedValueUtils = __webpack_require__(111);
 	var ReactBrowserComponentMixin = __webpack_require__(60);
 	var ReactClass = __webpack_require__(12);
@@ -16311,7 +16311,7 @@
 	var ReactEmptyComponent = __webpack_require__(83);
 	var ReactBrowserEventEmitter = __webpack_require__(82);
 	var ReactNativeComponent = __webpack_require__(46);
-	var ReactDOMComponent = __webpack_require__(51);
+	var ReactDOMComponent = __webpack_require__(50);
 	var ReactPerf = __webpack_require__(22);
 	var ReactRootIndex = __webpack_require__(80);
 	var ReactUpdates = __webpack_require__(85);
@@ -19446,7 +19446,7 @@
 
 	'use strict';
 
-	var escapeTextContentForBrowser = __webpack_require__(52);
+	var escapeTextContentForBrowser = __webpack_require__(51);
 
 	/**
 	 * Escapes attribute value to prevent scripting attacks.
@@ -25424,7 +25424,7 @@
 	'use strict';
 
 	var ExecutionEnvironment = __webpack_require__(29);
-	var escapeTextContentForBrowser = __webpack_require__(52);
+	var escapeTextContentForBrowser = __webpack_require__(51);
 	var setInnerHTML = __webpack_require__(89);
 
 	/**

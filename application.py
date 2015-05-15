@@ -40,7 +40,6 @@ def createRFI():
   return regions.RegionFileInterface()
 
 # returns a list of regions and the server path given a file
-@app.route('/simulator/uploadRegions', methods=['POST'])
 @app.route('/specEditor/uploadRegions', methods=['POST'])
 def uploadRegions():
   file = request.files['file']
@@ -55,7 +54,7 @@ def uploadRegions():
   return jsonify(theBool = "False")
 
 # ----------------- simulator functions ------------------------------
-@app.route('/')
+@app.route('/simulator')
 def loadSimulator():
   return render_template('/simulator.html', name='simulator')
 
@@ -70,6 +69,7 @@ def createProject():
   return proj
 
 # render the spec editor
+@app.route('/')
 @app.route('/specEditor')
 def loadSpecEditor():
   return render_template('/specEditor.html', name='specEditor')
