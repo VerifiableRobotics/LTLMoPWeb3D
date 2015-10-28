@@ -1,5 +1,6 @@
 # LTLMoPWeb3D Specific
 uploads/
+.vagrant/
 
 # Created by https://www.gitignore.io
 

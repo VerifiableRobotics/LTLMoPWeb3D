@@ -3,8 +3,8 @@
 var webpack = require('webpack');
 
 module.exports = {
-  entry: './static/js/simulator/simulator.cjsx.md',
-  output: { filename: 'static/js/simulator/simulator.js' },
+  entry: './js/simulator/simulator.cjsx.md',
+  output: { filename: 'js/simulator/simulator.js' },
   // output: {
   //   path: './build', // This is where images AND js will go
   //   publicPath: 'http://0.0.0.0:5000', // This is used to generate URLs to e.g. images

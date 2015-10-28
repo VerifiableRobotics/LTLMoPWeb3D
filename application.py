@@ -2,7 +2,7 @@ from flask import Flask, request, redirect, url_for, render_template, jsonify, R
 from werkzeug.utils import secure_filename
 import os, sys, datetime, uuid, threading, zipfile
                                                                                                                                                                                                                
-sys.path.append(os.path.join("LTLMoP","src","lib")) # add lib to path
+sys.path.append(os.path.join(os.sep, "LTLMoP","src","lib")) # add lib to path
 import regions, project, specCompiler
 
 UPLOAD_FOLDER = 'uploads'
@@ -115,9 +115,11 @@ def createSpec(dict):
     proj.rfi.readFile(dict.get('regionPath')) # 'uploads/floorplan.regions'
   
   # write spec, save spec, and return path
-  thepath = os.path.join(app.config['UPLOAD_FOLDER'], session['username'], session['username'] + ".spec")
-  proj.writeSpecFile(thepath)
-  session['specFilePath'] = thepath
+  # create the path if it doesn't exist in the session already
+  if not session['specFilePath']:
+    session['specFilePath'] = os.path.join(app.config['UPLOAD_FOLDER'], 
+      session['username'], session['username'] + ".spec")
+  proj.writeSpecFile(session['specFilePath'])
   return jsonify(theBool = "True")
 
 # sends the currently stored spec to the user
@@ -131,8 +133,7 @@ def saveSpec():
 # sends the currently stored regions to the user
 @app.route('/specEditor/saveRegions', methods=['GET', 'POST'])
 def saveRegions():
-  thepath = session['regionsFilePath']
-  return send_file(thepath, as_attachment=True, mimetype='text/plain')
+  return send_file(session['regionsFilePath'], as_attachment=True, mimetype='text/plain')
 
 # compiles the currently stored project and returns compiler log
 @app.route('/specEditor/compileSpec', methods=['GET'])
@@ -246,10 +247,5 @@ def loadRegionEditor():
 
 if __name__ == '__main__':
   #app.debug = True
-  # compile jtlv compiler initially (build the java source with javac)
-  print "Compiling jtlv compiler..."
-  os.chdir('LTLMoP/src/etc/jtlv')
-  os.system('sh build.sh')
-  os.chdir('../../../..')
   port = int(os.environ.get("PORT", 5000))
   app.run(host='0.0.0.0', port=port)

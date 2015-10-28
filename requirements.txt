@@ -1,5 +1,3 @@
 Flask==0.10
 Jinja2
 Werkzeug
-
--r ./LTLMoP/requirements.txt
