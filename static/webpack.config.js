@@ -3,13 +3,12 @@
 var webpack = require('webpack');
 
 module.exports = {
-  entry: './js/simulator/simulator.cjsx.md',
-  output: { filename: 'js/simulator/simulator.js' },
-  // output: {
-  //   path: './build', // This is where images AND js will go
-  //   publicPath: 'http://0.0.0.0:5000', // This is used to generate URLs to e.g. images
-  //   filename: 'bundle.js'
-  // },
+  entry: './js/specEditor/specEditor.cjsx.md',
+  output: {
+    path: './build', // This is where images AND js will go
+    publicPath: 'http://0.0.0.0:5000', // This is used to generate URLs to e.g. images
+    filename: 'bundle.js'
+  },
   resolveLoader: {
     modulesDirectories: ['node_modules']
   },
@@ -18,13 +17,15 @@ module.exports = {
   },
   module: {
     loaders: [
-      { test: /\.cjsx$/, loader: 'cjsx-loader' },
-      { test: /\.cjsx\.md$/, loaders: ['coffee-loader?literate', 'cjsx-loader'] },
+      { test: /\.cjsx$/, loader: ['coffee-loader', 'cjsx-loader'] },
+      { test: /\.cjsx\.md$/, loaders: ['coffee-loader?literate', 'cjsx-loader?literate'] },
       { test: /\.coffee$/, loader: 'coffee-loader' },
       { test: /\.(coffee\.md|litcoffee)$/, loader: 'coffee-loader?literate' },
-      { test: /\.scss$/, loader: 'style-loader!css-loader!sass-loader' }, // use ! to chain loaders
       { test: /\.css$/, loader: 'style-loader!css-loader' },
       { test: /\.(png|jpg)$/, loader: 'url-loader?limit=8192'} // inline base64 URLs for <=8k images, direct URLs for the rest
     ]
+  },
+  watchOptions: {
+    poll: true
   }
 };
