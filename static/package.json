@@ -10,7 +10,6 @@
     "isomorphic-fetch": "^2.2.0",
     "react": "^0.14.2",
     "react-dom": "^0.14.2",
-    "react-file-input": "^0.2.5",
     "react-tabs": "^0.5.1"
   },
   "devDependencies": {

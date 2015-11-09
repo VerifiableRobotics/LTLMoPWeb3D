@@ -22,14 +22,7 @@
   border: 1px solid gray;
 }
 /* so that the browser/OS generated button isn't seen */
-#spec_editor_regions_upload_file{
-  opacity: 0;
-  z-index: 2;
-  position: absolute;
-  width: 140px; /* approximate width of the text overlay */
-}
-/* so that the browser/OS generated button isn't seen */
-#spec_editor_import_spec_file{
+.spec_editor_upload_file{
   opacity: 0;
   z-index: 2;
   position: absolute;

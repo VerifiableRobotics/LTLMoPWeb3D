@@ -3,7 +3,6 @@ External Dependencies
     
     React = require('react')
     ReactDOM = require('react-dom')
-    FileInput = require('react-file-input')
     { Tab, Tabs, TabList, TabPanel } = require('react-tabs');
     { Map } = require('immutable')
     classNames = require('classnames')
@@ -312,20 +311,20 @@ Render the component
                     <ul>
                       <li>
                         <form>
-                          <FileInput name='spec'
+                          <input name='spec'
+                            type='file'
                             accept='.spec'
-                            placeholder='Open...'
-                            id='spec_editor_import_spec_file'
+                            className='spec_editor_upload_file'
                             onChange={@_uploadSpec} />
-                          <a>Open...</a>
+                          <a>Import Spec File...</a>
                         </form>
                       </li>
                       <li>
                         <form>
-                          <FileInput name='regions'
+                          <input name='regions'
+                            type='file'
                             accept='.regions'
-                            placeholder='Import Region File...'
-                            id='spec_editor_regions_upload_file'
+                            className='spec_editor_upload_file'
                             onChange={@_uploadRegions} />
                           <a>Import Region File...</a>
                         </form>
@@ -459,11 +458,12 @@ Render the component
             <div id='spec_editor_rightside'>
               <div className='spec_editor_labels'>Regions:</div>
               <ul className='spec_editor_selectlist' id='spec_editor_regions'>
-                {@state.data.get('regions').map((values, name) =>
-                  <li tabIndex='0' onClick={() => @_highlightProp('regions', name)}
-                    className={classNames({'spec_editor_selectlist_li_highlighted':
-                      values.get('highlighted')})}>
-                    {name}</li>)}
+                {@state.data.get('regions').filter((values, name) -> name != 'boundary')
+                  .map((values, name) =>
+                    <li tabIndex='0' onClick={() => @_highlightProp('regions', name)}
+                      className={classNames({'spec_editor_selectlist_li_highlighted':
+                        values.get('highlighted')})}>
+                      {name}</li>)}
               </ul>
               <ul className='spec_editor_buttonlist'>
                 <li><button disabled={@state.data.get('regions').size <= 0}>
