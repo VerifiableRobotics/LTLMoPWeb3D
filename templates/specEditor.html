@@ -4,158 +4,17 @@
 
 <head>
   <title>LTLMoPWeb3D Specification Editor</title>
-	
-  <link rel="stylesheet" type="text/css" href="static/css/header.css" />
-  <link rel="stylesheet" type="text/css" href="static/css/specEditor.css" />
-  <link rel="stylesheet" type="text/css" href="static/plugins/jquerylinedtextarea/jquery-linedtextarea.css" />
-	
-  <script type="text/javascript" src="static/plugins/jquery/jquery-2.1.0.min.js"></script>
-  <script type="text/javascript" src="static/js/specEditor.js"></script>
-  <script type="text/javascript" src="static/plugins/jquerylinedtextarea/jquery-linedtextarea.js"></script>  
-  
+  <link rel='stylesheet' type='text/css' href='static/css/header.css' />
+  <link rel='stylesheet' type='text/css' href='static/css/specEditor.css' />
+  <link rel='stylesheet' type='text/css' href='static/plugins/jquerylinedtextarea/jquery-linedtextarea.css' />
 </head>
 
 <body>
-  <div id="heading">
-    <h1>LTLMoPWeb3D Specification Editor</h1>
-    <a href="/simulator">Simulator</a>
-    <a href="/specEditor">Specification Editor</a>
-    <a href="/regionEditor">Region Editor</a>
-  </div>
-  <div id="spec_editor_wrapper">
-    <div id="menuh-container">
-      <div id="menuh">
-          <ul>
-            <li><a href="#">File &#x25BC;</a>
-              <ul>
-                <li>
-                  <form enctype="multipart/form-data" id="spec_editor_import_spec_form">
-                    <input name="file" type="file" id="spec_editor_import_spec_file"/>
-                    <a id="spec_editor_import_spec" href="#">Open...</a>
-                  </form>
-                </li>
-                <li>
-                  <form enctype="multipart/form-data" id="spec_editor_regions_upload_form">
-                    <input name="file" type="file" id="spec_editor_regions_upload_file"/>
-                    <a id="spec_editor_importregions" href="#">Import Region File...</a>
-                  </form>
-                </li>
-                <li><a id="spec_editor_save" href="#">Save Spec</a></li>
-                <li><a href="/specEditor/saveZip" download class="spec_editor_save_link spec_editor_save_link_disabled">Save Zip</a></li>
-                <li><a href="/specEditor/saveAut" download class="spec_editor_save_link spec_editor_save_link_disabled">Save Aut</a></li>
-                <li><a href="/specEditor/saveLTL" download class="spec_editor_save_link spec_editor_save_link_disabled">Save LTL</a></li>
-                <li><a href="/specEditor/saveSMV" download class="spec_editor_save_link spec_editor_save_link_disabled">Save SMV</a></li>
-                <li><a href="/specEditor/saveDecomposed" download class="spec_editor_save_link spec_editor_save_link_disabled">Save Decomposed</a></li>
-              </ul>
-            </li>
-          </ul>
-          <ul>	
-            <li><a href="#">Edit &#x25BC;</a>
-              <ul>
-                <li><a href="#">Undo</a></li>
-                <li><a href="#">Redo</a></li>
-                <li><a href="#">Cut</a></li>
-                <li><a href="#">Copy</a></li>
-                <li><a href="#">Paste</a></li>
-              </ul>
-            </li>
-          </ul>
-          <ul>	
-            <li><a href="#">Run &#x25BC;</a>
-              <ul>
-                <li><a id="spec_editor_compile" href="#">Compile</a></li>
-                <li><a href="#" class="parent">Compilation options &#x25b6;</a>
-                  <ul>
-                    <li><a href="#"><input id="compilation_options_convexify" type="checkbox" name="compilation_options" checked="checked">Decompose workspace into convex regions</a></li>
-                    <li><a href="#"><input id="compilation_options_fastslow" type="checkbox" name="compilation_options">Enable "fast-slow" synthesis</a></li>
-                    <li><a href="#"><input id="compilation_options_use_region_bit_encoding" type="checkbox" name="compilation_options" checked="checked">Use bit-vector region encoding</a></li>
-                    <li><a href="#" class="parent">Parser Mode &#x25b6;</a>
-                      <ul>
-                        <li><a href="#"><input class="parser_mode_radio" type="radio" name="parser_mode" value="slurp">SLURP (NL)</a></li>
-                        <li><a href="#"><input class="parser_mode_radio" type="radio" name="parser_mode" value="structured" checked="checked">Structured English</a></li>
-                        <li><a href="#"><input class="parser_mode_radio" type="radio" name="parser_mode" value="ltl">LTL</a></li>
-                      </ul>
-                    </li>
-                    <li><a href="#" class="parent">Synthesizer &#x25b6;</a>
-                      <ul>
-                        <li><a href="#"><input class="synthesizer_radio" type="radio" name="synthesizer" value="jtlv" checked="checked">JTLV</a></li>
-                        <li><a href="#"><input class="synthesizer_radio" type="radio" name="synthesizer" value="slugs">Slugs</a></li>
-                      </ul>
-                    </li>
-                    <li><a href="#"><input id="compilation_options_symbolic" type="checkbox" name="compilation_options">Use symbolic strategy</a></li>
-                  </ul>
-                </li>
-                <li><a href="#">Simulate</a></li>
-                <li><a href="#">Configure Simulation...</a></li>
-              </ul>
-            </li>
-          </ul>
-          <ul>	
-            <li><a href="#">Debug &#x25BC;</a>
-              <ul>
-                <li><a href="#" id="spec_editor_analyze">Analyze</a></li>
-                <li><a href="#">View Automaton</a></li>
-                <li><a href="#">Visualize Counterstrategy...</a></li>
-              </ul>
-            </li>
-          </ul> 
-          <ul>	
-            <li><a href="#">Help &#x25BC;</a>
-              <ul>
-                <li><a id="about_spec_editor" href="#">About Specification Editor...</a></li>
-              </ul>
-            </li>
-          </ul> 
-      </div> 	<!-- end the menuh-container div -->  
-    </div>	<!-- end the menuh div --> 
-    <div id="spec_editor_text_wrapper">
-      <textarea id="spec_editor_text" placeholder="Write your specification here"></textarea>
-    </div>
-    <div id="spec_editor_rightside">
-      <div class="spec_editor_labels">Regions:</div>
-      <ul class="spec_editor_selectlist" id="spec_editor_regions"></ul>
-      <ul class="spec_editor_buttonlist">
-        <li><button id="spec_editor_regions_selectfrommap" disabled>Select from Map...</button></li>
-        <li><button id="spec_editor_regions_editregions">Edit Regions...</button></li>
-      </ul>
-      <div class="spec_editor_labels">Sensors:</div>
-      <ul class="spec_editor_selectlist" id="spec_editor_sensors"></ul>
-      <ul class="spec_editor_buttonlist">
-        <li><button id="spec_editor_sensors_add">Add</button></li>
-        <li><button id="spec_editor_sensors_remove" disabled>Remove</button></li>
-      </ul>
-      <div class="spec_editor_labels">Actuators:</div>
-      <ul class="spec_editor_selectlist" id="spec_editor_actuators"></ul>
-      <ul class="spec_editor_buttonlist">
-        <li><button id="spec_editor_actuators_add">Add</button></li>
-        <li><button id="spec_editor_actuators_remove" disabled>Remove</button></li>
-      </ul>
-      <div class="spec_editor_labels">Custom Propositions:</div>
-      <ul class="spec_editor_selectlist" id="spec_editor_customprops"></ul>
-      <ul class="spec_editor_buttonlist">
-        <li><button id="spec_editor_customprops_add">Add</button></li>
-        <li><button id="spec_editor_customprops_remove" disabled>Remove</button></li>
-      </ul>
-    </div>
-    <div id="spec_editor_bottom">
-      <label class="spec_editor_bottom_label spec_editor_bottom_label_clicked" for="spec_editor_compilerlog_radio">Compiler Log</label>
-      <label class="spec_editor_bottom_label" for="spec_editor_ltloutput_radio">LTL Output</label>
-      <label class="spec_editor_bottom_label" for="spec_editor_workspacedecomposition_radio">Workspace Decomposition</label>
-      
-      <input class="spec_editor_bottom_radio" type="radio" id="spec_editor_compilerlog_radio" name="tab" checked="checked" />
-      <div class="spec_editor_bottom_div">
-        <textarea  id="spec_editor_compilerlog_text" class="spec_editor_bottom_textarea" disabled></textarea>
-      </div>
-      <input class="spec_editor_bottom_radio" type="radio" id="spec_editor_ltloutput_radio" name="tab" />
-      <div class="spec_editor_bottom_div">
-        <textarea  id="spec_editor_ltloutput_text" class="spec_editor_bottom_textarea" disabled></textarea>
-      </div>
-      <input class="spec_editor_bottom_radio" type="radio" id="spec_editor_workspacedecomposition_radio" name="tab" />
-      <div class="spec_editor_bottom_div" id="spec_editor_workspacedecomposition_text">
-        Workspace Decomposition
-      </div>
-    </div>
-  </div>
+  <div id='spec_editor_body' class='spec_editor_max_height'></div>
 </body>
+
+<script type='text/javascript' src='static/plugins/jquery/jquery-2.1.0.min.js'></script>
+<script type='text/javascript' src='static/plugins/jquerylinedtextarea/jquery-linedtextarea.js'></script>
+<script type='text/javascript' src='static/build/bundle.js'></script>
 
 </html>

@@ -2,7 +2,8 @@ External Dependencies
 ---------------------
     
     React = require('react')
-    { Map, List } = require('immutable')
+    ReactDOM = require('react-dom')
+    { Map } = require('immutable')
 
 Internal Dependencies
 ---------------------
@@ -522,4 +523,4 @@ Render the application
 
 And render!
 
-    currentSimulator = React.render(<Simulator />, document.getElementById('simulator_body'))
+    currentSimulator = ReactDOM.render(<Simulator />, document.getElementById('simulator_body'))

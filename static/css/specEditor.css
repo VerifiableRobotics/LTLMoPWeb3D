@@ -1,4 +1,7 @@
 /* ----------------- spec editor specific css ---------------------*/
+.spec_editor_max_height{
+  height: 100%;
+}
 #spec_editor_wrapper{
   height: calc(100% - 50px);
   width: 100%;
@@ -48,7 +51,7 @@
   padding-left: 0pt;
   border: 1px solid gray;
 }
-.spec_editor_selectlist_li_clicked{
+.spec_editor_selectlist_li_highlighted{
   background: #0000FF;
   color: white;
 }
@@ -67,34 +70,17 @@
   width: 100%;
   clear: both;
 }
-.spec_editor_bottom_radio{
-  position: absolute;
-  right: 100%;
-  opacity: 0;
-  top: 0;
-}
-.spec_editor_bottom_label{
-  border: 2px solid;
-  margin-right: -4px;
-}
-.spec_editor_bottom_label_clicked{
-  border-bottom: 0px;
-}
-.spec_editor_bottom_radio:checked + .spec_editor_bottom_div{
-  display: block;
-}
 .spec_editor_bottom_div{
-  display: none;
   background-color: white;
   height: calc(100% - 19px);
-  top: 2px;
+  top: -9px;
   position: relative;
   border: solid 1px gray;
   overflow: auto;
 }
 .spec_editor_bottom_textarea{
-  width:100%;
-  height:100%;
+  width: 100%;
+  height: 100%;
 }
 
 /* CSS Dropdown Menu */
@@ -116,11 +102,8 @@
   white-space:nowrap;
   margin:0;
   padding: 0.3em;
-}
-	
-#menuh a:link, #menuh a:visited, #menuh a:active{	/* menu at rest */
   color: white;
-  background-color: #0040FF;		/* royal blue */
+  background-color: #0040FF;    /* royal blue */
   text-decoration:none;
 }
 	

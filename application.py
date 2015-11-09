@@ -71,9 +71,9 @@ def loadSimulator():
 
 # creates a project instance and returns it
 def createProject():
+  createSession()
   proj = project.Project() # project instance
   proj.project_root = os.path.join(app.config['UPLOAD_FOLDER'], session['username']) # set root
-  createSession()
   proj.project_basename = session['username'] # this might need to be something specific...?
   return proj
 
@@ -83,36 +83,29 @@ def createProject():
 def loadSpecEditor():
   return render_template('/specEditor.html', name='specEditor')
 
-# create a spec file from request.args dict
-def createSpec(dict):
+# create a spec file from request.get_json() json
+def createSpec(specDict):
   proj = createProject()
   #store text
-  proj.specText = dict.get('specText') # "Do something"
+  proj.specText = specDict['specText'] # "Do something"
   if proj.specText is None: 
     proj.specText = '' # store as blank string, not None if None
   
   # store sensors
-  proj.all_sensors = dict.getlist('all_sensors') # ["s1"]
-  proj.all_actuators = dict.getlist('all_actuators') # ["a1","a2"]
-  proj.enabled_sensors = dict.getlist('enabled_sensors') # ["s1"]
-  proj.enabled_actuators = dict.getlist('enabled_actuators') # ["a1"]
-  proj.all_customs = dict.getlist('all_customs') # ['p1']
+  proj.all_sensors = specDict['all_sensors'] # ["s1"]
+  proj.all_actuators = specDict['all_actuators'] # ["a1","a2"]
+  proj.enabled_sensors = specDict['enabled_sensors'] # ["s1"]
+  proj.enabled_actuators = specDict['enabled_actuators'] # ["a1"]
+  proj.all_customs = specDict['all_customs'] # ['p1']
 
   # store compliation options
-  proj.compile_options = {}
-  proj.compile_options['convexify'] = dict.get('convexify') == 'true' # true or false
-  proj.compile_options['fastslow'] = dict.get('fastslow') == 'true' # true or false
-  proj.compile_options['symbolic'] = dict.get('symbolic') == 'true' # true or false
-  proj.compile_options['decompose'] = True; # cannot be changed by user
-  proj.compile_options['use_region_bit_encoding'] = dict.get('use_region_bit_encoding') == 'true' # true or false
-  proj.compile_options['synthesizer'] = dict.get('synthesizer') # 'jtlv' or 'slugs'
-  proj.compile_options['parser'] = dict.get('parser') # 'structured' or 'slurp' or 'ltl'
+  proj.compile_options = specDict['compile_options']
   
   # store region path
-  regionPath = dict.get('regionPath')
+  regionPath = specDict['regionPath']
   if regionPath is not None and regionPath != '': # make sure there is a region path before rfi
     proj.rfi = createRFI()
-    proj.rfi.readFile(dict.get('regionPath')) # 'uploads/floorplan.regions'
+    proj.rfi.readFile(regionPath) # 'uploads/floorplan.regions'
   
   # write spec, save spec, and return path
   # create the path if it doesn't exist in the session already
@@ -122,22 +115,17 @@ def createSpec(dict):
   proj.writeSpecFile(session['specFilePath'])
   return jsonify(theBool = "True")
 
-# sends the currently stored spec to the user
-@app.route('/specEditor/saveSpec', methods=['GET', 'POST'])
-def saveSpec():
+# route wrapper for createSpec helper
+@app.route('/specEditor/createSpec', methods=['POST'])
+def createSpecRoute():
   if session['specFilePath']:
     deleteFile(session['specFilePath'])
-  createSpec(request.args)
-  return send_file(session['specFilePath'], as_attachment=True, mimetype='text/plain')
+  return createSpec(request.get_json())
 
-# sends the currently stored regions to the user
-@app.route('/specEditor/saveRegions', methods=['GET', 'POST'])
-def saveRegions():
-  return send_file(session['regionsFilePath'], as_attachment=True, mimetype='text/plain')
-
-# compiles the currently stored project and returns compiler log
-@app.route('/specEditor/compileSpec', methods=['GET'])
+# compiles the project as passed in by JSON, returns log + ltl
+@app.route('/specEditor/compileSpec', methods=['POST'])
 def compileSpec():
+  createSpec(request.get_json())
   sc = specCompiler.SpecCompiler()
   sc.loadSpec(session['specFilePath'])
   realizable, realizableFS, logString = sc.compile()
@@ -146,12 +134,14 @@ def compileSpec():
     myzip.write(session['regionsFilePath'], os.path.basename(session['regionsFilePath']))
     myzip.write(session['specFilePath'], os.path.basename(session['specFilePath']))
     fileName, fileExtension = os.path.splitext(session['specFilePath']) # split extension
-    myzip.write(fileName + ".aut", os.path.basename(fileName + ".aut"))
     myzip.write(fileName + ".ltl", os.path.basename(fileName + ".ltl"))
     myzip.write(fileName + ".smv", os.path.basename(fileName + ".smv"))
+    myzip.write(fileName + ".aut", os.path.basename(fileName + ".aut"))
     myzip.write(fileName + "_decomposed.regions", os.path.basename(fileName + "_decomposed.regions"))
-  # end create zip
-  return jsonify(compilerLog = logString)
+  # get ltl output
+  fileName, fileExtension = os.path.splitext(session['specFilePath'])
+  ltlOutput = open(fileName + ".aut").read()
+  return jsonify({"compilerLog": logString, "ltlOutput": ltlOutput})
 
 # analyzes the spec and sends back the output
 @app.route('/specEditor/analyzeSpec', methods=['GET'])
@@ -162,11 +152,20 @@ def analyzeSpec():
   realizable, unsat, nonTrivial, to_highlight, output = sc._analyze()
   return jsonify(analyzeLog = output)
 
+# sends the currently stored spec to the user
+@app.route('/specEditor/saveSpec', methods=['GET','POST'])
+def saveSpec():
+  return send_file(session['specFilePath'], as_attachment=True, mimetype='text/plain')
+
+# sends the currently stored regions to the user
+@app.route('/specEditor/saveRegions', methods=['GET', 'POST'])
+def saveRegions():
+  return send_file(session['regionsFilePath'], as_attachment=True, mimetype='text/plain')
+
 # sends the currently stored aut to the user
 @app.route('/specEditor/saveAut', methods=['GET'])
 def saveAut():
   fileName, fileExtension = os.path.splitext(session['specFilePath']) # split extension
-  print "" + fileName
   thepath = fileName + ".aut"
   return send_file(thepath, as_attachment=True, mimetype='text/plain')
 
@@ -214,13 +213,7 @@ def specEditorImportSpec():
     # create JSON
     data = {}
     data['specText'] = proj.specText
-    data['convexify'] = proj.compile_options['convexify']
-    data['fastslow'] = proj.compile_options['fastslow']
-    data['use_region_bit_encoding'] = proj.compile_options['use_region_bit_encoding']
-    data['symbolic'] = proj.compile_options['symbolic']
-      
-    data['parser'] = proj.compile_options['parser']
-    data['synthesizer'] = proj.compile_options['synthesizer']
+    data['compile_options'] = proj.compile_options
     
     # arrays to store data that will be passed to server 
     data['all_sensors'] = proj.all_sensors
@@ -228,7 +221,7 @@ def specEditorImportSpec():
     data['all_actuators'] = proj.all_actuators
     data['enabled_actuators'] = proj.enabled_actuators
     data['all_customs'] = proj.all_customs
-    data['regionPath'] = proj.rfi.filename # -> must be unique and therefore not necessarily preserved
+    data['regionPath'] = proj.rfi.filename
     data['regionList'] = []
     # loop through list of regions and add names to the array
     for region in proj.rfi.regions:
@@ -246,6 +239,6 @@ def loadRegionEditor():
   
 
 if __name__ == '__main__':
-  #app.debug = True
   port = int(os.environ.get("PORT", 5000))
-  app.run(host='0.0.0.0', port=port)
+  debug = bool(os.environ.get("DEBUG", False))
+  app.run(host='0.0.0.0', port=port, debug=True)
