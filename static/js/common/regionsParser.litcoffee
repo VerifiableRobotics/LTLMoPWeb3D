@@ -58,7 +58,7 @@ Parse the region file
       regions = {}
       # loop through lines
       currentOption = ''
-      for line in parse_string.trim().split "\n"
+      for line in parse_string.trim().split '\n'
         line = line.trim()
         if line.length < 1 and currentOption != 'Spec'
           currentOption = ''
@@ -68,7 +68,7 @@ Parse the region file
             currentOption = getRegionsOption(line)
           when 'Background'
             if not regions.Background?
-              regions.Background = ""
+              regions.Background = ''
             regions.Background += line
           when 'CalibrationPoints'
             if not regions.CalibrationPoints?
@@ -80,21 +80,18 @@ Parse the region file
             $.extend(regions.Obstacles, getObstacle(line))
           when 'Regions'
             if not regions.Regions?
-              regions.Regions = ""
+              regions.Regions = ''
             regions.Regions += line
           when 'Transitions'
             if not regions.Transitions?
               regions.Transitions = {}
             $.extend(true, regions.Transitions, getTransition(line)) # deep merge
           else
-            console.warn("Regions Parsing: unrecognized regions option")
-        # end else
-      # end for
-      # parse regions string into actual JSON
+            console.warn('Regions Parsing: unrecognized regions option')
+      # parse regions JSON string into JS object
       regions.Regions = JSON.parse(regions.Regions)
 
       return regions
-    # end parseRegions
 
 
 Export

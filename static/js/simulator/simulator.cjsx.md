@@ -8,11 +8,15 @@ External Dependencies
 Internal Dependencies
 ---------------------
 
-    RegionsParser = require('./regionsParser.litcoffee')
-    SpecParser = require('./specParser.litcoffee')
+    Helpers = require('js/common/helpers.litcoffee')
+    RegionsParser = require('js/common/regionsParser.litcoffee')
+    SpecParser = require('js/common/specParser.litcoffee')
     AutomatonParser = require('./automatonParser.litcoffee')
     Executor = require('./executor.litcoffee')
-    Header = require('../header.cjsx.md')
+
+Assets
+
+    require('css/simulator.css')
 
 Main Program
 ------------    
@@ -36,10 +40,6 @@ Create 3D regions from the region array
         # skip boundary
         if name == 'boundary'
           continue
-        # get rgb values
-        red = region.color[0]
-        green = region.color[1]
-        blue = region.color[2]
         # get position
         xpos = region.position[0]
         ypos = region.position[1]
@@ -52,7 +52,7 @@ Create 3D regions from the region array
         # create the new ground material
         new_ground_material = Physijs.createMaterial(
           new THREE.MeshBasicMaterial(
-            color: "rgb(" + red + "," + green + "," + blue + ")"
+            color: 'rgb('+ region.color.join(',') +')'
             side: THREE.DoubleSide
           ), 
           .5, # high friction
@@ -87,8 +87,8 @@ Create 3D regions from the region array
 Set the velocity and theta of the car
 
     setVelocityTheta = (velocity, theta) ->
-      console.log("car position x:" + car.body.position.x)
-      console.log("car position y:" + car.body.position.z)
+      console.log('car position x:' + car.body.position.x)
+      console.log('car position y:' + car.body.position.z)
       # z-axis motor, upper limit, lower limit, target velocity, maximum force
       car.wheel_bl_constraint.configureAngularMotor( 2, velocity, 0, velocity, 200000 )
       car.wheel_br_constraint.configureAngularMotor( 2, velocity, 0, velocity, 200000 )
@@ -107,17 +107,17 @@ Set the velocity and theta of the car
       # set current velocity and theta in case of later stop
       currentVelocity = velocity
       currentTheta = theta
-      console.log("velocity: " + velocity)
-      console.log("car x: " + car.body.quaternion._euler.x)
-      console.log("car y: " + car.body.quaternion._euler.y)
-      console.log("car z: " + car.body.quaternion._euler.z)
-      console.log("wheel theta: " + theta)
+      console.log('velocity: ' + velocity)
+      console.log('car x: ' + car.body.quaternion._euler.x)
+      console.log('car y: ' + car.body.quaternion._euler.y)
+      console.log('car z: ' + car.body.quaternion._euler.z)
+      console.log('wheel theta: ' + theta)
 
     
 Stop the velocity and theta of the car (reverse acceleration)
 
     stopVelocityTheta = () ->
-      # set motor to opposite to "brake" the car
+      # set motor to opposite to 'brake' the car
       car.wheel_bl_constraint.configureAngularMotor( 2, currentVelocity, -currentVelocity, 0, 200000 )
       car.wheel_br_constraint.configureAngularMotor( 2, currentVelocity, -currentVelocity, 0, 200000 )
       car.wheel_fl_constraint.configureAngularMotor( 2, currentVelocity, -currentVelocity, 0, 200000 )
@@ -148,7 +148,7 @@ Given region object, get the midpoint of the transition from the current region 
     getTransition = (region) ->
       regionToName = region.name
       regionFromName = regionFile.Regions[getCurrentRegion()].name
-      console.log("regionFrom: " + regionFromName + " regionTo: " + regionToName)
+      console.log('regionFrom: ' + regionFromName + ' regionTo: ' + regionToName)
       # get correct transition array, could be ordered either way
       transition = if !regionFile.Transitions[regionFromName]? or !regionFile.Transitions[regionFromName][regionToName]?
         regionFile.Transitions[regionToName][regionFromName] 
@@ -174,12 +174,12 @@ Starts moving the car toward the destination
       targetPosition = getTransition(target)
       currentPosition = [car.body.position.x, car.body.position.z]
       targetTheta = Math.atan2(targetPosition[1] - currentPosition[1], targetPosition[0] - currentPosition[0])
-      console.log("target theta: " + targetTheta)
+      console.log('target theta: ' + targetTheta)
       # get proper car theta via transformations of euler angles
       carTheta = car.body.quaternion._euler.y
       if Math.abs(car.body.quaternion._euler.x) < Math.PI/2
         carTheta = -(carTheta + Math.PI)
-      console.log("car theta: " + carTheta)
+      console.log('car theta: ' + carTheta)
       # theta = diff b/t car body's theta and target theta
       wheelTheta = -(targetTheta - carTheta)
       # properly transform when angle is too big/too small
@@ -233,59 +233,48 @@ Simulator Component
 -------------------
 
     Simulator = React.createClass
+      displayName: 'Simulator'
+
+Define the initial state
+
       getInitialState: () ->
         return {disableAut: true, disableExec: true, 
         sensors: Map(), actuators: Map(), customs: Map(), regions: Map(),
         velocity: 8}
-      
-Helper function for uploading files, takes in the event, an extension, and the reader's callback'
-
-      onUpload: (ev, ext, callback) ->
-        file = ev.target.files[0]
-        if file?
-          nameSplit = file.name.split('.')
-          extension = nameSplit[nameSplit.length - 1]
-          # validation
-          if extension != ext
-            alert("This only accepts *." + ext + " files!")
-          else
-            reader = new FileReader()
-            reader.onload = callback
-            reader.readAsText(file)
 
 When a *.regions file is uploaded; specifically the decomposed one
 
       onRegionsUpload: (ev) ->
         callback = (ev) => 
           regionFile = RegionsParser.parseRegions(ev.target.result)
-          console.log("Regions Object: ")
+          console.log('Regions Object: ')
           console.log(regionFile)
           create3DRegions(regionFile.Regions)
           @addRegionButtons(regionFile.Regions)
-        @onUpload(ev, "regions", callback)
+        Helpers.onUpload(ev, 'regions', callback)
 
 When a *.spec file is uploaded
       
       onSpecUpload: (ev) ->
         callback = (ev) => 
           spec = SpecParser.parseSpec(ev.target.result)
-          console.log("Spec Object: ")
+          console.log('Spec Object: ')
           console.log(spec)
           # enable uploading of automaton now
           @setState({disableAut: false})
           @addPropButtons(spec)
-        @onUpload(ev, "spec", callback)
+        Helpers.onUpload(ev, 'spec', callback)
 
 When a *.aut file is uploaded
 
       onAutUpload: (ev) ->
         callback = (ev) => 
           automaton = AutomatonParser.parseAutomaton(ev.target.result, spec)
-          console.log("Automaton Object: ")
+          console.log('Automaton Object: ')
           console.log(automaton)
           # enable executor execution now
           @setState({disableExec: false})
-        @onUpload(ev, "aut", callback)
+        Helpers.onUpload(ev, 'aut', callback)
       
 Launch the executor
 
@@ -304,7 +293,7 @@ Launch the executor
           # if first execution
           if counter == 0
             # current region is the single active one
-            currentRegion = @state.regions.find((values) -> values.get("active")).get("index")
+            currentRegion = @state.regions.find((values) -> values.get('active')).get('index')
             createCar(currentRegion)
             if Executor.execute(automaton, @getInitialProps(), null, currentRegion)
               @setEnabledProps(false, spec, regionFile.Regions) # disable all props
@@ -337,12 +326,12 @@ Outputs a {sensors, actuators, customs} dict of prop -> 1 or 0 (active or not), 
 
       getInitialProps: () ->
         sensors = actuators = customs = Map()
-        @state.sensors.filter((values, name) -> !values.get("disabled")).forEach (values, name) ->
-          sensors = sensors.set(name, if values.get("active") then 1 else 0)
-        @state.actuators.filter((values, name) -> !values.get("disabled")).forEach (values, name) ->
-          actuators = actuators.set(name, if values.get("active") then 1 else 0)
+        @state.sensors.filter((values, name) -> !values.get('disabled')).forEach (values, name) ->
+          sensors = sensors.set(name, if values.get('active') then 1 else 0)
+        @state.actuators.filter((values, name) -> !values.get('disabled')).forEach (values, name) ->
+          actuators = actuators.set(name, if values.get('active') then 1 else 0)
         @state.customs.forEach (values, name) ->
-          customs = customs.set(name, if values.get("active") then 1 else 0)
+          customs = customs.set(name, if values.get('active') then 1 else 0)
         return {sensors: sensors.toJS(), actuators: actuators.toJS(), customs: customs.toJS()}
 
 Gets sensor readings for the executor to determine next state  
@@ -350,8 +339,8 @@ Outputs a dict of prop -> 1 or 0 (active or not), excluding disabled props
 
       getSensors: () ->
         sensors = {}
-        @state.sensors.filter((values, name) -> !values.get("disabled")).forEach (values, name) ->
-          sensors[name] = if values.get("active") then 1 else 0
+        @state.sensors.filter((values, name) -> !values.get('disabled')).forEach (values, name) ->
+          sensors[name] = if values.get('active') then 1 else 0
         return sensors
 
 Add Region buttons based on regions in region file
@@ -362,7 +351,7 @@ Add Region buttons based on regions in region file
         for region, index in regions_arr
           regions = regions.set(region.name, Map({index: index, disabled: false, active: false}))
         # arbitrarily turn first region as active region
-        regions = regions.setIn([regions_arr[0].name, "active"], true)
+        regions = regions.setIn([regions_arr[0].name, 'active'], true)
         @setState({regions: regions})
 
 
@@ -385,41 +374,41 @@ Toggle for when a sensor is clicked
 
       toggleActiveSensors: (name) ->
         return () =>
-          @setState((prev) -> {sensors: prev.sensors.updateIn([name, "active"], (val) -> !val)})
+          @setState((prev) -> {sensors: prev.sensors.updateIn([name, 'active'], (val) -> !val)})
 
 Toggle for when an actuator is clicked
 
       toggleActiveActuators: (name) ->
         return () =>
-          @setState((prev) -> {actuators: prev.actuators.updateIn([name, "active"], (val) -> !val)})
+          @setState((prev) -> {actuators: prev.actuators.updateIn([name, 'active'], (val) -> !val)})
 
 Toggle for when an actuator is clicked
 
       toggleActiveCustoms: (name) ->
         return () =>
-          @setState((prev) -> {customs: prev.customs.updateIn([name, "active"], (val) -> !val)})
+          @setState((prev) -> {customs: prev.customs.updateIn([name, 'active'], (val) -> !val)})
 
 Toggle the enabled state of all actuators, customs, and regions (unless it were disabled in spec to begin with)
 
       setEnabledProps: (enabled, spec, regions_arr) ->
         # do not set to true if it were disabled in spec
-        actuators = @state.actuators.map((values, name) -> values.set("disabled", !enabled || spec.Actions[name] == 1))
-        customs = @state.customs.map((values) -> values.set("disabled", !enabled))
-        regions = @state.regions.map((values) -> values.set("disabled", !enabled))
+        actuators = @state.actuators.map((values, name) -> values.set('disabled', !enabled || spec.Actions[name] == 1))
+        customs = @state.customs.map((values) -> values.set('disabled', !enabled))
+        regions = @state.regions.map((values) -> values.set('disabled', !enabled))
         @setState({actuators: actuators, customs: customs, regions: regions})
 
 Set which region is active
 
       setActiveRegion: (regionNum) ->
         # set all to false, find the one with the correct index, set it to true
-        @setState({regions: @state.regions.map((values) -> values.set("active", false))
-          .setIn([@state.regions.findKey((values) -> values.get("index") == regionNum), "active"], true)})
+        @setState({regions: @state.regions.map((values) -> values.set('active', false))
+          .setIn([@state.regions.findKey((values) -> values.get('index') == regionNum), 'active'], true)})
 
 Set which actuators and customs are active based on [0, 1] dict from executor
     
       setActiveProps: (actDict, custDict) ->
-        actuators = @state.actuators.map((values, name) -> values.set("active", actDict[name] == 1))
-        customs = @state.customs.map((values, name) -> values.set("active", custDict[name] == 1))
+        actuators = @state.actuators.map((values, name) -> values.set('active', actDict[name] == 1))
+        customs = @state.customs.map((values, name) -> values.set('active', custDict[name] == 1))
         @setState({actuators: actuators, customs: customs})
 
 Set the velocity of the car
@@ -448,74 +437,74 @@ Optimize component speed because we have immutability!
             break
         return !isEqual
 
-Render the application
+Define the simulator's layout
 
       render: () ->
-        return <div>
+        <div>
           <Header />
-          <div className="center_wrapper">
-            <button type="button" onClick={@startExecution} disabled={@state.disableExec}>Start</button>
+          <div className='center_wrapper'>
+            <button type='button' onClick={@startExecution} disabled={@state.disableExec}>Start</button>
           </div>
-          <div className="center_wrapper">
-            <form className="upload_form">
-              <input name="file" type="file" className="upload_file_overlay" onChange={@onRegionsUpload} 
-                disabled={@state.disableRegions}/>
-              <button type="button" disabled={@state.disableRegions}>Upload Regions</button>
+          <div className='center_wrapper'>
+            <form className='upload_form'>
+              <input name='file' type='file' className='upload_file_overlay' accept='.regions'
+                onChange={@onRegionsUpload} disabled={@state.disableRegions}/>
+              <button type='button' disabled={@state.disableRegions}>Upload Regions</button>
             </form>
-            <form className="upload_form">
-              <input name="file" type="file" className="upload_file_overlay" onChange={@onSpecUpload} 
-                disabled={@state.disableSpec}/>
-              <button type="button" disabled={@state.disableSpec}>Upload Spec</button>
+            <form className='upload_form'>
+              <input name='file' type='file' className='upload_file_overlay' accept='.spec'
+                onChange={@onSpecUpload} disabled={@state.disableSpec}/>
+              <button type='button' disabled={@state.disableSpec}>Upload Spec</button>
             </form>
-            <form className="upload_form">
-              <input name="file" type="file" className="upload_file_overlay" onChange={@onAutUpload}
-                disabled={@state.disableAut} />
-              <button type="button" disabled={@state.disableAut}>Upload Automaton</button>
+            <form className='upload_form'>
+              <input name='file' type='file' className='upload_file_overlay' accept='.aut'
+                onChange={@onAutUpload} disabled={@state.disableAut} />
+              <button type='button' disabled={@state.disableAut}>Upload Automaton</button>
             </form>
           </div>
-          <div id="simulator_wrapper">
-            <div className="right_wrapper">
+          <div id='simulator_wrapper'>
+            <div className='right_wrapper'>
               <div>Sensors</div>
-              <ul className="simulator_lists">
+              <ul className='simulator_lists'>
                 {@state.sensors.map((values, name) =>
                   <li>
-                    <button type="button" className={if values.get("active") then "prop_button_green" else "prop_button"} 
-                      onClick={@toggleActiveSensors(name)} disabled={values.get("disabled")}>{name}</button>
+                    <button type='button' className={if values.get('active') then 'prop_button_green' else 'prop_button'}
+                      onClick={@toggleActiveSensors(name)} disabled={values.get('disabled')}>{name}</button>
                   </li>).toSeq()
                 }
               </ul>
               <div>Actuators</div>
-              <ul className="simulator_lists">
+              <ul className='simulator_lists'>
                 {@state.actuators.map((values, name) =>
                   <li>
-                    <button type="button" className={if values.get("active") then "prop_button_green" else "prop_button"} 
-                      onClick={@toggleActiveActuators(name)} disabled={values.get("disabled")}>{name}</button>
+                    <button type='button' className={if values.get('active') then 'prop_button_green' else 'prop_button'}
+                      onClick={@toggleActiveActuators(name)} disabled={values.get('disabled')}>{name}</button>
                   </li>).toSeq()
                 }
               </ul>
               <div>Custom Propositions</div>
-              <ul className="simulator_lists">
+              <ul className='simulator_lists'>
                 {@state.customs.map((values, name) =>
                   <li>
-                    <button type="button" className={if values.get("active") then "prop_button_green" else "prop_button"}
-                      onClick={@toggleActiveCustoms(name)} disabled={values.get("disabled")}>{name}</button>
+                    <button type='button' className={if values.get('active') then 'prop_button_green' else 'prop_button'}
+                      onClick={@toggleActiveCustoms(name)} disabled={values.get('disabled')}>{name}</button>
                   </li>).toSeq()
                 }
               </ul>
               <div>Regions</div>
-              <ul className="simulator_lists">
+              <ul className='simulator_lists'>
                 {@state.regions.map((values, name) =>
                   <li>
-                    <button type="button" className={if values.get("active") then "prop_button_green" else "prop_button"}
-                      onClick={() => @setActiveRegion(values.get("index"))} 
-                      disabled={values.get("disabled")}>{name}</button>
+                    <button type='button' className={if values.get('active') then 'prop_button_green' else 'prop_button'}
+                      onClick={() => @setActiveRegion(values.get('index'))}
+                      disabled={values.get('disabled')}>{name}</button>
                   </li>).toSeq()
                 }
               </ul>
               <div>Maximum Velocity</div>
-              <input type="text" value={@state.velocity} onChange={@setVelocity} /> <br />
-              <button type="button" onClick={@increaseVelocity}>Increase</button>
-              <button type="button" onClick={@decreaseVelocity}>Decrease</button>
+              <input type='text' value={@state.velocity} onChange={@setVelocity} /> <br />
+              <button type='button' onClick={@increaseVelocity}>Increase</button>
+              <button type='button' onClick={@decreaseVelocity}>Decrease</button>
             </div>
           </div>
         </div>

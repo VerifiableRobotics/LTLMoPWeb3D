@@ -10,16 +10,19 @@ External Dependencies
 Internal Dependencies
 ---------------------
 
-    Header = require('../header.cjsx.md')
-    { Fetch } = require('../../plugins/fetchHelpers.litcoffee')
+    Fetch = require('plugins/fetchHelpers.litcoffee')
 
-Main Program
-------------      
+Assets
+
+    require('css/specEditor.css')
+    #require('plugins/jquerylinedtextarea/jquery-linedtextarea.css')
+
 
 Spec Editor Component
 -------------------
 
-    SpecEditor = React.createClass               
+    SpecEditor = React.createClass
+      displayName: 'Specification Editor'
 
 Define the initial state
 
@@ -59,7 +62,8 @@ Hook onto mount event
       componentDidMount: () -> 
         # TODO: create react highlighter (contenteditable)
         # create a lined text area with a largely borrowed plugin
-        $('#spec_editor_text').linedtextarea() 
+        # seems to break react router...
+        #$('#spec_editor_text').linedtextarea()
 
 Upload the regions file
 
@@ -212,8 +216,9 @@ Highlights a prop based on its name and the map's name
 
 Checks a prop based on its name and the map's name
 
-      _checkProp: (mapName, propName) ->
-        @setImmState (d) -> d.setIn([mapName, propName, 'checked'], true)
+      _toggleProp: (mapName, propName) ->
+        @setImmState (d) ->
+          d.updateIn([mapName, propName, 'checked'], (checked) -> !checked)
 
 Removes the currently highlighted prop in the map with name as specified
 
@@ -278,18 +283,13 @@ Creates and returns a JSON object that holds all spec information
           data['specText'] = specText
         
         # create arrays for props 
-        data['all_sensors'] = @state.data.get('sensors')
-          .reduce(((arr, values, name) -> arr.concat(name)), [])
+        data['all_sensors'] = @state.data.get('sensors').keySeq().toArray()
         data['enabled_sensors'] = @state.data.get('sensors')
-          .filter((values) -> values.get('checked'))
-          .reduce(((arr, values, name) -> arr.concat(name)), [])
-        data['all_actuators'] = @state.data.get('actuators')
-          .reduce(((arr, values, name) -> arr.concat(name)), [])
+          .filter((values) -> values.get('checked')).keySeq().toArray()
+        data['all_actuators'] = @state.data.get('actuators').keySeq().toArray()
         data['enabled_actuators'] = @state.data.get('actuators')
-          .filter((values) -> values.get('checked'))
-          .reduce(((arr, values, name) -> arr.concat(name)), [])
-        data['all_customs'] = @state.data.get('customprops')
-          .reduce(((arr, values, name) -> arr.concat(name)), [])
+          .filter((values) -> values.get('checked')).keySeq().toArray()
+        data['all_customs'] = @state.data.get('customprops').keySeq().toArray()
 
         return data
 
@@ -298,273 +298,267 @@ Show about dialog
       _showAbout: () ->
         alert('Specification Editor is part of the LTLMoP Toolkit.\nFor more information, please visit http://ltlmop.github.io')
 
-Render the component
+Define the component's layout
 
       render: () ->
-        <div id='spec_editor_body_inner' className='spec_editor_max_height'>
-          <Header />
-          <div id='spec_editor_wrapper'>
-            <div id='menuh-container'>
-              <div id='menuh'>
-                <ul>
-                  <li><a>File &#x25BC</a>
-                    <ul>
-                      <li>
-                        <form>
-                          <input name='spec'
-                            type='file'
-                            accept='.spec'
-                            className='spec_editor_upload_file'
-                            onChange={@_uploadSpec} />
-                          <a>Import Spec File...</a>
-                        </form>
-                      </li>
-                      <li>
-                        <form>
-                          <input name='regions'
-                            type='file'
-                            accept='.regions'
-                            className='spec_editor_upload_file'
-                            onChange={@_uploadRegions} />
-                          <a>Import Region File...</a>
-                        </form>
-                      </li>
-                      <li><a onClick={@_saveSpec}>Save Spec</a></li>
-                      <li><a href='/specEditor/saveZip' download
-                        className={classNames({'spec_editor_save_link_disabled': !@state.data.get('isCompiled')})}
-                        onClick={@_saveCompiledArtifacts}>
-                        Save Zip</a></li>
-                      <li><a href='/specEditor/saveAut' download
-                        className={classNames({'spec_editor_save_link_disabled': !@state.data.get('isCompiled')})}
-                        onClick={@_saveCompiledArtifacts}>
-                        Save Aut</a></li>
-                      <li><a href='/specEditor/saveLTL' download
-                        className={classNames({'spec_editor_save_link_disabled': !@state.data.get('isCompiled')})}
-                        onClick={@_saveCompiledArtifacts}>
-                        Save LTL</a></li>
-                      <li><a href='/specEditor/saveSMV' download
-                        className={classNames({'spec_editor_save_link_disabled': !@state.data.get('isCompiled')})}
-                        onClick={@_saveCompiledArtifacts}>
-                        Save SMV</a></li>
-                      <li><a href='/specEditor/saveDecomposed' download
-                        className={classNames({'spec_editor_save_link_disabled': !@state.data.get('isCompiled')})}
-                        onClick={@_saveCompiledArtifacts}>
-                        Save Decomposed</a></li>
-                    </ul>
-                  </li>
-                </ul>
-                <ul>  
-                  <li><a>Edit &#x25BC</a>
-                    <ul>
-                      <li><a>Undo</a></li>
-                      <li><a>Redo</a></li>
-                      <li><a>Cut</a></li>
-                      <li><a>Copy</a></li>
-                      <li><a>Paste</a></li>
-                    </ul>
-                  </li>
-                </ul>
-                <ul>  
-                  <li><a>Run &#x25BC</a>
-                    <ul>
-                      <li><a onClick={@_compileSpec}>Compile</a></li>
-                      <li>
-                        <a className='parent'>Compilation options &#x25b6</a>
-                        <ul>
-                          <li><a>
-                            <input type='checkbox' name='convexify'
-                              checked={@state.data.getIn(['compile_options', 'convexify'])}
-                              onChange={() => @_toggleCompileOption('convexify')} />
-                            Decompose workspace into convex regions</a></li>
-                          <li><a>
-                            <input type='checkbox' name='fastslow'
-                              checked={@state.data.getIn(['compile_options', 'fastslow'])}
-                              onChange={() => @_toggleCompileOption('fastslow')} />
-                            Enable 'fast-slow' synthesis</a></li>
-                          <li><a>
-                            <input type='checkbox' name='use_region_bit_encoding'
-                              checked={@state.data.getIn(['compile_options', 'use_region_bit_encoding'])}
-                              onChange={() => @_toggleCompileOption('use_region_bit_encoding')} />
-                            Use bit-vector region encoding</a></li>
-                          <li><a className='parent'>Parser Mode &#x25b6</a>
-                            <ul>
-                              <li><a>
-                                <input type='radio' name='parser_mode'
-                                  checked={@state.data.getIn(['compile_options', 'parser']) == 'slurp'}
-                                  onChange={() => @_changeCompileOption('parser', 'slurp')} />
-                                SLURP (NL)</a></li>
-                              <li><a>
-                                <input type='radio' name='parser_mode'
-                                  checked={@state.data.getIn(['compile_options', 'parser']) == 'structured'}
-                                  onChange={() => @_changeCompileOption('parser', 'structured')} />
-                                Structured English</a></li>
-                              <li><a>
-                                <input type='radio' name='parser_mode'
-                                  checked={@state.data.getIn(['compile_options', 'parser']) == 'ltl'}
-                                  onChange={() => @_changeCompileOption('parser', 'ltl')} />
-                                LTL</a></li>
-                            </ul>
-                          </li>
-                          <li><a className='parent'>Synthesizer &#x25b6</a>
-                            <ul>
-                              <li><a>
-                                <input type='radio' name='synthesizer'
-                                  checked={@state.data.getIn(['compile_options', 'synthesizer']) == 'jtlv'}
-                                  onChange={() => @_changeCompileOption('synthesizer', 'jtlv')} />
-                                JTLV</a></li>
-                              <li><a>
-                                <input type='radio' name='synthesizer'
-                                  checked={@state.data.getIn(['compile_options', 'synthesizer']) == 'slugs'}
-                                  onChange={() => @_changeCompileOption('synthesizer', 'slugs')} />
-                                Slugs</a></li>
-                            </ul>
-                          </li>
-                          <li><a>
-                            <input type='checkbox' name='symbolic'
-                              checked={@state.data.getIn(['compile_options', 'symbolic'])}
-                              onChange={() => @_toggleCompileOption('symbolic')} />
-                            Use symbolic strategy</a></li>
-                        </ul>
-                      </li>
-                      <li><a>Simulate</a></li>
-                      <li><a>Configure Simulation...</a></li>
-                    </ul>
-                  </li>
-                </ul>
-                <ul>  
-                  <li><a>Debug &#x25BC</a>
-                    <ul>
-                      <li><a onClick={@_analyzeSpec}>Analyze</a></li>
-                      <li><a>View Automaton</a></li>
-                      <li><a>Visualize Counterstrategy...</a></li>
-                    </ul>
-                  </li>
-                </ul> 
-                <ul>  
-                  <li><a>Help &#x25BC</a>
-                    <ul><li>
-                      <a onClick={@_showAbout}>About Specification Editor...</a>
-                    </li></ul>
-                  </li>
-                </ul> 
-              </div>
-            </div>
-            <div id='spec_editor_text_wrapper'>
-              <textarea id='spec_editor_text' 
-                placeholder='Write your specification here...'
-                value={@state.data.get('specText')}
-                onChange={@_changeSpecText} />
-            </div>
-            <div id='spec_editor_rightside'>
-              <div className='spec_editor_labels'>Regions:</div>
-              <ul className='spec_editor_selectlist' id='spec_editor_regions'>
-                {@state.data.get('regions').filter((values, name) -> name != 'boundary')
-                  .map((values, name) =>
-                    <li tabIndex='0' onClick={() => @_highlightProp('regions', name)}
-                      className={classNames({'spec_editor_selectlist_li_highlighted':
-                        values.get('highlighted')})}>
-                      {name}</li>)}
+        <div id='spec_editor_wrapper'>
+          <div id='menuh-container'>
+            <div id='menuh'>
+              <ul>
+                <li><a>File &#x25BC</a>
+                  <ul>
+                    <li>
+                      <form>
+                        <input name='spec' type='file' accept='.spec'
+                          className='spec_editor_upload_file'
+                          onChange={@_uploadSpec} />
+                        <a>Import Spec File...</a>
+                      </form>
+                    </li>
+                    <li>
+                      <form>
+                        <input name='regions' type='file' accept='.regions'
+                          className='spec_editor_upload_file'
+                          onChange={@_uploadRegions} />
+                        <a>Import Region File...</a>
+                      </form>
+                    </li>
+                    <li><a onClick={@_saveSpec}>Save Spec</a></li>
+                    <li><a href='/specEditor/saveZip' download
+                      className={classNames({'spec_editor_save_link_disabled': !@state.data.get('isCompiled')})}
+                      onClick={@_saveCompiledArtifacts}>
+                      Save Zip</a></li>
+                    <li><a href='/specEditor/saveAut' download
+                      className={classNames({'spec_editor_save_link_disabled': !@state.data.get('isCompiled')})}
+                      onClick={@_saveCompiledArtifacts}>
+                      Save Aut</a></li>
+                    <li><a href='/specEditor/saveLTL' download
+                      className={classNames({'spec_editor_save_link_disabled': !@state.data.get('isCompiled')})}
+                      onClick={@_saveCompiledArtifacts}>
+                      Save LTL</a></li>
+                    <li><a href='/specEditor/saveSMV' download
+                      className={classNames({'spec_editor_save_link_disabled': !@state.data.get('isCompiled')})}
+                      onClick={@_saveCompiledArtifacts}>
+                      Save SMV</a></li>
+                    <li><a href='/specEditor/saveDecomposed' download
+                      className={classNames({'spec_editor_save_link_disabled': !@state.data.get('isCompiled')})}
+                      onClick={@_saveCompiledArtifacts}>
+                      Save Decomposed</a></li>
+                  </ul>
+                </li>
               </ul>
-              <ul className='spec_editor_buttonlist'>
-                <li><button disabled={@state.data.get('regions').size <= 0}>
-                  Select from Map...</button></li>
-                <li><button>Edit Regions...</button></li>
+              <ul>
+                <li><a>Edit &#x25BC</a>
+                  <ul>
+                    <li><a>Undo</a></li>
+                    <li><a>Redo</a></li>
+                    <li><a>Cut</a></li>
+                    <li><a>Copy</a></li>
+                    <li><a>Paste</a></li>
+                  </ul>
+                </li>
               </ul>
-              <div className='spec_editor_labels'>Sensors:</div>
-              <ul className='spec_editor_selectlist'>
-                {@state.data.get('sensors').map((values, name) =>
-                  <li tabIndex='0' onClick={() => @_highlightProp('sensors', name)}
+              <ul>
+                <li><a>Run &#x25BC</a>
+                  <ul>
+                    <li><a onClick={@_compileSpec}>Compile</a></li>
+                    <li>
+                      <a className='parent'>Compilation options &#x25b6</a>
+                      <ul>
+                        <li><a>
+                          <input type='checkbox' name='convexify'
+                            checked={@state.data.getIn(['compile_options', 'convexify'])}
+                            onChange={() => @_toggleCompileOption('convexify')} />
+                          Decompose workspace into convex regions</a></li>
+                        <li><a>
+                          <input type='checkbox' name='fastslow'
+                            checked={@state.data.getIn(['compile_options', 'fastslow'])}
+                            onChange={() => @_toggleCompileOption('fastslow')} />
+                          Enable 'fast-slow' synthesis</a></li>
+                        <li><a>
+                          <input type='checkbox' name='use_region_bit_encoding'
+                            checked={@state.data.getIn(['compile_options', 'use_region_bit_encoding'])}
+                            onChange={() => @_toggleCompileOption('use_region_bit_encoding')} />
+                          Use bit-vector region encoding</a></li>
+                        <li><a className='parent'>Parser Mode &#x25b6</a>
+                          <ul>
+                            <li><a>
+                              <input type='radio' name='parser_mode'
+                                checked={@state.data.getIn(['compile_options', 'parser']) == 'slurp'}
+                                onChange={() => @_changeCompileOption('parser', 'slurp')} />
+                              SLURP (NL)</a></li>
+                            <li><a>
+                              <input type='radio' name='parser_mode'
+                                checked={@state.data.getIn(['compile_options', 'parser']) == 'structured'}
+                                onChange={() => @_changeCompileOption('parser', 'structured')} />
+                              Structured English</a></li>
+                            <li><a>
+                              <input type='radio' name='parser_mode'
+                                checked={@state.data.getIn(['compile_options', 'parser']) == 'ltl'}
+                                onChange={() => @_changeCompileOption('parser', 'ltl')} />
+                              LTL</a></li>
+                          </ul>
+                        </li>
+                        <li><a className='parent'>Synthesizer &#x25b6</a>
+                          <ul>
+                            <li><a>
+                              <input type='radio' name='synthesizer'
+                                checked={@state.data.getIn(['compile_options', 'synthesizer']) == 'jtlv'}
+                                onChange={() => @_changeCompileOption('synthesizer', 'jtlv')} />
+                              JTLV</a></li>
+                            <li><a>
+                              <input type='radio' name='synthesizer'
+                                checked={@state.data.getIn(['compile_options', 'synthesizer']) == 'slugs'}
+                                onChange={() => @_changeCompileOption('synthesizer', 'slugs')} />
+                              Slugs</a></li>
+                          </ul>
+                        </li>
+                        <li><a>
+                          <input type='checkbox' name='symbolic'
+                            checked={@state.data.getIn(['compile_options', 'symbolic'])}
+                            onChange={() => @_toggleCompileOption('symbolic')} />
+                          Use symbolic strategy</a></li>
+                      </ul>
+                    </li>
+                    <li><a>Simulate</a></li>
+                    <li><a>Configure Simulation...</a></li>
+                  </ul>
+                </li>
+              </ul>
+              <ul>
+                <li><a>Debug &#x25BC</a>
+                  <ul>
+                    <li><a onClick={@_analyzeSpec}>Analyze</a></li>
+                    <li><a>View Automaton</a></li>
+                    <li><a>Visualize Counterstrategy...</a></li>
+                  </ul>
+                </li>
+              </ul>
+              <ul>
+                <li><a>Help &#x25BC</a>
+                  <ul><li>
+                    <a onClick={@_showAbout}>About Specification Editor...</a>
+                  </li></ul>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div id='spec_editor_text_wrapper'>
+            <textarea id='spec_editor_text'
+              placeholder='Write your specification here...'
+              value={@state.data.get('specText')}
+              onChange={@_changeSpecText} />
+          </div>
+          <div id='spec_editor_rightside'>
+            <div className='spec_editor_labels'>Regions:</div>
+            <ul className='spec_editor_selectlist' id='spec_editor_regions'>
+              {@state.data.get('regions').filter((values, name) -> name != 'boundary')
+                .map((values, name) =>
+                  <li key={name} tabIndex='0' onClick={() => @_highlightProp('regions', name)}
                     className={classNames({'spec_editor_selectlist_li_highlighted':
                       values.get('highlighted')})}>
-                    <input type='checkbox' value={name} checked={values.get('checked')}
-                      onChange={() => @_checkProp('sensors', name)} />
-                    {name}
-                  </li>
-                )}
-              </ul>
-              <ul className='spec_editor_buttonlist'>
-                <li>
-                  <button onClick={() => @_addProp('sensors')}>Add</button>
+                    {name}</li>).toArray()}
+            </ul>
+            <ul className='spec_editor_buttonlist'>
+              <li><button disabled={@state.data.get('regions').size <= 0}>
+                Select from Map...</button></li>
+              <li><button>Edit Regions...</button></li>
+            </ul>
+            <div className='spec_editor_labels'>Sensors:</div>
+            <ul className='spec_editor_selectlist'>
+              {@state.data.get('sensors').map((values, name) =>
+                <li key={name} tabIndex='0' onClick={() => @_highlightProp('sensors', name)}
+                  className={classNames({'spec_editor_selectlist_li_highlighted':
+                    values.get('highlighted')})}>
+                  <input type='checkbox' value={name} checked={values.get('checked')}
+                    onChange={() => @_toggleProp('sensors', name)} />
+                  {name}
                 </li>
-                <li>
-                  <button disabled={@state.data.get('sensors').size <= 0}
-                    onClick={() => @_removeProp('sensors')}>
-                    Remove</button>
+              ).toArray()}
+            </ul>
+            <ul className='spec_editor_buttonlist'>
+              <li>
+                <button onClick={() => @_addProp('sensors')}>Add</button>
+              </li>
+              <li>
+                <button disabled={@state.data.get('sensors').size <= 0}
+                  onClick={() => @_removeProp('sensors')}>
+                  Remove</button>
+              </li>
+            </ul>
+            <div className='spec_editor_labels'>Actuators:</div>
+            <ul className='spec_editor_selectlist'>
+              {@state.data.get('actuators').map((values, name) =>
+                <li key={name} tabIndex='0' onClick={() => @_highlightProp('actuators', name)}
+                  className={classNames({'spec_editor_selectlist_li_highlighted':
+                    values.get('highlighted')})}>
+                  <input type='checkbox' value={name} checked={values.get('checked')}
+                    onChange={() => @_toggleProp('actuators', name)} />
+                  {name}
                 </li>
-              </ul>
-              <div className='spec_editor_labels'>Actuators:</div>
-              <ul className='spec_editor_selectlist'>
-                {@state.data.get('actuators').map((values, name) =>
-                  <li tabIndex='0' onClick={() => @_highlightProp('actuators', name)}
-                    className={classNames({'spec_editor_selectlist_li_highlighted':
-                      values.get('highlighted')})}>
-                    <input type='checkbox' value={name} checked={values.get('checked')}
-                      onChange={() => @_checkProp('actuators', name)} />
-                    {name}
-                  </li>
-                )}
-              </ul>
-              <ul className='spec_editor_buttonlist'>
-                <li>
-                  <button onClick={() => @_addProp('actuators')}>
-                    Add</button>
+              ).toArray()}
+            </ul>
+            <ul className='spec_editor_buttonlist'>
+              <li>
+                <button onClick={() => @_addProp('actuators')}>
+                  Add</button>
+              </li>
+              <li>
+                <button disabled={@state.data.get('actuators').size <= 0}
+                  onClick={() => @_removeProp('actuators')}>
+                  Remove</button>
+              </li>
+            </ul>
+            <div className='spec_editor_labels'>Custom Propositions:</div>
+            <ul className='spec_editor_selectlist'>
+              {@state.data.get('customprops').map((values, name) =>
+                <li key={name} tabIndex='0' onClick={() => @_highlightProp('customprops', name)}
+                  className={classNames({'spec_editor_selectlist_li_highlighted':
+                    values.get('highlighted')})}>
+                  {name}
                 </li>
-                <li>
-                  <button disabled={@state.data.get('actuators').size <= 0}
-                    onClick={() => @_removeProp('actuators')}>
-                    Remove</button>
-                </li>
-              </ul>
-              <div className='spec_editor_labels'>Custom Propositions:</div>
-              <ul className='spec_editor_selectlist'>
-                {@state.data.get('customprops').map((values, name) =>
-                  <li tabIndex='0' onClick={() => @_highlightProp('customprops', name)}
-                    className={classNames({'spec_editor_selectlist_li_highlighted':
-                      values.get('highlighted')})}>
-                    {name}
-                  </li>
-                )}
-              </ul>
-              <ul className='spec_editor_buttonlist'>
-                <li>
-                  <button onClick={() => @_addProp('customprops')}>
-                    Add</button>
-                </li>
-                <li>
-                  <button disabled={@state.data.get('customprops').size <= 0}
-                    onClick={() => @_removeProp('customprops')}>
-                    Remove</button>
-                </li>
-              </ul>
-            </div>
-            <div id='spec_editor_bottom'>
-              <Tabs className='spec_editor_max_height'>
-                <TabList>
-                  <Tab>Compiler Log</Tab>
-                  <Tab>LTL Output</Tab>
-                  <Tab>Workspace Decomposition</Tab>
-                </TabList>
-                <TabPanel className='spec_editor_bottom_div'>
-                  <div className='spec_editor_max_height'>
-                    <textarea className='spec_editor_bottom_textarea' disabled
-                      value={@state.data.get('compilerLog')} />
-                  </div>
-                </TabPanel>
-                <TabPanel className='spec_editor_bottom_div'>
-                  <div className='spec_editor_max_height'>
-                    <textarea className='spec_editor_bottom_textarea' disabled 
-                      value={@state.data.get('ltlOutput')} />
-                  </div>
-                </TabPanel>
-                <TabPanel className='spec_editor_bottom_div'>
-                  <div className='spec_editor_max_height'>
-                    Workspace Decomposition</div>
-                </TabPanel>
-              </Tabs>
-            </div>
+              ).toArray()}
+            </ul>
+            <ul className='spec_editor_buttonlist'>
+              <li>
+                <button onClick={() => @_addProp('customprops')}>
+                  Add</button>
+              </li>
+              <li>
+                <button disabled={@state.data.get('customprops').size <= 0}
+                  onClick={() => @_removeProp('customprops')}>
+                  Remove</button>
+              </li>
+            </ul>
+          </div>
+          <div id='spec_editor_bottom'>
+            <Tabs className='spec_editor_max_height'>
+              <TabList>
+                <Tab>Compiler Log</Tab>
+                <Tab>LTL Output</Tab>
+                <Tab>Workspace Decomposition</Tab>
+              </TabList>
+              <TabPanel className='spec_editor_bottom_div'>
+                <div className='spec_editor_max_height'>
+                  <textarea className='spec_editor_bottom_textarea' disabled
+                    value={@state.data.get('compilerLog')} />
+                </div>
+              </TabPanel>
+              <TabPanel className='spec_editor_bottom_div'>
+                <div className='spec_editor_max_height'>
+                  <textarea className='spec_editor_bottom_textarea' disabled
+                    value={@state.data.get('ltlOutput')} />
+                </div>
+              </TabPanel>
+              <TabPanel className='spec_editor_bottom_div'>
+                <div className='spec_editor_max_height'>
+                  Workspace Decomposition</div>
+              </TabPanel>
+            </Tabs>
           </div>
         </div>
 
-And render!
+Export
+------
 
-    currentSpecEditor = ReactDOM.render(<SpecEditor />, document.getElementById('spec_editor_body'))
+    module.exports = SpecEditor

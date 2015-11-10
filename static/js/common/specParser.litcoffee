@@ -34,7 +34,7 @@ Parse a spec spec file
       spec = {}
       # loop through lines
       currentOption = ''
-      for line in parse_string.trim().split "\n"
+      for line in parse_string.trim().split '\n'
         line = line.trim()
         if line.length < 1 and currentOption != 'Spec'
           currentOption = ''
@@ -75,7 +75,7 @@ Parse a spec spec file
               spec.Spec = ''
             spec.Spec += line + '\n'
           else
-            console.warn("Spec Parsing: unrecognized spec option")
+            console.warn('Spec Parsing: unrecognized spec option')
         # end else
       # end for
 

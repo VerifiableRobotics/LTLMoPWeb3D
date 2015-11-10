@@ -21,12 +21,12 @@ Helper functions to create automaton object
       props['sensors'] = {}
       props['actuators'] = {}
       props['customs'] = {}
-      props['region'] = "" # region bit string first, then convert to int
+      props['region'] = '' # region bit string first, then convert to int
 
       # match all props
       for prop in str.match(propRegEx)
         # split by colon, name left, value right
-        propSplit = prop.split(":")
+        propSplit = prop.split(':')
         # check if the prop exists in the spec 
         if spec.Sensors.hasOwnProperty propSplit[0]
           props['sensors'][propSplit[0]] = parseInt(propSplit[1])
@@ -40,9 +40,9 @@ Helper functions to create automaton object
       
       # convert region bit string to int
       regionInt = 0
-      for bit, index in props["region"]
-        regionInt += parseInt(bit) * 2 ** (props["region"].length - index - 1)
-      props["region"] = regionInt
+      for bit, index in props['region']
+        regionInt += parseInt(bit) * 2 ** (props['region'].length - index - 1)
+      props['region'] = regionInt
 
       return props
     
@@ -69,14 +69,14 @@ State 0 with rank 0 -> <person:0, hazardous_item:0, pick_up:0, drop:0, radio:0, 
       automaton = {}
       # loop through lines
       currentState = ''
-      for line in parse_string.trim().split "\n"
+      for line in parse_string.trim().split '\n'
         if isStateString(line)
           currentState = getState(line)
-          automaton[currentState] = "rank": getRank(line), "props": getProps(line, spec), "successors": []
+          automaton[currentState] = 'rank': getRank(line), 'props': getProps(line, spec), 'successors': []
         else if isSuccessorString(line)
-          automaton[currentState]["successors"] = getSuccessors(line)
+          automaton[currentState]['successors'] = getSuccessors(line)
         else
-          console.warn("Automaton Parsing: neither state nor successor string")
+          console.warn('Automaton Parsing: neither state nor successor string')
         # end else
       # end for
 

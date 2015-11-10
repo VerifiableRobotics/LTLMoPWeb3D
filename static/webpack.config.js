@@ -1,9 +1,10 @@
 // webpack.config.js
 
-var webpack = require('webpack');
+var webpack = require('webpack')
+var path = require('path')
 
 module.exports = {
-  entry: './js/specEditor/specEditor.cjsx.md',
+  entry: './js/header.cjsx.md',
   output: {
     path: './build', // This is where images AND js will go
     publicPath: 'http://0.0.0.0:5000', // This is used to generate URLs to e.g. images
@@ -13,6 +14,7 @@ module.exports = {
     modulesDirectories: ['node_modules']
   },
   resolve: {
+    root: path.resolve('./'), // allow js/... css/... plugins/... to resolve
     extensions: ['', '.js', '.cjsx', '.cjsx.md', '.coffee', '.coffee.md', '.litcoffee']
   },
   module: {
@@ -28,4 +30,4 @@ module.exports = {
   watchOptions: {
     poll: true
   }
-};
+}

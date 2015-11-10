@@ -55,11 +55,10 @@ def uploadRegions():
   if file and allowed_file(file.filename):
     createSession() # create one in case one currently doesn't exist
     filename = secure_filename(file.filename)
-    newFilePath = os.path.join(app.config['UPLOAD_FOLDER'], session['username'], filename)
-    file.save(newFilePath)
-    session['regionsFilePath'] = newFilePath # store regions file path in session
-    newJSON = createRFI().extractJSONFromRegions(newFilePath)
-    return jsonify(theList = newJSON, thePath = newFilePath)
+    session['regionsFilePath'] = os.path.join(app.config['UPLOAD_FOLDER'], session['username'], filename)
+    file.save(session['regionsFilePath'])
+    newJSON = createRFI().extractJSONFromRegions(session['regionsFilePath'])
+    return jsonify(theList = newJSON, thePath = session['regionsFilePath'])
   return jsonify(theBool = "False")
 
 # ----------------- simulator functions ------------------------------
@@ -205,10 +204,9 @@ def specEditorImportSpec():
   if file and allowed_file(file.filename) and 'regionsFilePath' in session: # make sure a regions file has been uploaded
     createSession() # create one in case one currently doesn't exist
     filename = secure_filename(file.filename)
-    newFilePath = os.path.join(app.config['UPLOAD_FOLDER'], session['username'], filename)
-    file.save(newFilePath)
-    session['specFilePath'] = newFilePath
-    proj.loadProject(newFilePath)
+    session['specFilePath'] = os.path.join(app.config['UPLOAD_FOLDER'], session['username'], filename)
+    file.save(session['specFilePath'])
+    proj.loadProject(session['specFilePath'])
 
     # create JSON
     data = {}
@@ -232,11 +230,7 @@ def specEditorImportSpec():
 
 
 # ------------------------- region editor functions ------------------------
-# renders the region editor
-@app.route('/regionEditor')
-def loadRegionEditor():
-  return render_template('/regionEditor.html', name='regionEditor')
-  
+
 
 if __name__ == '__main__':
   port = int(os.environ.get("PORT", 5000))

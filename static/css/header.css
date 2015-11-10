@@ -4,7 +4,6 @@ html {
   padding: 0;
   height: 100%;
 }
-
 body {
   position: absolute;
   margin: 0;
@@ -17,7 +16,9 @@ body {
   font-size: 10pt;
   height: 100%;
 }
-
+.max_height{
+  height: 100%;
+}
 #heading {
   position: relative;
   top: 0;
@@ -34,9 +35,4 @@ body {
   line-height: 30px;
   background-color: #64a36d;
   font-size: 16px;
-}
-#heading p {
-  margin: 0;
-  line-height: 20px;
-  height: 20px;
 }

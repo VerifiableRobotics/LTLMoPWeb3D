@@ -39,6 +39,4 @@ Fetch with defaults added
 Export
 ------
 
-    module.exports = {
-      Fetch
-    }
+    module.exports = Fetch

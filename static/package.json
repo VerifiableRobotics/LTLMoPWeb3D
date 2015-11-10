@@ -6,16 +6,20 @@
   "dependencies": {
     "classnames": "^2.2.0",
     "es6-promise": "^3.0.2",
+    "history": "^1.13.0",
     "immutable": "^3.7.5",
     "isomorphic-fetch": "^2.2.0",
     "react": "^0.14.2",
     "react-dom": "^0.14.2",
+    "react-router": "^1.0.0",
     "react-tabs": "^0.5.1"
   },
   "devDependencies": {
     "cjsx-loader": "^2.1.0",
     "coffee-loader": "~0.7.2",
     "coffee-script": "~1.9.2",
+    "css-loader": "^0.22.0",
+    "style-loader": "^0.13.0",
     "webpack": "^1.8.11"
   },
   "scripts": {
@@ -24,7 +28,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/LTLMoP/LTLMoPWeb3D.git"
+    "url": "https://github.com/VerifiableRobotics/LTLMoPWeb3D.git"
   },
   "keywords": [
     "robotics"
@@ -32,6 +36,6 @@
   "author": "agilgur5",
   "license": "GPL-3.0",
   "bugs": {
-    "url": "https://github.com/agilgur5/LTLMoPWeb3D/issues"
+    "url": "https://github.com/VerifiableRobotics/LTLMoPWeb3D/issues"
   }
 }
