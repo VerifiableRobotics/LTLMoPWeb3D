@@ -8,11 +8,11 @@ External Dependencies
 Internal Dependencies
 ---------------------
 
-    Helpers = require('js/common/helpers.litcoffee')
-    RegionsParser = require('js/common/regionsParser.litcoffee')
-    SpecParser = require('js/common/specParser.litcoffee')
-    AutomatonParser = require('./automatonParser.litcoffee')
-    Executor = require('./executor.litcoffee')
+    Helpers = require('js/lib/helpers.litcoffee')
+    RegionsParser = require('js/lib/regionsParser.litcoffee')
+    SpecParser = require('js/lib/specParser.litcoffee')
+    AutomatonParser = require('js/lib/automatonParser.litcoffee')
+    Executor = require('js/lib/executor.litcoffee')
 
 Assets
 
@@ -52,7 +52,7 @@ Create 3D regions from the region array
         # create the new ground material
         new_ground_material = Physijs.createMaterial(
           new THREE.MeshBasicMaterial(
-            color: 'rgb('+ region.color.join(',') +')'
+            color: 'rgb('+ region.color.join(',') + ')'
             side: THREE.DoubleSide
           ), 
           .5, # high friction
@@ -238,43 +238,40 @@ Simulator Component
 Define the initial state
 
       getInitialState: () ->
-        return {disableAut: true, disableExec: true, 
-        sensors: Map(), actuators: Map(), customs: Map(), regions: Map(),
-        velocity: 8}
+        return {
+          disableAut: true,
+          disableExec: true,
+          sensors: Map(),
+          actuators: Map(),
+          customs: Map(),
+          regions: Map(),
+          velocity: 8
+        }
 
 When a *.regions file is uploaded; specifically the decomposed one
 
       onRegionsUpload: (ev) ->
-        callback = (ev) => 
-          regionFile = RegionsParser.parseRegions(ev.target.result)
-          console.log('Regions Object: ')
-          console.log(regionFile)
+        RegionsParser.uploadRegions(ev.target.files[0], (regionsObj) =>
+          regionFile = regionsObj
           create3DRegions(regionFile.Regions)
-          @addRegionButtons(regionFile.Regions)
-        Helpers.onUpload(ev, 'regions', callback)
+          @addRegionButtons(regionFile.Regions))
 
 When a *.spec file is uploaded
       
       onSpecUpload: (ev) ->
-        callback = (ev) => 
-          spec = SpecParser.parseSpec(ev.target.result)
-          console.log('Spec Object: ')
-          console.log(spec)
+        SpecParser.uploadSpec(ev.target.files[0], (specObj) => 
+          spec = specObj
           # enable uploading of automaton now
           @setState({disableAut: false})
-          @addPropButtons(spec)
-        Helpers.onUpload(ev, 'spec', callback)
+          @addPropButtons(spec))
 
 When a *.aut file is uploaded
 
       onAutUpload: (ev) ->
-        callback = (ev) => 
-          automaton = AutomatonParser.parseAutomaton(ev.target.result, spec)
-          console.log('Automaton Object: ')
-          console.log(automaton)
+        AutomatonParser.uploadAutomaton(ev.target.files[0], spec, (autObj) =>
+          automaton = autObj
           # enable executor execution now
-          @setState({disableExec: false})
-        Helpers.onUpload(ev, 'aut', callback)
+          @setState({disableExec: false}))
       
 Launch the executor
 
@@ -353,7 +350,6 @@ Add Region buttons based on regions in region file
         # arbitrarily turn first region as active region
         regions = regions.setIn([regions_arr[0].name, 'active'], true)
         @setState({regions: regions})
-
 
 Add Buttons/State based on props in spec
       
@@ -441,7 +437,6 @@ Define the simulator's layout
 
       render: () ->
         <div>
-          <Header />
           <div className='center_wrapper'>
             <button type='button' onClick={@startExecution} disabled={@state.disableExec}>Start</button>
           </div>

@@ -8,8 +8,7 @@ External Dependencies
 Internal Dependencies
 ---------------------
 
-    Helpers = require('js/common/helpers.litcoffee')
-    RegionsParser = require('js/common/regionsParser.litcoffee')
+    RegionsParser = require('js/lib/regionsParser.litcoffee')
 
 Region Editor Component
 -------------------
@@ -21,18 +20,19 @@ Define the initial state
 
       getInitialState: () ->
         {
-          regionObj: { Regions: [] }
+          regionsObj: { Regions: [] }
+          decomposedObj: { Regions: [] }
         }
 
 When a regions file is uploaded
 
       _onRegionsUpload: (ev) ->
-        callback = (ev) => 
-          regionObj = RegionsParser.parseRegions(ev.target.result)
-          console.log('Regions Object: ')
-          console.log(regionObj)
-          @setState({ regionObj })
-        Helpers.onUpload(ev, 'regions', callback)
+        RegionsParser.uploadRegions(ev.target.files[0], (regionsObj) =>
+          @setState({ regionsObj }))
+
+      _onDecomposedUpload: (ev) ->
+        RegionsParser.uploadRegions(ev.target.files[0], (decomposedObj) =>
+          @setState({ decomposedObj }))
 
 Define the component layout
 
@@ -41,13 +41,16 @@ Define the component layout
           <input type='file' name='regions' accept='.regions'
             onChange={@_onRegionsUpload} />
           <span>Import Regions...</span>
-          {@state.regionObj.Regions
+          <input type='file' name='regions' accept='.regions'
+            onChange={@_onDecomposedUpload} />
+          <span>Import Decomposed...</span>
+          {@state.regionsObj.Regions
             .filter((region) -> region.name == 'boundary')
             .map((boundary) =>
             {# create svg with viewbox equal to boundary dimensions}
               <svg width={500} height={500}
                 viewBox={boundary.position.join(' ') + ' ' + boundary.size.join(' ')}>
-                {@state.regionObj.Regions.map((region, index) ->
+                {@state.decomposedObj.Regions.map((region, index) ->
                   <g key={index} transform={'translate(' + region.position.join(',') + ')'}>
                     <text>{region.name}</text>
                     {# stroke if boundary, fill otherwise}

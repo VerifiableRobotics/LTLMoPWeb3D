@@ -4,11 +4,14 @@ var webpack = require('webpack')
 var path = require('path')
 
 module.exports = {
-  entry: './js/header.cjsx.md',
+  entry: {
+    header: './js/header.cjsx.md',
+    simulator: './js/simulator/simulator.cjsx.md'
+  },
   output: {
     path: './build', // This is where images AND js will go
     publicPath: 'http://0.0.0.0:5000', // This is used to generate URLs to e.g. images
-    filename: 'bundle.js'
+    filename: '[name].bundle.js'
   },
   resolveLoader: {
     modulesDirectories: ['node_modules']

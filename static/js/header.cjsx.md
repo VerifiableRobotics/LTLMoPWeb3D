@@ -24,7 +24,7 @@ Header Component
         <div className='max_height'>
           <div id='heading'>
             <h1>LTLMoPWeb3D Simulator</h1>
-            <Link to='/simulator'> Simulator </Link>
+            <a href='/simulator'> Simulator </a>
             <Link to='/specEditor'> Specification Editor </Link>
             <Link to='/regionEditor'> Region Editor </Link>
           </div>

@@ -2,7 +2,7 @@ from flask import Flask, request, redirect, url_for, render_template, jsonify, R
 from werkzeug.utils import secure_filename
 import os, sys, datetime, uuid, threading, zipfile
                                                                                                                                                                                                                
-sys.path.append(os.path.join(os.sep, "LTLMoP","src","lib")) # add lib to path
+sys.path.append(os.path.join(os.sep, 'LTLMoP','src','lib')) # add lib to path
 import regions, project, specCompiler
 
 UPLOAD_FOLDER = 'uploads'
@@ -57,9 +57,8 @@ def uploadRegions():
     filename = secure_filename(file.filename)
     session['regionsFilePath'] = os.path.join(app.config['UPLOAD_FOLDER'], session['username'], filename)
     file.save(session['regionsFilePath'])
-    newJSON = createRFI().extractJSONFromRegions(session['regionsFilePath'])
-    return jsonify(theList = newJSON, thePath = session['regionsFilePath'])
-  return jsonify(theBool = "False")
+    return jsonify(theBool = 'True')
+  return jsonify(theBool = 'False')
 
 # ----------------- simulator functions ------------------------------
 @app.route('/simulator')
@@ -86,15 +85,15 @@ def loadSpecEditor():
 def createSpec(specDict):
   proj = createProject()
   #store text
-  proj.specText = specDict['specText'] # "Do something"
+  proj.specText = specDict['specText'] # 'Do something'
   if proj.specText is None: 
     proj.specText = '' # store as blank string, not None if None
   
   # store sensors
-  proj.all_sensors = specDict['all_sensors'] # ["s1"]
-  proj.all_actuators = specDict['all_actuators'] # ["a1","a2"]
-  proj.enabled_sensors = specDict['enabled_sensors'] # ["s1"]
-  proj.enabled_actuators = specDict['enabled_actuators'] # ["a1"]
+  proj.all_sensors = specDict['all_sensors'] # ['s1']
+  proj.all_actuators = specDict['all_actuators'] # ['a1','a2']
+  proj.enabled_sensors = specDict['enabled_sensors'] # ['s1']
+  proj.enabled_actuators = specDict['enabled_actuators'] # ['a1']
   proj.all_customs = specDict['all_customs'] # ['p1']
 
   # store compliation options
@@ -102,7 +101,10 @@ def createSpec(specDict):
   
   # store region path
   regionPath = specDict['regionPath']
-  if regionPath is not None and regionPath != '': # make sure there is a region path before rfi
+  # make sure there is a region path before creating RFI
+  if regionPath is not None and regionPath != '':
+    # if the path is not just filename, take just filename and attach uploads/
+    regionPath = os.path.join(app.config['UPLOAD_FOLDER'], session['username'], os.path.basename(regionPath))
     proj.rfi = createRFI()
     proj.rfi.readFile(regionPath) # 'uploads/floorplan.regions'
   
@@ -110,9 +112,9 @@ def createSpec(specDict):
   # create the path if it doesn't exist in the session already
   if not session['specFilePath']:
     session['specFilePath'] = os.path.join(app.config['UPLOAD_FOLDER'], 
-      session['username'], session['username'] + ".spec")
+      session['username'], session['username'] + '.spec')
   proj.writeSpecFile(session['specFilePath'])
-  return jsonify(theBool = "True")
+  return jsonify(theBool = 'True')
 
 # route wrapper for createSpec helper
 @app.route('/specEditor/createSpec', methods=['POST'])
@@ -129,25 +131,24 @@ def compileSpec():
   sc.loadSpec(session['specFilePath'])
   realizable, realizableFS, logString = sc.compile()
   # create zip of all files in the project
-  with zipfile.ZipFile(os.path.join(app.config['UPLOAD_FOLDER'], session['username'], session['username'] + ".zip"), 'w') as myzip:
+  with zipfile.ZipFile(os.path.join(app.config['UPLOAD_FOLDER'], session['username'], session['username'] + '.zip'), 'w') as myzip:
     myzip.write(session['regionsFilePath'], os.path.basename(session['regionsFilePath']))
     myzip.write(session['specFilePath'], os.path.basename(session['specFilePath']))
     fileName, fileExtension = os.path.splitext(session['specFilePath']) # split extension
-    myzip.write(fileName + ".ltl", os.path.basename(fileName + ".ltl"))
-    myzip.write(fileName + ".smv", os.path.basename(fileName + ".smv"))
-    myzip.write(fileName + ".aut", os.path.basename(fileName + ".aut"))
-    myzip.write(fileName + "_decomposed.regions", os.path.basename(fileName + "_decomposed.regions"))
+    myzip.write(fileName + '.ltl', os.path.basename(fileName + '.ltl'))
+    myzip.write(fileName + '.smv', os.path.basename(fileName + '.smv'))
+    myzip.write(fileName + '.aut', os.path.basename(fileName + '.aut'))
+    myzip.write(fileName + '_decomposed.regions', os.path.basename(fileName + '_decomposed.regions'))
   # get ltl output
   fileName, fileExtension = os.path.splitext(session['specFilePath'])
-  ltlOutput = open(fileName + ".aut").read()
-  return jsonify({"compilerLog": logString, "ltlOutput": ltlOutput})
+  ltlOutput = open(fileName + '.ltl').read()
+  return jsonify({'compilerLog': logString, 'ltlOutput': ltlOutput})
 
 # analyzes the spec and sends back the output
 @app.route('/specEditor/analyzeSpec', methods=['GET'])
 def analyzeSpec():
   sc = specCompiler.SpecCompiler()
   sc.loadSpec(session['specFilePath'])
-  #realizable, realizableFS, logString = sc.compile()
   realizable, unsat, nonTrivial, to_highlight, output = sc._analyze()
   return jsonify(analyzeLog = output)
 
@@ -165,39 +166,39 @@ def saveRegions():
 @app.route('/specEditor/saveAut', methods=['GET'])
 def saveAut():
   fileName, fileExtension = os.path.splitext(session['specFilePath']) # split extension
-  thepath = fileName + ".aut"
+  thepath = fileName + '.aut'
   return send_file(thepath, as_attachment=True, mimetype='text/plain')
 
 # sends the currently stored ltl to the user
 @app.route('/specEditor/saveLTL', methods=['GET'])
 def saveLTL():
   fileName, fileExtension = os.path.splitext(session['specFilePath']) # split extension
-  thepath = fileName + ".ltl"
+  thepath = fileName + '.ltl'
   return send_file(thepath, as_attachment=True, mimetype='text/plain')
 
 # sends the currently stored smv to the user
 @app.route('/specEditor/saveSMV', methods=['GET'])
 def saveSMV():
   fileName, fileExtension = os.path.splitext(session['specFilePath']) # split extension
-  thepath = fileName + ".smv"
+  thepath = fileName + '.smv'
   return send_file(thepath, as_attachment=True, mimetype='text/plain')
 
 # sends the currently stored decomposed regions to the user
-@app.route('/specEditor/saveDecomposed', methods=['GET'])
+@app.route('/specEditor/saveDecomposed', methods=['GET', 'POST'])
 def saveDecomposed():
   fileName, fileExtension = os.path.splitext(session['specFilePath']) # split extension
-  thepath = fileName + "_decomposed.regions"
+  thepath = fileName + '_decomposed.regions'
   return send_file(thepath, as_attachment=True, mimetype='text/plain')
 
 # sends the currently stored zipped project to the user
 @app.route('/specEditor/saveZip', methods=['GET', 'POST'])
 def saveZip():
-  thepath = os.path.join(app.config['UPLOAD_FOLDER'], session['username'], session['username'] + ".zip")
+  thepath = os.path.join(app.config['UPLOAD_FOLDER'], session['username'], session['username'] + '.zip')
   return send_file(thepath, as_attachment=True, mimetype='text/plain')
 
 # returns data that specifies what to place into the spec editor
 @app.route('/specEditor/importSpec', methods=['POST'])
-def specEditorImportSpec():
+def importSpec():
   proj = createProject()
   # get file and re-create project
   file = request.files['file']
@@ -207,32 +208,15 @@ def specEditorImportSpec():
     session['specFilePath'] = os.path.join(app.config['UPLOAD_FOLDER'], session['username'], filename)
     file.save(session['specFilePath'])
     proj.loadProject(session['specFilePath'])
-
-    # create JSON
-    data = {}
-    data['specText'] = proj.specText
-    data['compile_options'] = proj.compile_options
-    
-    # arrays to store data that will be passed to server 
-    data['all_sensors'] = proj.all_sensors
-    data['enabled_sensors'] = proj.enabled_sensors
-    data['all_actuators'] = proj.all_actuators
-    data['enabled_actuators'] = proj.enabled_actuators
-    data['all_customs'] = proj.all_customs
-    data['regionPath'] = proj.rfi.filename
-    data['regionList'] = []
-    # loop through list of regions and add names to the array
-    for region in proj.rfi.regions:
-        data['regionList'].append(region.name)
         
-    return jsonify(data)
-  return jsonify(theBool = "False")
+    return jsonify(theBool = 'True')
+  return jsonify(theBool = 'False')
 
 
 # ------------------------- region editor functions ------------------------
 
 
 if __name__ == '__main__':
-  port = int(os.environ.get("PORT", 5000))
-  debug = bool(os.environ.get("DEBUG", False))
+  port = int(os.environ.get('PORT', 5000))
+  debug = bool(os.environ.get('DEBUG', False))
   app.run(host='0.0.0.0', port=port, debug=True)

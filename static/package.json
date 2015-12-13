@@ -5,6 +5,7 @@
   "main": "main.js",
   "dependencies": {
     "classnames": "^2.2.0",
+    "deep-extend": "^0.4.0",
     "es6-promise": "^3.0.2",
     "history": "^1.13.0",
     "immutable": "^3.7.5",
@@ -24,7 +25,9 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "webpack": "node ./node_modules/webpack/bin/webpack.js"
+    "webpack": "node ./node_modules/webpack/bin/webpack.js",
+    "watch": "npm run webpack -- --watch -d",
+    "produce": "npm run webpack -- -p"
   },
   "repository": {
     "type": "git",

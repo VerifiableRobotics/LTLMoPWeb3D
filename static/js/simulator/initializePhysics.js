@@ -18,14 +18,13 @@ initScene = function() {
   
   // create the renderer
   renderer = new THREE.WebGLRenderer({antialias: true});
-  var $viewport = $('#viewport')
-  var rendWidth = $viewport.width();
-  var rendHeight = $viewport.height();
-  console.log(rendHeight);
-  renderer.setSize(rendWidth, rendHeight);
+  var viewportElem = document.getElementById('viewport')
+  console.log(viewportElem.clientWidth)
+  console.log(viewportElem.clientHeight)
+  renderer.setSize(viewportElem.clientWidth, viewportElem.clientHeight)
   renderer.shadowMapEnabled = true;
   renderer.shadowMapSoft = true;
-  $viewport.append(renderer.domElement);
+  viewportElem.appendChild(renderer.domElement)
   
   
   // create the scene and add gravity

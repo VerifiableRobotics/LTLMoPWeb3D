@@ -7,7 +7,7 @@ COPY ./requirements.txt ./requirements.txt
 RUN pip install -r requirements.txt
 
 # mount core in here
-VOLUME /web
+ADD ./ /web
 WORKDIR /web
 
 # expose dev server port
