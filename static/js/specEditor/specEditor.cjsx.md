@@ -3,7 +3,6 @@ External Dependencies
     
     React = require('react')
     ReactDOM = require('react-dom')
-    { Tab, Tabs, TabList, TabPanel } = require('react-tabs');
     { Map } = require('immutable')
     classNames = require('classnames')
 
@@ -14,20 +13,12 @@ Internal Dependencies
     SpecParser = require('js/lib/specParser.litcoffee')
     RegionsParser = require('js/lib/regionsParser.litcoffee')
     AutParser = require('js/lib/automatonParser.litcoffee')
-    SpecEditorMenu = require('./specEditorMenu.cjsx.md')
+    SpecEditorMenu = require('./menu.cjsx.md')
+    SpecEditorCompileTabs = require('./compileTabs.cjsx.md')
 
 Assets
 
     require('css/specEditor.css')
-
-Main Program
-------------
-
-Initial set up
-
-    specObj = { RegionMapping: [] }
-    autObj = {}
-
 
 Spec Editor Component
 ---------------------
@@ -53,9 +44,10 @@ Define the initial state
               symbolic: false
             })
             regions: Map()
-            selectedDecomposed: ''
             regionsObj: { Regions: [] }
             decomposedObj: { Regions: [] }
+            specObj: { RegionMapping: [] }
+            autObj: {}
             sensors: Map()
             actuators: Map()
             customprops: Map()
@@ -73,11 +65,19 @@ Immutable setState helper
         return @setState(({data}) -> {data: fn(data)})
 
 Upload the regions file
+Adds all the regions from a list of region objects
 
       _uploadRegions: (ev) ->
         RegionsParser.uploadRegions(ev.target.files[0], (regions) =>
-          @setImmState (d) -> d.set('regionsObj', regions)
-          @_createRegions(regions))
+          @setImmState((d) -> 
+            d.set('regionsObj', regions)
+              .set('regions', regions.Regions.reduce(
+                ((map, region) -> map.set(region.name, 
+                  Map({'checked': false, 'highlighted': false}))
+                ), Map()
+              ))
+            ))
+
         # upload the regions file
         form = new FormData()
         form.append('file', ev.target.files[0])
@@ -90,12 +90,28 @@ Upload the regions file
           )
 
 Upload the spec file
+Given the JSON version of a project object, import the spec
 
       _uploadSpec: (ev) ->
         # read the spec file
         SpecParser.uploadSpec(ev.target.files[0], (spec) => 
-          specObj = spec
-          @_importSpec(specObj))
+          @setImmState((d) -> 
+            # merge values
+            d.set('specObj', spec).merge(Map({
+              'specText': spec.Spec
+              'compile_options': Map(spec.CompileOptions)
+            # add props
+            })).set('sensors', Map(spec.Sensors).map(
+              (value, name) -> Map({'checked': value == 1, 'highlighted': false})
+            )).set('actuators', Map(spec.Actions).map(
+              (value, name) -> Map({'checked': value == 1, 'highlighted': false})
+            )).set('customprops', spec.Customs.reduce(
+              ((map, elem) ->
+                map.set(elem, Map({'checked': false, 'highlighted': false}))
+              ), Map()
+            ))
+          ))
+        
         # upload the spec file
         form = new FormData()
         form.append('file', ev.target.files[0])
@@ -242,11 +258,6 @@ Highlights a prop based on its name and the map's name
             .setIn([propName, 'highlighted'], true) # highlight the clicked one
         )
 
-Selects a decomposed region based on its name
-
-      _selectDecomposed: (name) -> 
-        @setImmState (d) -> d.set('selectedDecomposed', name)
-
 Checks a prop based on its name and the map's name
 
       _toggleProp: (mapName, propName) ->
@@ -261,42 +272,13 @@ Removes the currently highlighted prop in the map with name as specified
             (values) -> values.get('highlighted'))
           )
         )
-      
-Adds all the regions from a list of region objects
-
-      _createRegions: (regionsObj) ->
-        @setImmState (d) -> 
-          d.set('regions', regionsObj.Regions.reduce(
-              ((map, region) -> map.set(region.name, 
-                Map({'checked': false, 'highlighted': false}))
-              ), Map()
-            ))
-
-Given the JSON version of a project object, import the spec
-
-      _importSpec: (spec) ->
-        @setImmState (d) ->
-          # merge values
-          d.merge(Map({
-            'specText': spec.Spec
-            'compile_options': Map(spec.CompileOptions)
-          # add props
-          })).set('sensors', Map(spec.Sensors).map(
-            (value, name) -> Map({'checked': value == 1, 'highlighted': false})
-          )).set('actuators', Map(spec.Actions).map(
-            (value, name) -> Map({'checked': value == 1, 'highlighted': false})
-          )).set('customprops', spec.Customs.reduce(
-            ((map, elem) ->
-              map.set(elem, Map({'checked': false, 'highlighted': false}))
-            ), Map()
-          ))
 
 Creates and returns a JSON object that holds all spec information
 
       _createJSONForSpec: () ->
         data = {}
         data['compile_options'] = @state.data.get('compile_options').toJS()
-        data['regionPath'] = specObj.RegionFile
+        data['regionPath'] = @state.data.get('specObj').RegionFile
 
         specText = @state.data.get('specText')
         if specText != ''
@@ -416,60 +398,7 @@ Define the component's layout
               </li>
             </ul>
           </div>
-          <div id='spec_editor_bottom'>
-            <Tabs className='spec_editor_max_height'>
-              <TabList>
-                <Tab>Compiler Log</Tab>
-                <Tab>LTL Output</Tab>
-                <Tab>Workspace Decomposition</Tab>
-              </TabList>
-              <TabPanel className='spec_editor_bottom_div'>
-                <div className='spec_editor_max_height'>
-                  <textarea className='spec_editor_bottom_textarea' disabled
-                    value={data.get('compilerLog')} />
-                </div>
-              </TabPanel>
-              <TabPanel className='spec_editor_bottom_div'>
-                <div className='spec_editor_max_height'>
-                  <textarea className='spec_editor_bottom_textarea' disabled
-                    value={data.get('ltlOutput')} />
-                </div>
-              </TabPanel>
-              <TabPanel className='spec_editor_bottom_div'>
-                <div className='spec_editor_max_height'>
-                  <div className='spec_editor_workspace_left'>
-                    <div className='spec_editor_labels'>Active locative phrases:</div>
-                    <ul className='spec_editor_selectlist' id='spec_editor_regions'>
-                      {Map(specObj.RegionMapping).keySeq().toArray().map((name) =>
-                        <li key={name} tabIndex='0' onClick={() => @_selectDecomposed(name)}
-                          className={classNames({'spec_editor_selectlist_li_highlighted':
-                            name == data.get('selectedDecomposed')})}>
-                          {name}</li>)}
-                    </ul>
-                  </div>
-                  <div className='spec_editor_workspace_right'>
-                    {data.get('regionsObj').Regions
-                      .filter((region) -> region.name == 'boundary')
-                      .map((boundary, index) =>
-                        <svg key={index} width={1000} height={150}
-                          viewBox={boundary.position.join(' ') + ' ' + boundary.size.join(' ')}>
-                          {data.get('decomposedObj').Regions.map((region, index) =>
-                            <g key={index} transform={'translate(' + region.position.join(',') + ')'}>
-                              <text>{region.name}</text>
-                              <polygon
-                                fill={
-                                  if data.get('selectedDecomposed') != '' && specObj.RegionMapping[data.get('selectedDecomposed')].indexOf(region.name) != -1 then '#000' else 'rgb(' + region.color.join(',') + ')'}
-                                points={region.points.map((point) -> point.join(',')).join(' ')} />
-                            </g>
-                          )}
-                        </svg>
-                      )
-                    }
-                  </div>
-                </div>
-              </TabPanel>
-            </Tabs>
-          </div>
+          <SpecEditorCompileTabs data={data} />
         </div>
 
 Export

@@ -4,7 +4,6 @@ External Dependencies
     React = require('react')
     classNames = require('classnames')
 
-
 Spec Editor Menu Component
 --------------------------
 
