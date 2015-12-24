@@ -10,7 +10,7 @@ Spec Editor Menu Component
     SpecEditorMenu = React.createClass
       displayName: 'Specification Editor Menu'
 
-Define the component's layout        
+Define the component's layout
 
       render: () ->
         {data, _uploadSpec, _uploadRegions, _saveSpec,
@@ -119,7 +119,7 @@ Define the component's layout
                           <li><a>
                             <input type='radio' name='synthesizer'
                               checked={data.getIn(['compile_options', 'synthesizer']) == 'jtlv'}
-                              onChange={() => @_changeCompileOption('synthesizer', 'jtlv')} />
+                              onChange={() => _changeCompileOption('synthesizer', 'jtlv')} />
                             JTLV</a></li>
                           <li><a>
                             <input type='radio' name='synthesizer'

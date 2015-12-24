@@ -139,10 +139,8 @@ def compileSpec():
     myzip.write(fileName + '.smv', os.path.basename(fileName + '.smv'))
     myzip.write(fileName + '.aut', os.path.basename(fileName + '.aut'))
     myzip.write(fileName + '_decomposed.regions', os.path.basename(fileName + '_decomposed.regions'))
-  # get ltl output
-  fileName, fileExtension = os.path.splitext(session['specFilePath'])
-  ltlOutput = open(fileName + '.ltl').read()
-  return jsonify({'compilerLog': logString, 'ltlOutput': ltlOutput})
+
+  return jsonify({'compilerLog': logString})
 
 # analyzes the spec and sends back the output
 @app.route('/specEditor/analyzeSpec', methods=['GET'])
@@ -153,7 +151,7 @@ def analyzeSpec():
   return jsonify(analyzeLog = output)
 
 # sends the currently stored spec to the user
-@app.route('/specEditor/saveSpec', methods=['GET','POST'])
+@app.route('/specEditor/saveSpec', methods=['GET', 'POST'])
 def saveSpec():
   return send_file(session['specFilePath'], as_attachment=True, mimetype='text/plain')
 
@@ -163,21 +161,21 @@ def saveRegions():
   return send_file(session['regionsFilePath'], as_attachment=True, mimetype='text/plain')
 
 # sends the currently stored aut to the user
-@app.route('/specEditor/saveAut', methods=['GET'])
+@app.route('/specEditor/saveAut', methods=['GET', 'POST'])
 def saveAut():
   fileName, fileExtension = os.path.splitext(session['specFilePath']) # split extension
   thepath = fileName + '.aut'
   return send_file(thepath, as_attachment=True, mimetype='text/plain')
 
 # sends the currently stored ltl to the user
-@app.route('/specEditor/saveLTL', methods=['GET'])
+@app.route('/specEditor/saveLTL', methods=['GET', 'POST'])
 def saveLTL():
   fileName, fileExtension = os.path.splitext(session['specFilePath']) # split extension
   thepath = fileName + '.ltl'
   return send_file(thepath, as_attachment=True, mimetype='text/plain')
 
 # sends the currently stored smv to the user
-@app.route('/specEditor/saveSMV', methods=['GET'])
+@app.route('/specEditor/saveSMV', methods=['GET', 'POST'])
 def saveSMV():
   fileName, fileExtension = os.path.splitext(session['specFilePath']) # split extension
   thepath = fileName + '.smv'

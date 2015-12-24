@@ -10,6 +10,7 @@ Internal Dependencies
 ---------------------
 
     Fetch = require('plugins/fetchHelpers.litcoffee')
+    Helpers = require('js/lib/helpers.litcoffee')
     SpecParser = require('js/lib/specParser.litcoffee')
     RegionsParser = require('js/lib/regionsParser.litcoffee')
     AutParser = require('js/lib/automatonParser.litcoffee')
@@ -43,11 +44,11 @@ Define the initial state
               synthesizer: 'jtlv'
               symbolic: false
             })
-            regions: Map()
             regionsObj: { Regions: [] }
             decomposedObj: { Regions: [] }
             specObj: { RegionMapping: [] }
             autObj: {}
+            regions: Map()
             sensors: Map()
             actuators: Map()
             customprops: Map()
@@ -69,10 +70,10 @@ Adds all the regions from a list of region objects
 
       _uploadRegions: (ev) ->
         RegionsParser.uploadRegions(ev.target.files[0], (regions) =>
-          @setImmState((d) -> 
+          @setImmState((d) ->
             d.set('regionsObj', regions)
               .set('regions', regions.Regions.reduce(
-                ((map, region) -> map.set(region.name, 
+                ((map, region) -> map.set(region.name,
                   Map({'checked': false, 'highlighted': false}))
                 ), Map()
               ))
@@ -95,7 +96,7 @@ Given the JSON version of a project object, import the spec
       _uploadSpec: (ev) ->
         # read the spec file
         SpecParser.uploadSpec(ev.target.files[0], (spec) => 
-          @setImmState((d) -> 
+          @setImmState((d) ->
             # merge values
             d.set('specObj', spec).merge(Map({
               'specText': spec.Spec
@@ -111,7 +112,7 @@ Given the JSON version of a project object, import the spec
               ), Map()
             ))
           ))
-        
+
         # upload the spec file
         form = new FormData()
         form.append('file', ev.target.files[0])
@@ -164,12 +165,28 @@ Compile the spec and set log + ltl
         }).then(([data, request]) => 
             @setImmState((d) ->
               d.set('isCompiled', true)
-                .set('compilerLog', data.compilerLog)
-                .set('ltlOutput', data.ltlOutput))
+                .set('compilerLog', data.compilerLog))
+            # download the other artifacts asynchronously
+            @_downloadLTL()
             @_downloadDecomposed()
+            @_downloadAut()
           ).catch((error) ->
             console.error('compile spec failed')
             alert('Spec compilation failed!')
+          )
+
+Download the ltl
+
+      _downloadLTL: () ->
+        Fetch('/specEditor/saveLTL', {method: 'post'}, {isBlob: true})
+          .then(([data, request]) =>
+            Helpers.onUpload(data, 'ltl',
+              ((ltl) =>
+                @setImmState (d) -> d.set('ltlOutput', ltl)
+              ), {isBlob: true})
+          ).catch((error) ->
+            console.error('ltl download failed')
+            alert('Downloading the LTL failed!')
           )
 
 Download the decomposed regions
@@ -184,6 +201,20 @@ Download the decomposed regions
           ).catch((error) -> 
             console.error('decompose download failed')
             alert('Downloading the decomposition failed!')
+          )
+
+Download the automaton
+
+      _downloadAut: () ->
+        Fetch('/specEditor/saveAut', {method: 'post'}, {isBlob: true})
+          .then(([data, request]) =>
+            AutParser.uploadAutomaton(data, @state.data.get('specObj'),
+              ((aut) =>
+                @setImmState (d) -> d.set('autObj', aut)
+              ), {isBlob: true})
+          ).catch((error) ->
+            console.error('aut download failed')
+            alert('Downloading the automaton failed!')
           )
 
 Analyze the spec

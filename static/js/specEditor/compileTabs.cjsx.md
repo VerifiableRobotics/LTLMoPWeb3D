@@ -19,10 +19,10 @@ Define the initial state
 
 Selects a decomposed region based on its name
 
-      _selectDecomposed: (name) -> 
+      _selectDecomposed: (name) ->
         @setState({'selectedDecomposed': name})
 
-Define the component's layout        
+Define the component's layout
 
       render: () ->
         data = @props.data
@@ -73,7 +73,7 @@ Define the component's layout
                                   if @state.selectedDecomposed != '' and
                                   region.name in data.get('specObj').RegionMapping[@state.selectedDecomposed]
                                     return '#000'
-                                  else 
+                                  else
                                     return 'rgb(' + region.color.join(',') + ')'
                                 )()}
                               points={region.points.map((point) -> point.join(',')).join(' ')} />
