@@ -10,10 +10,10 @@ Internal Dependencies
 ---------------------
 
     Fetch = require('plugins/fetchHelpers.litcoffee')
-    Helpers = require('js/lib/helpers.litcoffee')
-    SpecParser = require('js/lib/specParser.litcoffee')
-    RegionsParser = require('js/lib/regionsParser.litcoffee')
-    AutParser = require('js/lib/automatonParser.litcoffee')
+    Helpers = require('js/core/helpers.litcoffee')
+    SpecParser = require('js/core/specParser.litcoffee')
+    RegionsParser = require('js/core/regionsParser.litcoffee')
+    AutParser = require('js/core/automatonParser.litcoffee')
     SpecEditorMenu = require('./menu.cjsx.md')
     SpecEditorCompileTabs = require('./compileTabs.cjsx.md')
 

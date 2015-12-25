@@ -8,7 +8,7 @@ External Dependencies
 Internal Dependencies
 ---------------------
 
-    RegionsParser = require('js/lib/regionsParser.litcoffee')
+    RegionsParser = require('js/core/regionsParser.litcoffee')
 
 Region Editor Component
 -------------------

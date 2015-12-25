@@ -8,11 +8,11 @@ External Dependencies
 Internal Dependencies
 ---------------------
 
-    Helpers = require('js/lib/helpers.litcoffee')
-    RegionsParser = require('js/lib/regionsParser.litcoffee')
-    SpecParser = require('js/lib/specParser.litcoffee')
-    AutomatonParser = require('js/lib/automatonParser.litcoffee')
-    Executor = require('js/lib/executor.litcoffee')
+    Helpers = require('js/core/helpers.litcoffee')
+    RegionsParser = require('js/core/regionsParser.litcoffee')
+    SpecParser = require('js/core/specParser.litcoffee')
+    AutomatonParser = require('js/core/automatonParser.litcoffee')
+    Executor = require('js/core/executor.litcoffee')
 
 Assets
 

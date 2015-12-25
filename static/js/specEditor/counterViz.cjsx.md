@@ -71,7 +71,7 @@ Define the component's layout
                         <text>{region.name}</text>
                         <polygon
                           fill={
-                            (() =>
+                            (() ->
                               if index in possibleRegions
                                 return 'rgb(' + region.color.join(',') + ')'
                               else

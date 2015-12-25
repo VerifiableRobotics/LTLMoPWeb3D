@@ -22,8 +22,8 @@ module.exports = {
   },
   module: {
     loaders: [
-      { test: /\.cjsx$/, loader: ['coffee-loader', 'cjsx-loader'] },
-      { test: /\.cjsx\.md$/, loaders: ['coffee-loader?literate', 'cjsx-loader?literate'] },
+      { test: /\.cjsx$/, loader: 'cjsx-loader!coffee-loader' },
+      { test: /\.cjsx\.md$/, loader: 'cjsx-loader?literate!coffee-loader?literate' },
       { test: /\.coffee$/, loader: 'coffee-loader' },
       { test: /\.(coffee\.md|litcoffee)$/, loader: 'coffee-loader?literate' },
       { test: /\.css$/, loader: 'style-loader!css-loader' },
