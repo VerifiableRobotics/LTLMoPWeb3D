@@ -6,7 +6,7 @@ WORKDIR /web
 COPY ./requirements.txt ./requirements.txt
 RUN pip install -r requirements.txt
 
-# mount core in here
+# add the production code to the image
 ADD ./ /web
 WORKDIR /web
 

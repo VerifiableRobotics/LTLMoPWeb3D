@@ -1,18 +1,64 @@
-LTLMoPWeb3D
-===================
+# Table of Contents
 
-A website for Cornell's Autonomous Systems Lab to essentially have LTLMoP available in 3D and online. [Check out the live version](https://ltlmop.herokuapp.com)! See the [Wiki](https://github.com/LTLMoP/LTLMoP/wiki/) for more details.
+I. [Check out the live version](https://ltlmop.herokuapp.com)! <br />
+II. See the [Wiki](../../wiki/) for examples and miscellaneous instructions <br />
+III. See the [Overview](../../wiki/Overview) for the rationale behind this project <br />
+IV. [Installation](#installation) <br />
+V. [Development](#development) <br />
+VI. [Working on Front End](static/) <br />
+VII. [Deployment](deploy/) <br />
 
-<br />
-(Below taken from the Wiki's Overview)
-<hr />
+# LTLMoP API
 
-LTLMoPWeb3D is a project to get [LTLMoP](https://github.com/LTLMoP/LTLMoP/wiki/Overview) running on the web as well as add a 3D rendering and physics engine for the simulator.
+The LTLMoP API is a [soon-to-be] file-based API to which one can pass a spec and
+regions for compilation and returns the compiler log. Via few simple URLs (and a
+unique session token [or API key]), one can access all the compiled artifacts:
+the automaton (`/saveAut`), the decomposed regions (`/saveDecomposed`),
+the LTL (`/saveLTL`), the SMV (`/saveSMV`), and a new spec file with a mapping
+from the original regions to ther decomposed counterparts (`/saveSpec`).
 
-Currently, LTLMoP requires [a number of dependencies](https://github.com/LTLMoP/LTLMoP/wiki/Installation-Guide) and is relatively tedious to install, especially for an ordinary user that does not have extensive experience with the terminal, Git, or open source libraries. By bringing LTLMoP to the web, only one computer, the server, needs to have an actual copy of LTLMoP installed, while all clients only need a mere browser to access the LTLMoP toolkit. As most people who own computers typically have a browser and internet connection, LTLMoPWeb3D enables practically anyone to start using LTLMoP without a single installation process; all you need to do is access a URL (it even works on mobile phones)!
+It also currently serves [LTLMoPWeb3D](static/), the web front end to the
+LTLMoP API.
 
-Creating LTLMoPWeb3D also allows for a much greater audience to start using LTLMoP actively. Whether this be Cornell ASL's developers, other universities' robotics programs, or just a kid trying to experiment with robotics, LTLMoP will now be able to reach many more people, mainly due to the incredibly reduced start up time (installing LTLMoP vs. navigating to a URL).
 
-The second part of the project is the creation of a 3D rendering and physics engine for the LTLMoP simulator. By utilizing a 3D rendering engine instead of the 2D simulator LTLMoP currently has, users will be able to see far more realistic versions of their robot running through their strategy. Running a physics engine on top of this 3D rendering engine allows for even more realistic expectations as well as incredibly precise simulations by allowing the input of constraints (e.g. friction). While this certainly could be created as a new feature of LTLMoP as most engines can run on most machines, this would only further increase LTLMoP's list of dependencies, and dramatically at that. By placing LTLMoP on the web, we once again dramatically reduce dependencies, especially by using currently available engines that can run entirely in the browser through a simple plugin. 
+## Installation
 
-LTLMoPWeb3D will enable anyone to start using LTLMoP with zero start up time and enhanced functionality; using robots has never been easier!
+### Prerequisites
+
+1. Install [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
+2. Install [Vagrant](https://www.vagrantup.com/downloads.html)
+3. If you do not have `git` on your host machine, you can follow the
+   [alternative method](#alternative-method)
+
+#### Alternative Method
+
+1. Create a VM with `vagrant init ubuntu/trusty64; vagrant up;`
+2. `vagrant ssh`
+3. `cd /vagrant` (this is shared to your host by default)
+4. `git clone` the repo
+5. `exit`, delete the VirtualBox VM, and delete the .vagrant directory
+6. Start from step 2 of [Getting Started](#getting-started)
+
+### Getting Started
+
+1. Clone this repo
+2. Change directories to the repo
+3. `vagrant up` will create a VM with all dependencies AND run the services
+4. Connect to <http://192.168.33.10:5000>
+
+
+## Development
+
+1. `vagrant up` to start the already created and provisioned VM 
+2. `vagrant ssh` will SSH you into the VM
+3. Change directories into the the shared older (see Vagrantfile)
+4. `docker-compose up -d` will run the API in the background in
+   debug and watch mode
+5. Connect to <http://192.168.33.10:5000>
+
+
+## Further Reading
+
+1. [Vagrant Docs](https://docs.vagrantup.com/)
+2. [Docker Docs](https://docs.docker.com/)
+  * Read the Engine and Compose CLIs
