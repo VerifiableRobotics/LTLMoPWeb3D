@@ -1,8 +1,11 @@
-web:
-  build: .
-  environment:
-    DEBUG: 'true'
-  ports:
-    - "0.0.0.0:5000:5000"
-  volumes:
-    - ./:/web
+version: '2'
+
+services:
+  web:
+    build: .
+    environment:
+      DEBUG: 'true'
+    ports:
+      - "0.0.0.0:5000:5000"
+    volumes:
+      - ./:/web

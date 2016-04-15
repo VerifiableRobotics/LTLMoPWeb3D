@@ -16,9 +16,6 @@ Vagrant.configure(2) do |config|
   # Customize VirtualBox provider
   config.vm.provider 'virtualbox' do |vb|
     vb.memory = '2048'
-    # allow symlinks on non unix hosts
-    vb.customize ['setextradata', :id,
-      'VBoxInternal2/SharedFoldersEnableSymlinksCreate/vagrant', '1']
   end
 
   # Sync LTLMoP if in the same directory
@@ -28,8 +25,6 @@ Vagrant.configure(2) do |config|
   # Sync cwd to LTLMoPWeb3D (as well as /vagrant of course)
   config.vm.synced_folder './', '/LTLMoPWeb3D'
 
-  # Only run the provisioning on the first 'vagrant up'
-  if Dir.glob('#{File.dirname(__FILE__)}/.vagrant/machines/default/*/id').empty?
-    config.vm.provision 'shell', path: 'provision.sh'
-  end
+  # provision the image
+  config.vm.provision 'shell', path: 'provision.sh', name: 'provision'
 end

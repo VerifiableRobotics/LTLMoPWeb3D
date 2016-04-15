@@ -27,17 +27,7 @@ LTLMoP API.
 
 1. Install [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
 2. Install [Vagrant](https://www.vagrantup.com/downloads.html)
-3. If you do not have `git` on your host machine, you can follow the
-   [alternative method](#alternative-method)
-
-#### Alternative Method
-
-1. Create a VM with `vagrant init ubuntu/trusty64; vagrant up;`
-2. `vagrant ssh`
-3. `cd /vagrant` (this is shared to your host by default)
-4. `git clone` the repo
-5. `exit`, delete the VirtualBox VM, and delete the .vagrant directory
-6. Start from step 2 of [Getting Started](#getting-started)
+3. Intsall [Git](https://git-scm.com/downloads)
 
 ### Getting Started
 

@@ -22,8 +22,9 @@ module.exports = {
   },
   module: {
     loaders: [
-      { test: /\.cjsx$/, loader: 'cjsx-loader!coffee-loader' },
-      { test: /\.cjsx\.md$/, loader: 'cjsx-loader?literate!coffee-loader?literate' },
+      // NOTE: chained loaders must be in RtL order (rightmost is first)
+      { test: /\.cjsx$/, loader: 'coffee-loader!cjsx-loader' },
+      { test: /\.cjsx\.md$/, loader: 'coffee-loader?literate!cjsx-loader?literate' },
       { test: /\.coffee$/, loader: 'coffee-loader' },
       { test: /\.(coffee\.md|litcoffee)$/, loader: 'coffee-loader?literate' },
       { test: /\.css$/, loader: 'style-loader!css-loader' },

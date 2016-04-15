@@ -4,7 +4,7 @@ MAINTAINER agilgur5
 # install python requirements
 WORKDIR /web
 COPY ./requirements.txt ./requirements.txt
-RUN pip install -r requirements.txt
+RUN pip -q install -r requirements.txt
 
 # mount core in here
 VOLUME /web
