@@ -1,5 +1,0 @@
-.git/
-.vagrant/
-uploads/*
-node_modules/
-*.log

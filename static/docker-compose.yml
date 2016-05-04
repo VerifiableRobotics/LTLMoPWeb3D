@@ -3,4 +3,4 @@ frontend:
   volumes:
     - ./:/code
     - /code/node_modules # do not mount node_modules into the source directory
-  command: npm run watch
+    - ../app/static/build:/code/build # mount builds in back end folder

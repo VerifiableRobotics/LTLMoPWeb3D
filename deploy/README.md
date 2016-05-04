@@ -18,8 +18,8 @@ included, and deploying this image to any server.
 
 1. First, create a production build of LTLMoPWeb3D, following
    [the directions](../static/#creating-a-production-build)
-2. Then, from the [root directory](../../../), run
-   `docker build -t vrrg/ltlmopapi -f deploy/Dockerfile .`
+2. Then, from the [app directory](../app), run
+   `docker build -t vrrg/ltlmopapi .`
 3. The image should now be created with the tag `vrrg/ltlmopapi`
 
 

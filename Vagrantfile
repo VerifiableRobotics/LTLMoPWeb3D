@@ -22,9 +22,15 @@ Vagrant.configure(2) do |config|
   if File.directory?('../LTLMoP')
     config.vm.synced_folder '../LTLMoP', '/LTLMoP'
   end
-  # Sync cwd to LTLMoPWeb3D (as well as /vagrant of course)
-  config.vm.synced_folder './', '/LTLMoPWeb3D'
+  # VFS by default, NFS otherwise
+  config.vm.synced_folder './', '/vagrant'
+  config.vm.synced_folder './', '/vagrant', type: 'nfs'
+
+  # also rsync certain foldes to pass fs events to the VM (sync vs. share)
+  config.vm.synced_folder './static', '/web/static', type: 'rsync'
+  config.vm.synced_folder './app', '/web/app', type: 'rsync'
+
 
   # provision the image
-  config.vm.provision 'shell', path: 'provision.sh', name: 'provision'
+  config.vm.provision 'shell', path: 'provision.sh'
 end

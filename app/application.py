@@ -1,7 +1,7 @@
 from flask import Flask, request, render_template, jsonify, send_file, session
 from werkzeug.utils import secure_filename
 import os, sys, datetime, uuid, threading, zipfile
-                                                                                                                                                                                                               
+
 sys.path.append(os.path.join(os.sep, 'LTLMoP','src','lib')) # add lib to path
 import regions, project, specCompiler
 
@@ -86,9 +86,9 @@ def createSpec(specDict):
   proj = createProject()
   #store text
   proj.specText = specDict['specText'] # 'Do something'
-  if proj.specText is None: 
+  if proj.specText is None:
     proj.specText = '' # store as blank string, not None if None
-  
+
   # store sensors
   proj.all_sensors = specDict['all_sensors'] # ['s1']
   proj.all_actuators = specDict['all_actuators'] # ['a1','a2']
@@ -98,20 +98,20 @@ def createSpec(specDict):
 
   # store compliation options
   proj.compile_options = specDict['compile_options']
-  
+
   # store region path
-  regionPath = specDict['regionPath']
+  regionPath = specDict.get('regionPath')
   # make sure there is a region path before creating RFI
   if regionPath is not None and regionPath != '':
     # if the path is not just filename, take just filename and attach uploads/
     regionPath = os.path.join(app.config['UPLOAD_FOLDER'], session['username'], os.path.basename(regionPath))
     proj.rfi = createRFI()
     proj.rfi.readFile(regionPath) # 'uploads/floorplan.regions'
-  
+
   # write spec, save spec, and return path
   # create the path if it doesn't exist in the session already
   if not session['specFilePath']:
-    session['specFilePath'] = os.path.join(app.config['UPLOAD_FOLDER'], 
+    session['specFilePath'] = os.path.join(app.config['UPLOAD_FOLDER'],
       session['username'], session['username'] + '.spec')
   proj.writeSpecFile(session['specFilePath'])
   return jsonify(theBool = 'True')
@@ -206,7 +206,7 @@ def importSpec():
     session['specFilePath'] = os.path.join(app.config['UPLOAD_FOLDER'], session['username'], filename)
     file.save(session['specFilePath'])
     proj.loadProject(session['specFilePath'])
-        
+
     return jsonify(theBool = 'True')
   return jsonify(theBool = 'False')
 

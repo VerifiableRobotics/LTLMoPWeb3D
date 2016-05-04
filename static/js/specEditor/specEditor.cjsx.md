@@ -9,7 +9,7 @@ External Dependencies
 Internal Dependencies
 ---------------------
 
-    Fetch = require('plugins/fetchHelpers.litcoffee')
+    Fetch = require('js/core/fetchHelpers.litcoffee')
     Helpers = require('js/core/helpers.litcoffee')
     SpecParser = require('js/core/specParser.litcoffee')
     RegionsParser = require('js/core/regionsParser.litcoffee')
@@ -241,7 +241,9 @@ Change a compile option (radio buttons)
 Change the spec text
 
       _changeSpecText: (ev) ->
-        @setImmState((d) -> d.set('specText', ev.target.value))
+        # target disappears unless you store it immediately
+        inputVal = ev.target.value
+        @setImmState((d) -> d.set('specText', inputVal))
       
 Adds a prop to the map with name as specified
 Launches a prompt to ask for the prop's name

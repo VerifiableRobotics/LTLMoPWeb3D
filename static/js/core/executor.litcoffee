@@ -85,13 +85,13 @@ Execute an automaton
       if currentState == null
         currentState = getInitialState(automaton, initialProps, currentRegion)
         nextState = getNextState(automaton, currentState, sensorReadings)
-      console.log('current state: ' + currentState)
-      console.log('current region: ' + currentRegion)
+      #console.log('current state: ' + currentState)
+      #console.log('current region: ' + currentRegion)
       # if there is a current state
       if currentState != false
         prevNextState = nextState
         nextState = getNextState(automaton, currentState, sensorReadings)
-        console.log('next state: ' + nextState)
+        #console.log('next state: ' + nextState)
         # if there is a next state, go to it
         if nextState != false
           # currentState should only be set to nextState when region has been reached
@@ -113,6 +113,5 @@ Export
 ------
 
     module.exports = {
-      execute,
-      counter
+      execute
     }

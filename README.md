@@ -25,9 +25,8 @@ LTLMoP API.
 
 ### Prerequisites
 
-1. Install [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
+1. Install [Git](https://git-scm.com/downloads)
 2. Install [Vagrant](https://www.vagrantup.com/downloads.html)
-3. Intsall [Git](https://git-scm.com/downloads)
 
 ### Getting Started
 

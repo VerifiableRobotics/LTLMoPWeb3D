@@ -7,13 +7,10 @@ Physijs.scripts.worker = 'static/plugins/physijs/physijs_worker.js';
 Physijs.scripts.ammo = 'ammo.js';
 
 // declare objects
-var initScene, render, animate, create3DCar,
-  ground_material, car_material, wheel_material, wheel_geometry, controls,
-  projector, renderer, scene, ground_geometry, ground, light, camera,
-  car = {};
+var controls, projector, renderer, scene, camera, car = {};
 
 // initialize the scene
-initScene = function() {
+var initScene = function() {
   projector = new THREE.Projector;
   
   // create the renderer
@@ -61,7 +58,7 @@ initScene = function() {
   controls.addEventListener( 'change', render );
   
   // create the lighting
-  light = new THREE.DirectionalLight( 0xFFFFFF );
+  var light = new THREE.DirectionalLight( 0xFFFFFF );
   light.position.set( 20, 40, -15 );
   light.target.position.copy( scene.position );
   light.castShadow = true;
@@ -80,22 +77,26 @@ initScene = function() {
   // scene.add(light);
 
   // add window resizer
-  THREEx.WindowResize(renderer, camera);
+  THREEx.WindowResize(renderer, camera, function () {
+    return {width: viewportElem.clientWidth, height: viewportElem.clientHeight}
+  });
   
   scene.simulate();
   animate();
-}; // end initScene
-render = function() {
+}
+
+var render = function() {
   renderer.render( scene, camera );
-};
-animate = function() {
+}
+
+var animate = function() {
   requestAnimationFrame( animate );
   controls.update();
   render();
-};
+}
 
-create3DCar = function(startX, startY, startZ) {
-  car_material = Physijs.createMaterial(
+var create3DCar = function(startX, startY, startZ) {
+  var car_material = Physijs.createMaterial(
     new THREE.MeshLambertMaterial({ color: 0xff6666 }),
     .5, // high friction
     0 // no restitution
@@ -111,12 +112,12 @@ create3DCar = function(startX, startY, startZ) {
   
   
   // create the 4 wheels
-  wheel_material = Physijs.createMaterial(
+  var wheel_material = Physijs.createMaterial(
     new THREE.MeshLambertMaterial({ color: 0x444444 }),
     .5, // high friction
     0 // no restitution
   );
-  wheel_geometry = new THREE.CylinderGeometry( 2, 2, 1, 8 );
+  var wheel_geometry = new THREE.CylinderGeometry( 2, 2, 1, 8 );
   car.wheel_fl = new Physijs.CylinderMesh(
     wheel_geometry,
     wheel_material,
@@ -189,10 +190,16 @@ create3DCar = function(startX, startY, startZ) {
   // camera position
   controls.target.set(startX, startY, startZ);
   camera.position.set(startX + 60, startY + 50, startZ + 60);
-} // end createCar
+}
 
 
 // set the scene to initiliaze as soon as the window is loaded
 window.onload = function() {
   initScene();
+}
+
+module.exports = {
+  getScene: function () { return scene },
+  getCar: function () { return car },
+  create3DCar: create3DCar
 }

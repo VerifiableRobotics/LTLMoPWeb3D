@@ -13,7 +13,8 @@
     "react": "^0.14.2",
     "react-dom": "^0.14.2",
     "react-router": "^1.0.0",
-    "react-tabs": "^0.5.1"
+    "react-tabs": "^0.5.1",
+    "roslib": "^0.18.0"
   },
   "devDependencies": {
     "cjsx-loader": "^2.1.0",

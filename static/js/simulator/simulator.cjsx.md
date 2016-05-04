@@ -13,220 +13,23 @@ Internal Dependencies
     SpecParser = require('js/core/specParser.litcoffee')
     AutomatonParser = require('js/core/automatonParser.litcoffee')
     Executor = require('js/core/executor.litcoffee')
+    PoseHandler = require('./physijsPoseHandler.litcoffee')
 
 Assets
 
+    require('css/header.css')
     require('css/simulator.css')
 
 Main Program
-------------    
+------------
 
 Initial set up
 
     spec = {}
     automaton = {}
     regionFile = {}
-    currentVelocity = 0
-    currentTheta = 0
     currentSimulator = {}
-
-Create 3D regions from the region array
-
-    create3DRegions = (regions_arr) ->
-      # loop through the region array
-      for region in regions_arr
-        # get name
-        name = region.name
-        # skip boundary
-        if name == 'boundary'
-          continue
-        # get position
-        xpos = region.position[0]
-        ypos = region.position[1]
-        # get size/bounding box
-        width = region.size[0]
-        height = region.size[1]
-        # get holes
-        holes = region.holeList
-
-        # create the new ground material
-        new_ground_material = Physijs.createMaterial(
-          new THREE.MeshBasicMaterial(
-            color: 'rgb('+ region.color.join(',') + ')'
-            side: THREE.DoubleSide
-          ), 
-          .5, # high friction
-          0 # no restitution
-        )
-        # create the custom geometry from a 2D shape
-        new_shape = new THREE.Shape()
-        # add each point as a vertex of the new shape
-        for point, pointIndex in region.points
-          if pointIndex == 0
-            new_shape.moveTo(point[0], point[1])
-          else
-            new_shape.lineTo(point[0], point[1])
-        # end for
-        new_geometry = new_shape.makeGeometry() # create 3D geometry out of 2D shape
-
-        # create the new ground
-        new_ground = new Physijs.ConvexMesh(
-          new_geometry,
-          new_ground_material,
-          0 # mass
-        )
-        # set the position and rotation
-        # note: makeGeometry creates shape on xy axis, this is putting it on xz
-        new_ground.position.set(xpos, 0, ypos)
-        new_ground.rotation.x = Math.PI/2
-        new_ground.receiveShadow = true
-        # add the new_ground to the scene
-        scene.add(new_ground)     
-
-      
-Set the velocity and theta of the car
-
-    setVelocityTheta = (velocity, theta) ->
-      console.log('car position x:' + car.body.position.x)
-      console.log('car position y:' + car.body.position.z)
-      # z-axis motor, upper limit, lower limit, target velocity, maximum force
-      car.wheel_bl_constraint.configureAngularMotor( 2, velocity, 0, velocity, 200000 )
-      car.wheel_br_constraint.configureAngularMotor( 2, velocity, 0, velocity, 200000 )
-      car.wheel_fl_constraint.configureAngularMotor( 2, velocity, 0, velocity, 200000 )
-      car.wheel_fr_constraint.configureAngularMotor( 2, velocity, 0, velocity, 200000 )
-      car.wheel_bl_constraint.enableAngularMotor( 2 ) # start z-axis motor
-      car.wheel_br_constraint.enableAngularMotor( 2 ) # start z-axis motor
-      car.wheel_fl_constraint.enableAngularMotor( 2 ) # start z-axis motor
-      car.wheel_fr_constraint.enableAngularMotor( 2 ) # start z-axis motor
-      # x-axis motor, upper limit, lower limit, target velocity, maximum force
-      car.wheel_fl_constraint.configureAngularMotor( 1, theta, 0, theta, 200 )
-      car.wheel_fr_constraint.configureAngularMotor( 1, theta, 0, theta, 200 )
-      car.wheel_fl_constraint.enableAngularMotor( 1 ) # start x-axis motor
-      car.wheel_fr_constraint.enableAngularMotor( 1 ) # start x-axis motor
-
-      # set current velocity and theta in case of later stop
-      currentVelocity = velocity
-      currentTheta = theta
-      console.log('velocity: ' + velocity)
-      console.log('car x: ' + car.body.quaternion._euler.x)
-      console.log('car y: ' + car.body.quaternion._euler.y)
-      console.log('car z: ' + car.body.quaternion._euler.z)
-      console.log('wheel theta: ' + theta)
-
-    
-Stop the velocity and theta of the car (reverse acceleration)
-
-    stopVelocityTheta = () ->
-      # set motor to opposite to 'brake' the car
-      car.wheel_bl_constraint.configureAngularMotor( 2, currentVelocity, -currentVelocity, 0, 200000 )
-      car.wheel_br_constraint.configureAngularMotor( 2, currentVelocity, -currentVelocity, 0, 200000 )
-      car.wheel_fl_constraint.configureAngularMotor( 2, currentVelocity, -currentVelocity, 0, 200000 )
-      car.wheel_fr_constraint.configureAngularMotor( 2, currentVelocity, -currentVelocity, 0, 200000 )
-      
-      # set motor to opposite to move the wheels back to straight
-      car.wheel_fl_constraint.configureAngularMotor( 1, currentTheta, -currentTheta, 0, 200 )
-      car.wheel_fr_constraint.configureAngularMotor( 1, currentTheta, -currentTheta, 0, 200 )
-      
-
-Given region object, get the centroid
-
-    getCentroid = (region) ->
-      # vars for getting centroid of region
-      regionX = 0
-      regionY = 0
-      numPoints = region.points.length
-      position = region.position
-      for point in region.points
-        regionX += point[0]
-        regionY += point[1]
-
-      return [position[0] + regionX / numPoints, position[1] + regionY / numPoints]
-
-
-Given region object, get the midpoint of the transition from the current region to it
-
-    getTransition = (region) ->
-      regionToName = region.name
-      regionFromName = regionFile.Regions[getCurrentRegion()].name
-      console.log('regionFrom: ' + regionFromName + ' regionTo: ' + regionToName)
-      # get correct transition array, could be ordered either way
-      transition = if !regionFile.Transitions[regionFromName]? or !regionFile.Transitions[regionFromName][regionToName]?
-        regionFile.Transitions[regionToName][regionFromName] 
-      else regionFile.Transitions[regionFromName][regionToName]
-      # return midpoint
-      return [(transition[0][0] + transition[1][0]) / 2, (transition[0][1] + transition[1][1]) / 2]
-
-
-Given region number, creates the car at its centroid
-
-    createCar = (region_num) ->
-      region = regionFile.Regions[region_num]
-      xpos = region.position[0]
-      ypos = region.position[1]
-      centroid = getCentroid(region)
-      create3DCar(centroid[0], 0, centroid[1])
-
-
-Starts moving the car toward the destination
-
-    plotCourse = (region_num) ->
-      target = regionFile.Regions[region_num]
-      targetPosition = getTransition(target)
-      currentPosition = [car.body.position.x, car.body.position.z]
-      targetTheta = Math.atan2(targetPosition[1] - currentPosition[1], targetPosition[0] - currentPosition[0])
-      console.log('target theta: ' + targetTheta)
-      # get proper car theta via transformations of euler angles
-      carTheta = car.body.quaternion._euler.y
-      if Math.abs(car.body.quaternion._euler.x) < Math.PI/2
-        carTheta = -(carTheta + Math.PI)
-      console.log('car theta: ' + carTheta)
-      # theta = diff b/t car body's theta and target theta
-      wheelTheta = -(targetTheta - carTheta)
-      # properly transform when angle is too big/too small
-      if wheelTheta > Math.PI 
-        wheelTheta = Math.PI - wheelTheta
-      else if wheelTheta < -Math.PI 
-        wheelTheta = 2*Math.PI + wheelTheta
-      maxVelocity = currentSimulator.state.velocity
-      if maxVelocity <= 0 then maxVelocity = 8 # default
-      # if theta > PI/4 or PI/2, then slower turn
-      if wheelTheta > Math.PI/2 or wheelTheta < -Math.PI/2
-        setVelocityTheta(maxVelocity / 4, wheelTheta)
-      else if wheelTheta > Math.PI/4 or wheelTheta < -Math.PI/4
-        setVelocityTheta(maxVelocity / 2, wheelTheta)
-      else
-        setVelocityTheta(maxVelocity, wheelTheta) 
-
-
-Get the current region (number) the car is located in
-
-    getCurrentRegion = () ->
-      xpos = car.body.position.x
-      ypos = car.body.position.z
-      # loop through the region array
-      for region, index in regionFile.Regions
-        left = region.position[0]
-        right = region.position[0] + region.size[0]
-        bottom = region.position[1]
-        top = region.position[1] + region.size[1]
-        # check if inside bounding box
-        if xpos >= left and xpos <= right and ypos >= bottom and ypos <= top
-          # if in bounding box, check if inside polygon
-          points = region.points
-          pos = region.position
-          j = points.length - 1
-          result = false
-          # check if in polygon (counting edges using ray method)
-          for point, i in points
-            if (points[i][1] + pos[1] > ypos) != (points[j][1] + pos[1] > ypos) and 
-            (xpos < (points[j][0] - points[i][0]) * (ypos - points[i][1] + pos[1]) / (points[j][1] - points[i][1]) + points[i][0] + pos[0])
-              result = !result
-            j = i
-          # if in polygon, return the region's index
-          if result
-            return index
-      # not in a region currently    
-      return null
+    ROSWorker = {}
 
 
 Simulator Component
@@ -253,7 +56,7 @@ When a *.regions file is uploaded; specifically the decomposed one
       onRegionsUpload: (ev) ->
         RegionsParser.uploadRegions(ev.target.files[0], (regionsObj) =>
           regionFile = regionsObj
-          create3DRegions(regionFile.Regions)
+          PoseHandler.createRegions(regionFile)
           @addRegionButtons(regionFile.Regions))
 
 When a *.spec file is uploaded
@@ -272,6 +75,39 @@ When a *.aut file is uploaded
           automaton = autObj
           # enable executor execution now
           @setState({disableExec: false}))
+
+When a ROS Handler is uploaded
+
+      onROSHandlerUpload: (ev) ->
+        # perform validation
+        Helpers.onUpload(ev.target.files[0], 'js', (file) =>
+          # terminate any existing workers (new upload)
+          ROSWorker.terminate?()
+          # create new worker
+          ROSWorker = new Worker(URL.createObjectURL(file))
+          ROSWorker.onerror = (e) => console.log(e)
+          # add sensor callback
+          ROSWorker.onmessage = (e) => @getROSSensor(e.data)
+        , {keepFile: true})
+
+Toggle for when a ROS message is received
+
+      getROSSensor: (obj) ->
+        # merge the sensor dictionary with the current map
+        @setState((prev) -> {sensors: prev.sensors.reduce(
+          ((red, values, name) ->
+            if obj[name]?
+              return red.set(name, values.set('active', obj[name]))
+            else
+              return red
+          ), prev.sensors)})
+
+Send ROS message when actuator is toggled by executor
+
+      sendROSActuator: (actDict) ->
+        for name, value of actDict
+          # call function with state of actuator
+          ROSWorker.postMessage?([name, value == 1])
       
 Launch the executor
 
@@ -291,7 +127,7 @@ Launch the executor
           if counter == 0
             # current region is the single active one
             currentRegion = @state.regions.find((values) -> values.get('active')).get('index')
-            createCar(currentRegion)
+            PoseHandler.setInitialRegion(currentRegion)
             if Executor.execute(automaton, @getInitialProps(), null, currentRegion)
               @setEnabledProps(false, spec, regionFile.Regions) # disable all props
               counter = 1
@@ -299,17 +135,20 @@ Launch the executor
               resetExecution()
           else
             # get current region and set it
-            currentRegion = getCurrentRegion()
+            currentRegion = PoseHandler.getCurrentRegion()
             @setActiveRegion(currentRegion)
             # get actuators, customs, and next region from executor's current state
             [nextRegion, actuators, customs] = Executor.execute(automaton, null, @getSensors(), currentRegion)
             @setActiveProps(actuators, customs)
             # if there is a next region, move to it
             if nextRegion != null
-              if nextRegion == currentRegion then stopVelocityTheta() else plotCourse(nextRegion)
+              if nextRegion == currentRegion
+                PoseHandler.stop()
+              else
+                PoseHandler.plotCourse(nextRegion, @state.velocity)
             # if there isn't, stop moving
             else if nextRegion != false
-              stopVelocityTheta()
+              PoseHandler.stop()
             # if there isn't a current state, stop the execution loop
             else  
               resetExecution()
@@ -403,6 +242,7 @@ Set which region is active
 Set which actuators and customs are active based on [0, 1] dict from executor
     
       setActiveProps: (actDict, custDict) ->
+        @sendROSActuator(actDict)
         actuators = @state.actuators.map((values, name) -> values.set('active', actDict[name] == 1))
         customs = @state.customs.map((values, name) -> values.set('active', custDict[name] == 1))
         @setState({actuators: actuators, customs: customs})
@@ -436,6 +276,7 @@ Optimize component speed because we have immutability!
 Define the simulator's layout
 
       render: () ->
+        hasInput = @state.actuators.size > 0 and @state.sensors.size > 0
         <div>
           <div className='center_wrapper'>
             <button type='button' onClick={@startExecution} disabled={@state.disableExec}>Start</button>
@@ -443,7 +284,7 @@ Define the simulator's layout
           <div className='center_wrapper'>
             <form className='upload_form'>
               <input name='file' type='file' className='upload_file_overlay' accept='.regions'
-                onChange={@onRegionsUpload} disabled={@state.disableRegions}/>
+                onChange={@onRegionsUpload} disabled={@state.disableRegions} />
               <button type='button' disabled={@state.disableRegions}>Upload Regions</button>
             </form>
             <form className='upload_form'>
@@ -459,42 +300,41 @@ Define the simulator's layout
           </div>
           <div id='simulator_wrapper'>
             <div className='right_wrapper'>
+              <input name='file' type='file' className='upload_file_overlay' accept='.js'
+                onChange={@onROSHandlerUpload} disabled={not hasInput} value='' />
+              <button type='button' disabled={not hasInput}>Upload Custom ROS Handler</button>
               <div>Sensors</div>
               <ul className='simulator_lists'>
                 {@state.sensors.map((values, name) =>
-                  <li>
+                  <li key={name}>
                     <button type='button' className={if values.get('active') then 'prop_button_green' else 'prop_button'}
                       onClick={@toggleActiveSensors(name)} disabled={values.get('disabled')}>{name}</button>
-                  </li>).toSeq()
-                }
+                  </li>)}
               </ul>
               <div>Actuators</div>
               <ul className='simulator_lists'>
                 {@state.actuators.map((values, name) =>
-                  <li>
+                  <li key={name}>
                     <button type='button' className={if values.get('active') then 'prop_button_green' else 'prop_button'}
                       onClick={@toggleActiveActuators(name)} disabled={values.get('disabled')}>{name}</button>
-                  </li>).toSeq()
-                }
+                  </li>)}
               </ul>
               <div>Custom Propositions</div>
               <ul className='simulator_lists'>
                 {@state.customs.map((values, name) =>
-                  <li>
+                  <li key={name}>
                     <button type='button' className={if values.get('active') then 'prop_button_green' else 'prop_button'}
                       onClick={@toggleActiveCustoms(name)} disabled={values.get('disabled')}>{name}</button>
-                  </li>).toSeq()
-                }
+                  </li>)}
               </ul>
               <div>Regions</div>
               <ul className='simulator_lists'>
                 {@state.regions.map((values, name) =>
-                  <li>
+                  <li key={name}>
                     <button type='button' className={if values.get('active') then 'prop_button_green' else 'prop_button'}
                       onClick={() => @setActiveRegion(values.get('index'))}
                       disabled={values.get('disabled')}>{name}</button>
-                  </li>).toSeq()
-                }
+                  </li>)}
               </ul>
               <div>Maximum Velocity</div>
               <input type='text' value={@state.velocity} onChange={@setVelocity} /> <br />
