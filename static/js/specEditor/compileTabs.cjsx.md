@@ -9,8 +9,8 @@ External Dependencies
 Spec Editor Compiled Output Tabs Component
 ------------------------------------------
 
-    SpecEditorCompileTabs = React.createClass
-      displayName: 'Specification Editor Compiled Output Tabs'
+    CompileTabs = React.createClass
+      displayName: 'Compiled Output Tabs'
 
 Define the initial state
 
@@ -50,7 +50,7 @@ Define the component's layout
               <div className='spec_editor_max_height'>
                 <div className='spec_editor_workspace_left'>
                   <div className='spec_editor_labels'>Active locative phrases:</div>
-                  <ul className='spec_editor_selectlist' id='spec_editor_regions'>
+                  <ul className='spec_editor_selectlist'>
                     {Map(data.get('specObj').RegionMapping).keySeq().toArray().map((name) =>
                       <li key={name} tabIndex='0' onClick={() => @_selectDecomposed(name)}
                         className={classNames({'spec_editor_selectlist_li_highlighted':
@@ -67,15 +67,13 @@ Define the component's layout
                         {data.get('decomposedObj').Regions.map((region, index) =>
                           <g key={index} transform={'translate(' + region.position.join(',') + ')'}>
                             <text>{region.name}</text>
-                            <polygon
-                              fill={
-                                (() =>
-                                  if @state.selectedDecomposed != '' and
-                                  region.name in data.get('specObj').RegionMapping[@state.selectedDecomposed]
-                                    return '#000'
-                                  else
-                                    return 'rgb(' + region.color.join(',') + ')'
-                                )()}
+                            <polygon fill={(() =>
+                                if @state.selectedDecomposed != '' and
+                                region.name in data.get('specObj').RegionMapping[@state.selectedDecomposed]
+                                  return '#000'
+                                else
+                                  return 'rgb(' + region.color.join(',') + ')'
+                              )()}
                               points={region.points.map((point) -> point.join(',')).join(' ')} />
                           </g>
                         )}
@@ -92,4 +90,4 @@ Define the component's layout
 Export
 ------
 
-    module.exports = SpecEditorCompileTabs
+    module.exports = CompileTabs

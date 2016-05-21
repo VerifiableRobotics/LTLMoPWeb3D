@@ -6,6 +6,7 @@
   "dependencies": {
     "classnames": "^2.2.0",
     "deep-extend": "^0.4.0",
+    "draft-js": "^0.7.0",
     "es6-promise": "^3.0.2",
     "history": "^1.13.0",
     "immutable": "^3.7.5",

@@ -2,7 +2,6 @@ External Dependencies
 ---------------------
     
     React = require('react')
-    ReactDOM = require('react-dom')
     { Map } = require('immutable')
     classNames = require('classnames')
 
@@ -14,8 +13,10 @@ Internal Dependencies
     SpecParser = require('js/core/specParser.litcoffee')
     RegionsParser = require('js/core/regionsParser.litcoffee')
     AutParser = require('js/core/automatonParser.litcoffee')
-    SpecEditorMenu = require('./menu.cjsx.md')
-    SpecEditorCompileTabs = require('./compileTabs.cjsx.md')
+    Menu = require('./menu.cjsx.md')
+    PropList = require('./propList.cjsx.md')
+    CompileTabs = require('./compileTabs.cjsx.md')
+    SyntaxHighlighter = require('./syntaxHighlighter.cjsx.md')
 
 Assets
 
@@ -33,7 +34,6 @@ Define the initial state
         return {
           data: Map({
             isCompiled: false
-            specText: ''
             compilerLog: ''
             ltlOutput: ''
             compile_options: Map({
@@ -95,11 +95,11 @@ Given the JSON version of a project object, import the spec
 
       _uploadSpec: (ev) ->
         # read the spec file
-        SpecParser.uploadSpec(ev.target.files[0], (spec) => 
+        SpecParser.uploadSpec(ev.target.files[0], (spec) =>
+          @refs.editor.insertText(spec.Spec)
           @setImmState((d) ->
             # merge values
             d.set('specObj', spec).merge(Map({
-              'specText': spec.Spec
               'compile_options': Map(spec.CompileOptions)
             # add props
             })).set('sensors', Map(spec.Sensors).map(
@@ -237,13 +237,6 @@ Change a compile option (radio buttons)
 
       _changeCompileOption: (optionName, newValue) ->
         @setImmState((d) -> d.setIn(['compile_options', optionName], newValue))
-
-Change the spec text
-
-      _changeSpecText: (ev) ->
-        # target disappears unless you store it immediately
-        inputVal = ev.target.value
-        @setImmState((d) -> d.set('specText', inputVal))
       
 Adds a prop to the map with name as specified
 Launches a prompt to ask for the prop's name
@@ -306,6 +299,17 @@ Removes the currently highlighted prop in the map with name as specified
           )
         )
 
+Helpers to transform certain data
+
+      _getEnabledSensors: () ->
+        @state.data.get('sensors')
+          .filter((values) -> values.get('checked')).keySeq().toArray()
+      _getEnabledActuators: () ->
+        @state.data.get('actuators')
+          .filter((values) -> values.get('checked')).keySeq().toArray()
+      _getAllCustoms: () -> @state.data.get('customprops').keySeq().toArray()
+      _getAllRegions: () -> @state.data.get('regions').keySeq().toArray()
+
 Creates and returns a JSON object that holds all spec information
 
       _createJSONForSpec: () ->
@@ -313,18 +317,16 @@ Creates and returns a JSON object that holds all spec information
         data['compile_options'] = @state.data.get('compile_options').toJS()
         data['regionPath'] = @state.data.get('specObj').RegionFile
 
-        specText = @state.data.get('specText')
+        specText = @refs.editor.getText()
         if specText != ''
           data['specText'] = specText
         
         # create arrays for props 
         data['all_sensors'] = @state.data.get('sensors').keySeq().toArray()
-        data['enabled_sensors'] = @state.data.get('sensors')
-          .filter((values) -> values.get('checked')).keySeq().toArray()
+        data['enabled_sensors'] = @_getEnabledSensors()
         data['all_actuators'] = @state.data.get('actuators').keySeq().toArray()
-        data['enabled_actuators'] = @state.data.get('actuators')
-          .filter((values) -> values.get('checked')).keySeq().toArray()
-        data['all_customs'] = @state.data.get('customprops').keySeq().toArray()
+        data['enabled_actuators'] = @_getEnabledActuators()
+        data['all_customs'] = @_getAllCustoms()
 
         return data
 
@@ -337,101 +339,46 @@ Define the component's layout
 
       render: () ->
         data = @state.data
-        specEditorMenuProps = {data, @_uploadSpec, @_uploadRegions, @_saveSpec,
+        menuProps = {data, @_uploadSpec, @_uploadRegions, @_saveSpec,
           @_saveCompiledArtifacts, @_compileSpec, @_toggleCompileOption,
           @_changeCompileOption, @_analyzeSpec, @_showAbout}
+        propListProps = {data, @_highlightProp, @_toggleProp, @_addProp,
+          @_removeProp}
 
         <div id='spec_editor_wrapper'>
-          <SpecEditorMenu {...specEditorMenuProps} />
+          <Menu {...menuProps} />
           <div id='spec_editor_text_wrapper'>
-            <textarea id='spec_editor_text'
-              placeholder='Write your specification here...'
-              value={data.get('specText')}
-              onChange={@_changeSpecText} />
+            <SyntaxHighlighter ref='editor'
+              regexes={@_getEnabledSensors().concat(@_getEnabledActuators(),
+                @_getAllCustoms(), @_getAllRegions()).map((str) ->
+                  new RegExp('(^|((\\s)+))' + str + '(((\\s)+)|$)', 'g'))} />
           </div>
           <div id='spec_editor_rightside'>
-            <div className='spec_editor_labels'>Regions:</div>
-            <ul className='spec_editor_selectlist' id='spec_editor_regions'>
-              {data.get('regions').filter((values, name) -> name != 'boundary')
-                .map((values, name) =>
-                  <li key={name} tabIndex='0' onClick={() => @_highlightProp('regions', name)}
-                    className={classNames({'spec_editor_selectlist_li_highlighted':
-                      values.get('highlighted')})}>
-                    {name}</li>).toArray()}
-            </ul>
-            <ul className='spec_editor_buttonlist'>
-              <li><button disabled={data.get('regions').size <= 0}>
-                Select from Map...</button></li>
-              <li><button>Edit Regions...</button></li>
-            </ul>
-            <div className='spec_editor_labels'>Sensors:</div>
-            <ul className='spec_editor_selectlist'>
-              {data.get('sensors').map((values, name) =>
-                <li key={name} tabIndex='0' onClick={() => @_highlightProp('sensors', name)}
-                  className={classNames({'spec_editor_selectlist_li_highlighted':
-                    values.get('highlighted')})}>
-                  <input type='checkbox' value={name} checked={values.get('checked')}
-                    onChange={() => @_toggleProp('sensors', name)} />
-                  {name}
-                </li>
-              ).toArray()}
-            </ul>
-            <ul className='spec_editor_buttonlist'>
-              <li>
-                <button onClick={() => @_addProp('sensors')}>Add</button>
-              </li>
-              <li>
-                <button disabled={data.get('sensors').size <= 0}
-                  onClick={() => @_removeProp('sensors')}>
-                  Remove</button>
-              </li>
-            </ul>
-            <div className='spec_editor_labels'>Actuators:</div>
-            <ul className='spec_editor_selectlist'>
-              {data.get('actuators').map((values, name) =>
-                <li key={name} tabIndex='0' onClick={() => @_highlightProp('actuators', name)}
-                  className={classNames({'spec_editor_selectlist_li_highlighted':
-                    values.get('highlighted')})}>
-                  <input type='checkbox' value={name} checked={values.get('checked')}
-                    onChange={() => @_toggleProp('actuators', name)} />
-                  {name}
-                </li>
-              ).toArray()}
-            </ul>
-            <ul className='spec_editor_buttonlist'>
-              <li>
-                <button onClick={() => @_addProp('actuators')}>
-                  Add</button>
-              </li>
-              <li>
-                <button disabled={data.get('actuators').size <= 0}
-                  onClick={() => @_removeProp('actuators')}>
-                  Remove</button>
-              </li>
-            </ul>
-            <div className='spec_editor_labels'>Custom Propositions:</div>
-            <ul className='spec_editor_selectlist'>
-              {data.get('customprops').map((values, name) =>
-                <li key={name} tabIndex='0' onClick={() => @_highlightProp('customprops', name)}
-                  className={classNames({'spec_editor_selectlist_li_highlighted':
-                    values.get('highlighted')})}>
-                  {name}
-                </li>
-              ).toArray()}
-            </ul>
-            <ul className='spec_editor_buttonlist'>
-              <li>
-                <button onClick={() => @_addProp('customprops')}>
-                  Add</button>
-              </li>
-              <li>
-                <button disabled={data.get('customprops').size <= 0}
-                  onClick={() => @_removeProp('customprops')}>
-                  Remove</button>
-              </li>
-            </ul>
+            <div className='spec_editor_selectlist_container'>
+              <div className='spec_editor_labels'>Regions:</div>
+              <ul className='spec_editor_selectlist'>
+                {data.get('regions').filter((values, name) -> name != 'boundary')
+                  .map((values, name) =>
+                    <li key={name} tabIndex='0' onClick={() => @_highlightProp('regions', name)}
+                      className={classNames({'spec_editor_selectlist_li_highlighted':
+                        values.get('highlighted')})}>
+                      {name}
+                    </li>
+                  ).toArray()}
+              </ul>
+              <ul className='spec_editor_buttonlist'>
+                <li><button disabled={data.get('regions').size <= 0}>
+                  Select from Map...</button></li>
+                <li><button>Edit Regions...</button></li>
+              </ul>
+            </div>
+            <PropList {...propListProps} title='Sensors:' propType='sensors' />
+            <PropList {...propListProps} title='Actuators:'
+              propType='actuators' />
+            <PropList {...propListProps} title='Custom Propositions:'
+              propType='customprops' />
           </div>
-          <SpecEditorCompileTabs data={data} />
+          <CompileTabs data={data} />
         </div>
 
 Export

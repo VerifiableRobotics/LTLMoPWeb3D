@@ -87,7 +87,7 @@ Define the component's layout
             </div>
             <div className='spec_editor_workspace_right'>
               <div className='spec_editor_labels'>Active locative phrases:</div>
-              <ul className='spec_editor_selectlist' id='spec_editor_regions'>
+              <ul className='spec_editor_selectlist'>
                 {Map(data.get('specObj').RegionMapping).keySeq().toArray().map((name) =>
                   <li key={name} tabIndex='0' onClick={() => @_selectDecomposed(name)}
                     className={classNames({'spec_editor_selectlist_li_highlighted':

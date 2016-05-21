@@ -7,8 +7,8 @@ External Dependencies
 Spec Editor Menu Component
 --------------------------
 
-    SpecEditorMenu = React.createClass
-      displayName: 'Specification Editor Menu'
+    Menu = React.createClass
+      displayName: 'Menu'
 
 Define the component's layout
 
@@ -163,4 +163,4 @@ Define the component's layout
 Export
 ------
 
-    module.exports = SpecEditorMenu
+    module.exports = Menu
