@@ -19,14 +19,14 @@ Define the component's layout
         <div className='spec_editor_selectlist_container'>
           <div className='spec_editor_labels'>{title}</div>
           <ul className='spec_editor_selectlist'>
-            {data.get(propType).map((values, name) ->
+            {data.get(propType).map((checked, name) ->
               <li key={name} tabIndex='0'
                 onClick={() -> _highlightProp(propType, name)}
                 className={classNames({'spec_editor_selectlist_li_highlighted':
-                  values.get('highlighted')})}>
+                  data.get(propType + 'Highlight') == name})}>
                 {if propType == 'customprops' then ''
                 else <input type='checkbox' value={name}
-                    checked={values.get('checked')}
+                    checked={checked}
                     onChange={() -> _toggleProp(propType, name)} />}
                 {name}
               </li>

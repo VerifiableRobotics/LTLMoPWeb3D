@@ -20,7 +20,7 @@ Helper functions to create spec object
     
     getSensorActuator = (str) ->
       sensorActuatorSplit = str.split(',')
-      return [sensorActuatorSplit[0], parseInt(sensorActuatorSplit[1].trim())]
+      return [sensorActuatorSplit[0], sensorActuatorSplit[1].trim() == '1']
     
     getRegionMapping = (str) ->
       regionMappingSplit = str.split('=')

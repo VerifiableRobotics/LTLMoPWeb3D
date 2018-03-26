@@ -73,9 +73,7 @@ Adds all the regions from a list of region objects
           @setImmState((d) ->
             d.set('regionsObj', regions)
               .set('regions', regions.Regions.reduce(
-                ((map, region) -> map.set(region.name,
-                  Map({'checked': false, 'highlighted': false}))
-                ), Map()
+                ((map, region) -> map.set(region.name, false)), Map()
               ))
             ))
 
@@ -102,14 +100,10 @@ Given the JSON version of a project object, import the spec
             d.set('specObj', spec).merge(Map({
               'compile_options': Map(spec.CompileOptions)
             # add props
-            })).set('sensors', Map(spec.Sensors).map(
-              (value, name) -> Map({'checked': value == 1, 'highlighted': false})
-            )).set('actuators', Map(spec.Actions).map(
-              (value, name) -> Map({'checked': value == 1, 'highlighted': false})
-            )).set('customprops', spec.Customs.reduce(
-              ((map, elem) ->
-                map.set(elem, Map({'checked': false, 'highlighted': false}))
-              ), Map()
+            })).set('sensors', Map(spec.Sensors))
+            .set('actuators', Map(spec.Actions))
+            .set('customprops', spec.Customs.reduce(
+              ((map, elem) -> map.set(elem, false)), Map()
             ))
           ))
 
@@ -231,7 +225,7 @@ Toggle a compile option (checkboxes)
 
       _toggleCompileOption: (optionName) ->
         @setImmState((d) -> d.updateIn(['compile_options', optionName],
-          (value) -> !value))
+          (checked) -> !checked))
 
 Change a compile option (radio buttons)
 
@@ -267,46 +261,36 @@ Launches a prompt to ask for the prop's name
         else if @state.data.hasIn([mapName, propName])
           alert('Duplicates are not allowed')
         else
-          # add prop to the map
-          @setImmState (d) -> 
-            d.update(mapName, (propMap) -> 
-              # unhighlight everything
-              propMap.map((values, name) -> values.set('highlighted', false))
-                .set(propName, Map({'checked': false, 'highlighted': true}))
-            ) # add and highlight the new one
-      
+          # add and highlight the new prop
+          @setImmState (d) ->
+            d.update(mapName, (propMap) ->  propMap.set(propName, false))
+              .set(mapName + 'Highlight', propName)
+
 Highlights a prop based on its name and the map's name
 
       _highlightProp: (mapName, propName) ->
-        @setImmState (d) -> d.update(mapName, (propMap) -> 
-          # unhighlight everything
-          propMap.map((values, name) -> values.set('highlighted', false))
-            .setIn([propName, 'highlighted'], true) # highlight the clicked one
-        )
+        @setImmState (d) -> d.set(mapName + 'Highlight', propName)
 
 Checks a prop based on its name and the map's name
 
       _toggleProp: (mapName, propName) ->
         @setImmState (d) ->
-          d.updateIn([mapName, propName, 'checked'], (checked) -> !checked)
+          d.updateIn([mapName, propName], (checked) -> !checked)
 
 Removes the currently highlighted prop in the map with name as specified
 
       _removeProp: (mapName) ->
         @setImmState (d) -> d.update(mapName, (propMap) ->
-          propMap.delete(propMap.findKey(
-            (values) -> values.get('highlighted'))
-          )
-        )
+          propMap.delete(d.get(mapName + 'Highlight')))
 
 Helpers to transform certain data
 
       _getEnabledSensors: () ->
         @state.data.get('sensors')
-          .filter((values) -> values.get('checked')).keySeq().toArray()
+          .filter((checked) -> checked).keySeq().toArray()
       _getEnabledActuators: () ->
         @state.data.get('actuators')
-          .filter((values) -> values.get('checked')).keySeq().toArray()
+          .filter((checked) -> checked).keySeq().toArray()
       _getAllCustoms: () -> @state.data.get('customprops').keySeq().toArray()
       _getAllRegions: () -> @state.data.get('regions').keySeq().toArray()
 
@@ -357,11 +341,11 @@ Define the component's layout
             <div className='spec_editor_selectlist_container'>
               <div className='spec_editor_labels'>Regions:</div>
               <ul className='spec_editor_selectlist'>
-                {data.get('regions').filter((values, name) -> name != 'boundary')
-                  .map((values, name) =>
+                {data.get('regions').filter((_, name) -> name != 'boundary')
+                  .map((_, name) =>
                     <li key={name} tabIndex='0' onClick={() => @_highlightProp('regions', name)}
                       className={classNames({'spec_editor_selectlist_li_highlighted':
-                        values.get('highlighted')})}>
+                        data.get('regionsHighlight') == name})}>
                       {name}
                     </li>
                   ).toArray()}
