@@ -25,9 +25,22 @@ Takes in the event, an extension, and the file reader's callback
         reader.onload = (ev) -> callback(ev.target.result)
         reader.readAsText(file)
 
+Helper for creating a text file and URL to it
+
+    createFileURL = (text, url) ->
+      # replace previously generated files to avoid memory leaks
+      if url != null
+        window.URL.revokeObjectURL(url)
+
+      # generate the spec file
+      url = window.URL.createObjectURL(new Blob([text], {type: 'text/plain'}))
+      return url
+
+
 Export
 ------
 
     module.exports = {
-      onUpload
+      onUpload,
+      createFileURL
     }

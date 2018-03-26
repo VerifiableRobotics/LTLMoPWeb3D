@@ -10,7 +10,7 @@ Internal Dependencies
 
     Helpers = require('js/core/helpers.litcoffee')
     RegionsParser = require('js/core/regionsParser.litcoffee')
-    SpecParser = require('js/core/specParser.litcoffee')
+    SpecAPI = require('js/core/spec/specAPI.litcoffee')
     AutomatonParser = require('js/core/automatonParser.litcoffee')
     Executor = require('js/core/executor.litcoffee')
     PoseHandler = require('./physijsPoseHandler.litcoffee')
@@ -62,7 +62,7 @@ When a *.regions file is uploaded; specifically the decomposed one
 When a *.spec file is uploaded
       
       onSpecUpload: (ev) ->
-        SpecParser.uploadSpec(ev.target.files[0], (specObj) => 
+        SpecAPI.uploadSpec(ev.target.files[0], (specObj) =>
           spec = specObj
           # enable uploading of automaton now
           @setState({disableAut: false})

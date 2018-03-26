@@ -10,7 +10,7 @@ Internal Dependencies
 
     Fetch = require('js/core/fetchHelpers.litcoffee')
     Helpers = require('js/core/helpers.litcoffee')
-    SpecParser = require('js/core/specParser.litcoffee')
+    SpecAPI = require('js/core/spec/specAPI.litcoffee')
     RegionsParser = require('js/core/regionsParser.litcoffee')
     AutParser = require('js/core/automatonParser.litcoffee')
     Menu = require('./menu.cjsx.md')
@@ -21,6 +21,10 @@ Internal Dependencies
 Assets
 
     require('css/specEditor.css')
+
+Initial set up
+
+    specURL = null
 
 Spec Editor Component
 ---------------------
@@ -93,7 +97,7 @@ Given the JSON version of a project object, import the spec
 
       _uploadSpec: (ev) ->
         # read the spec file
-        SpecParser.uploadSpec(ev.target.files[0], (spec) =>
+        SpecAPI.uploadSpec(ev.target.files[0], (spec) =>
           @refs.editor.insertText(spec.Spec)
           @setImmState((d) ->
             # merge values
@@ -107,17 +111,6 @@ Given the JSON version of a project object, import the spec
             ))
           ))
 
-        # upload the spec file
-        form = new FormData()
-        form.append('file', ev.target.files[0])
-        Fetch('/specEditor/importSpec', {
-          method: 'post'
-          body: form
-        }).catch((error) ->
-            console.error('upload spec failed')
-            alert('Uploading the spec failed!')
-          )
-
 Disable download if not yet compiled
 
       _saveCompiledArtifacts: (ev) ->
@@ -129,33 +122,21 @@ Disable download if not yet compiled
 Send json to create spec and then download spec
 
       _saveSpec: () ->
-        Fetch('specEditor/createSpec', {
-          method: 'post'
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          }
-          body: @_createJSONForSpec()
-        }).then(([data, request]) ->
-            # change this to use iframe submit?
-            # save the spec by opening the file in a new tab
-            # downloads cannot be done via ajax
-            window.open('specEditor/saveSpec', '_blank')
-          ).catch((error) ->
-            console.error('create spec failed')
-            alert('The spec was unable to be saved')
-          )
-      
+        specURL = Helpers.createFileURL(@_generateSpecText(), specURL)
+        # change this to use iframe submit?
+        # save the spec by opening the file in a new tab
+        # downloads cannot be done via ajax
+        window.open(specURL, '_blank')
+
 Compile the spec and set log + ltl
 
       _compileSpec: () ->
-        Fetch('specEditor/compileSpec', {
+        # upload the spec and regions file
+        form = new FormData()
+        form.append('spec', new Blob([@_generateSpecText()]))
+        Fetch('/specEditor/compileSpec', {
           method: 'post'
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          }
-          body: @_createJSONForSpec()
+          body: form
         }).then(([data, request]) => 
             @setImmState((d) ->
               d.set('isCompiled', true)
@@ -294,25 +275,26 @@ Helpers to transform certain data
       _getAllCustoms: () -> @state.data.get('customprops').keySeq().toArray()
       _getAllRegions: () -> @state.data.get('regions').keySeq().toArray()
 
-Creates and returns a JSON object that holds all spec information
+Updates the current spec object with the inputted properties and returns it
 
-      _createJSONForSpec: () ->
-        data = {}
-        data['compile_options'] = @state.data.get('compile_options').toJS()
-        data['regionPath'] = @state.data.get('specObj').RegionFile
+      _createSpecObj: () ->
+        specObj = @state.data.get('specObj')
+        specObj.CompileOptions = @state.data.get('compile_options').toJS()
+        # DO NOT CHANGE -- matches server-set filename
+        specObj.RegionFile = 'regions.regions'
 
-        specText = @refs.editor.getText()
-        if specText != ''
-          data['specText'] = specText
-        
-        # create arrays for props 
-        data['all_sensors'] = @state.data.get('sensors').keySeq().toArray()
-        data['enabled_sensors'] = @_getEnabledSensors()
-        data['all_actuators'] = @state.data.get('actuators').keySeq().toArray()
-        data['enabled_actuators'] = @_getEnabledActuators()
-        data['all_customs'] = @_getAllCustoms()
+        specObj.Spec = @refs.editor.getText()
 
-        return data
+        specObj.Sensors = @state.data.get('sensors').toJS()
+        specObj.Actions = @state.data.get('actuators').toJS()
+        specObj.Customs = @_getAllCustoms()
+
+        return specObj
+
+Shortcut function
+
+      _generateSpecText: () ->
+        return SpecAPI.generateSpecText(@_createSpecObj())
 
 Show about dialog 
 

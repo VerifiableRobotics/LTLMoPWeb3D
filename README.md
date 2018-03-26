@@ -10,7 +10,7 @@ VII. [Deployment](deploy/) <br />
 
 # LTLMoP API
 
-The LTLMoP API is a [soon-to-be] file-based API to which one can pass a spec and
+The LTLMoP API is a mostly complete file-based API to which one can pass a spec and
 regions for compilation and returns the compiler log. Via few simple URLs (and a
 unique session token [or API key]), one can access all the compiled artifacts:
 the automaton (`/saveAut`), the decomposed regions (`/saveDecomposed`),
