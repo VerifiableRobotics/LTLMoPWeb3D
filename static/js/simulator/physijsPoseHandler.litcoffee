@@ -3,6 +3,7 @@ Internal Dependencies
 
     engine = require('./initializePhysics.js')
     regionInterface = require('./regionInterface.litcoffee')
+    locomotionHandler = require('./carLocomotionHandler.litcoffee')
 
 Main Program
 ------------
@@ -67,29 +68,14 @@ Create 3D regions from the region array
         # add the new_ground to the scene
         engine.getScene().add(new_ground)     
 
-      
-Set the velocity and theta of the car
+
+Set the velocity and theta
 
     setVelocityTheta = (velocity, theta) ->
       car = engine.getCar()
       #console.log('car position x:' + car.body.position.x)
       #console.log('car position y:' + car.body.position.z)
-      # z-axis motor, upper limit, lower limit, target velocity, maximum force
-      car.wheel_bl_constraint.configureAngularMotor( 2, velocity, 0, velocity, 200000 )
-      car.wheel_br_constraint.configureAngularMotor( 2, velocity, 0, velocity, 200000 )
-      car.wheel_fl_constraint.configureAngularMotor( 2, velocity, 0, velocity, 200000 )
-      car.wheel_fr_constraint.configureAngularMotor( 2, velocity, 0, velocity, 200000 )
-      # start z-axis motors
-      car.wheel_bl_constraint.enableAngularMotor( 2 )
-      car.wheel_br_constraint.enableAngularMotor( 2 )
-      car.wheel_fl_constraint.enableAngularMotor( 2 )
-      car.wheel_fr_constraint.enableAngularMotor( 2 )
-      # x-axis motor, upper limit, lower limit, target velocity, maximum force
-      car.wheel_fl_constraint.configureAngularMotor( 1, theta, 0, theta, 200 )
-      car.wheel_fr_constraint.configureAngularMotor( 1, theta, 0, theta, 200 )
-      # start x-axis motor
-      car.wheel_fl_constraint.enableAngularMotor( 1 )
-      car.wheel_fr_constraint.enableAngularMotor( 1 )
+      locomotionHandler.setVelocityTheta(car, velocity, theta)
 
       # set current velocity and theta in case of later stop
       currentVelocity = velocity
@@ -100,21 +86,12 @@ Set the velocity and theta of the car
       #console.log('car z: ' + car.body.quaternion._euler.z)
       #console.log('wheel theta: ' + theta)
 
-    
-Stop the velocity and theta of the car (reverse acceleration)
+
+Stop the velocity and theta (reverse acceleration)
 
     stopVelocityTheta = () ->
       car = engine.getCar()
-      # set motor to opposite to 'brake' the car
-      car.wheel_bl_constraint.configureAngularMotor( 2, currentVelocity, -currentVelocity, 0, 200000 )
-      car.wheel_br_constraint.configureAngularMotor( 2, currentVelocity, -currentVelocity, 0, 200000 )
-      car.wheel_fl_constraint.configureAngularMotor( 2, currentVelocity, -currentVelocity, 0, 200000 )
-      car.wheel_fr_constraint.configureAngularMotor( 2, currentVelocity, -currentVelocity, 0, 200000 )
-      
-      # set motor to opposite to move the wheels back to straight
-      car.wheel_fl_constraint.configureAngularMotor( 1, currentTheta, -currentTheta, 0, 200 )
-      car.wheel_fr_constraint.configureAngularMotor( 1, currentTheta, -currentTheta, 0, 200 )
-
+      locomotionHandler.stopVelocityTheta(car, currentVelocity, currentTheta)
 
 Given region number, creates the car at its centroid
 
