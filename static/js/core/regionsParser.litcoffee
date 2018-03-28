@@ -6,16 +6,16 @@ External Dependencies
 
 Helper functions to create regions object
 -----------------------------------------
-  
+
     getRegionsOption = (str) ->
       return str.split(':')[0]
-    
+
     getCalibrationPoint = (str) ->
       calibrationPoint = {}
       calibrationPointSplit = str.split('\t')
       calibrationPoint[calibrationPointSplit[0]] = calibrationPointSplit[1].trim()
       return calibrationPoint
-        
+
     getTransition = (str) ->
       transition = {} # dict from region -> region -> [points]
       transitionSplit = str.split('\t')
@@ -27,7 +27,7 @@ Helper functions to create regions object
           when 0
             # make the first region a dict if it is not already
             region1 = transitionPiece.trim()
-            if !transition[region1]? 
+            if !transition[region1]?
               transition[region1] = {}
           when 1
             # make the second region an array (of points)
@@ -44,14 +44,14 @@ Helper functions to create regions object
                 # push y, increment pointNum
                 transition[region1][region2][pointNum].push(parseInt(transitionPiece))
                 pointNum++
-        
+
       return transition
 
 
 Parse the region file
 ---------------------
 
-    parseRegions = (parse_string) ->    
+    parseRegions = (parse_string) ->
 
       regions = {}
       # loop through lines

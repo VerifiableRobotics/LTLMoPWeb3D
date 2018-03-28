@@ -1,9 +1,9 @@
 Helper functions to create spec object
 --------------------------------------
-    
+
     getSpecOption = (str) ->
       return str.split(':')[0]
-    
+
     getCompileOption = (str) ->
       compileOptionSplit = str.split(':')
       compileOptionSplit[1] = compileOptionSplit[1].trim()
@@ -11,11 +11,11 @@ Helper functions to create spec object
       if compileOptionSplit[1] == 'True' or compileOptionSplit[1] == 'False'
         compileOptionSplit[1] = compileOptionSplit[1] == 'True'
       return [compileOptionSplit[0], compileOptionSplit[1]]
-    
+
     getSensorActuator = (str) ->
       sensorActuatorSplit = str.split(',')
       return [sensorActuatorSplit[0], sensorActuatorSplit[1].trim() == '1']
-    
+
     getRegionMapping = (str) ->
       regionMappingSplit = str.split('=')
       regionMappingArr = regionMappingSplit[1].trim().split(',').map((elem) ->

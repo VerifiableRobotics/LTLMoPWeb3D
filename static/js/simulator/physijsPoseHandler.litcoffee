@@ -39,7 +39,7 @@ Create 3D regions from the region array
           new THREE.MeshBasicMaterial(
             color: 'rgb('+ region.color.join(',') + ')'
             side: THREE.DoubleSide
-          ), 
+          ),
           .5, # high friction
           0 # no restitution
         )
@@ -66,7 +66,7 @@ Create 3D regions from the region array
         new_ground.rotation.x = Math.PI/2
         new_ground.receiveShadow = true
         # add the new_ground to the scene
-        engine.getScene().add(new_ground)     
+        engine.getScene().add(new_ground)
 
 
 Set the velocity and theta
@@ -133,9 +133,9 @@ Starts moving the car toward the destination
       # theta = diff b/t car body's theta and target theta
       wheelTheta = -(targetTheta - carTheta)
       # properly transform when angle is too big/too small
-      if wheelTheta > Math.PI 
+      if wheelTheta > Math.PI
         wheelTheta = Math.PI - wheelTheta
-      else if wheelTheta < -Math.PI 
+      else if wheelTheta < -Math.PI
         wheelTheta = 2*Math.PI + wheelTheta
       if maxVelocity <= 0 then maxVelocity = 8 # default
       # if theta > PI/4 or PI/2, then slower turn
@@ -144,7 +144,7 @@ Starts moving the car toward the destination
       else if wheelTheta > Math.PI/4 or wheelTheta < -Math.PI/4
         setVelocityTheta(maxVelocity / 2, wheelTheta)
       else
-        setVelocityTheta(maxVelocity, wheelTheta) 
+        setVelocityTheta(maxVelocity, wheelTheta)
 
 
 Export

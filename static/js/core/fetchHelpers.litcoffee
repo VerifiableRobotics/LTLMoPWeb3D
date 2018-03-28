@@ -9,11 +9,11 @@ Helpers for the Fetch API
 -------------------------
 
 Checks the HTTP status of a fetch request
-    
+
     checkHTTPStatus = (response) ->
       if response.status >= 200 && response.status < 300
         return response
-      else 
+      else
         error = new Error(response.statusText)
         error.response = response
         throw error
@@ -26,7 +26,7 @@ Returns the JSON of the response body along with the response in an array
       return response.json().then((json) -> [json, response])
 
 Returns the blob of the respone body along with the response in an array
-    
+
     parseBlob = (response) -> response.blob().then((blob) -> [blob, response])
 
 Fetch with defaults added
@@ -36,7 +36,7 @@ Fetch with defaults added
       # set same origin if nothing set to pass cookies/session data by default
       if !obj.credentials? then obj.credentials = 'same-origin'
       # if native object then stringify JSON body
-      if obj.body? and obj.body.constructor == ({}).constructor 
+      if obj.body? and obj.body.constructor == ({}).constructor
         obj.body = JSON.stringify(obj.body)
       # call fetch using helpers + defaults
       if !opts.isBlob?

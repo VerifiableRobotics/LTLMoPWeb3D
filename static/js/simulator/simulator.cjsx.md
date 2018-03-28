@@ -1,6 +1,6 @@
 External Dependencies
 ---------------------
-    
+
     React = require('react')
     ReactDOM = require('react-dom')
     { Map } = require('immutable')
@@ -62,7 +62,7 @@ When a *.regions file is uploaded; specifically the decomposed one
             @addRegionButtons(regionFile.Regions))
 
 When a *.spec file is uploaded
-      
+
       onSpecUpload: (ev) ->
         Helpers.onUpload(ev.target.files[0], 'spec')
           .then(SpecAPI.parse)
@@ -114,7 +114,7 @@ Send ROS message when actuator is toggled by executor
         for name, value of actDict
           # call function with state of actuator
           ROSWorker.postMessage?([name, value == 1])
-      
+
 Launch the executor
 
       startExecution: () ->
@@ -126,7 +126,7 @@ Launch the executor
           @setState({disableExec: false})
           clearInterval(executorInterval)
 
-        # initialize the execution loop        
+        # initialize the execution loop
         counter = 0
         executionLoop = () =>
           # if first execution
@@ -156,15 +156,15 @@ Launch the executor
             else if nextRegion != false
               PoseHandler.stop()
             # if there isn't a current state, stop the execution loop
-            else  
+            else
               resetExecution()
         # start the execution loop
         executorInterval = setInterval(executionLoop, 300)
         # disable buttons/uploads
         @setState({disableRegions: true, disableSpec: true, disableAut: true, disableExec: true})
 
-Gets the initial props (all of sensors, actuators, and customs) for the executor to determine initial state  
-Outputs a {sensors, actuators, customs} dict of prop -> 1 or 0 (active or not), excluding disabled props      
+Gets the initial props (all of sensors, actuators, and customs) for the executor to determine initial state
+Outputs a {sensors, actuators, customs} dict of prop -> 1 or 0 (active or not), excluding disabled props
 
       getInitialProps: () ->
         sensors = actuators = customs = Map()
@@ -176,7 +176,7 @@ Outputs a {sensors, actuators, customs} dict of prop -> 1 or 0 (active or not), 
           customs = customs.set(name, if values.get('active') then 1 else 0)
         return {sensors: sensors.toJS(), actuators: actuators.toJS(), customs: customs.toJS()}
 
-Gets sensor readings for the executor to determine next state  
+Gets sensor readings for the executor to determine next state
 Outputs a dict of prop -> 1 or 0 (active or not), excluding disabled props
 
       getSensors: () ->
@@ -197,7 +197,7 @@ Add Region buttons based on regions in region file
         @setState({regions: regions})
 
 Add Buttons/State based on props in spec
-      
+
       addPropButtons: (spec) ->
         sensors = actuators = customs = Map()
         # add elements to maps
@@ -210,7 +210,7 @@ Add Buttons/State based on props in spec
           customs = customs.set(propName, Map({disabled: false, active: false}))
         # set maps
         @setState({sensors: sensors, actuators: actuators, customs: customs})
-      
+
 Toggle for when a sensor is clicked
 
       toggleActiveSensors: (name) ->
@@ -246,7 +246,7 @@ Set which region is active
           .setIn([@state.regions.findKey((values) -> values.get('index') == regionNum), 'active'], true)})
 
 Set which actuators and customs are active based on [0, 1] dict from executor
-    
+
       setActiveProps: (actDict, custDict) ->
         @sendROSActuator(actDict)
         actuators = @state.actuators.map((values, name) -> values.set('active', actDict[name] == 1))
@@ -254,7 +254,7 @@ Set which actuators and customs are active based on [0, 1] dict from executor
         @setState({actuators: actuators, customs: customs})
 
 Set the velocity of the car
-      
+
       setVelocity: (ev) ->
         @setState({velocity: parseInt(ev.target.value)})
 
@@ -264,7 +264,7 @@ Increase Velocity
         @setState((prev) -> {velocity: prev.velocity + 2})
 
 Decrease Velocity
-      
+
       decreaseVelocity: () ->
         decremented = @state.velocity - 2
         @setState({velocity: if decremented <= 0 then 1 else decremented})
@@ -274,7 +274,7 @@ Optimize component speed because we have immutability!
       shouldComponentUpdate: (nextProps, nextState) ->
         isEqual = true
         for k, v of nextState
-          if v != @state[k] 
+          if v != @state[k]
             isEqual = false
             break
         return !isEqual

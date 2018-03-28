@@ -1,6 +1,6 @@
 External Dependencies
 ---------------------
-    
+
     React = require('react')
     { Map } = require('immutable')
     classNames = require('classnames')
@@ -121,7 +121,7 @@ Disable download if not yet compiled
           alert('You must compile the spec before saving this file!')
           ev.preventDefault()
           return false
-      
+
 Send json to create spec and then download spec
 
       _saveSpec: () ->
@@ -209,7 +209,7 @@ Change a compile option (radio buttons)
 
       _changeCompileOption: (optionName, newValue) ->
         @setImmState((d) -> d.setIn(['compile_options', optionName], newValue))
-      
+
 Adds a prop to the map with name as specified
 Launches a prompt to ask for the prop's name
 
@@ -224,7 +224,7 @@ Launches a prompt to ask for the prop's name
           when 'actuators'
             promptText += 'Actuator:'
             defaultName = 'actuator'
-          else 
+          else
             promptText += 'Custom Proposition:'
             defaultName = 'prop'
         count = 1
@@ -293,7 +293,7 @@ Shortcut function
       _generateSpecText: () ->
         return SpecAPI.generateSpecText(@_createSpecObj())
 
-Show about dialog 
+Show about dialog
 
       _showAbout: () ->
         alert('Specification Editor is part of the LTLMoP Toolkit.\nFor more information, please visit http://ltlmop.github.io')

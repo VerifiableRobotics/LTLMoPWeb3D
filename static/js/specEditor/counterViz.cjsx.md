@@ -53,7 +53,7 @@ Define the component's layout
           .map((elemMap) ->
             # if the sum is in (0, len) then that means this prop
             # can change between the possible states
-            elemMap.map((value) -> 
+            elemMap.map((value) ->
               if value == 0 or filteredSuccessors.length then 0 else 1
             ))
 

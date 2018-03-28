@@ -2,7 +2,7 @@ Helper functions for searching inside automaton
 -----------------------------------------------
 
 Finds a next state
-  
+
     getNextState = (automaton, currentState, sensors) ->
       if automaton[currentState]['successors'].length < 1
         alert 'The current state has no successors'
@@ -31,7 +31,7 @@ Finds an initial state given the automaton, initial props, and initial region nu
         # check region - if initial region does not match state, cotinue
         if state['props']['region'] != regionNum
           continue
-        # otherwise check all props with flag  
+        # otherwise check all props with flag
         isValidInitialState = true
         # check sensors - all sensors and whether or not they are active must match state
         for sensorName, isActive of props.sensors
@@ -80,7 +80,7 @@ Execute an automaton
 
     # to be executed continuosly
     execute = (automaton, initialProps, sensorReadings, currentRegion) ->
-      
+
       # if first execution, get the current and next state given initial props and sensors
       if currentState == null
         currentState = getInitialState(automaton, initialProps, currentRegion)

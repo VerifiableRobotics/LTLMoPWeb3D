@@ -1,6 +1,6 @@
 External Dependencies
 ---------------------
-    
+
     React = require('react')
     classNames = require('classnames')
 

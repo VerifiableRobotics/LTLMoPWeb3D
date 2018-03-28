@@ -1,6 +1,6 @@
 External Dependencies
 ---------------------
-    
+
     React = require('react')
     #{ Surface, Group, Shape, Text } = require('reactART')
     #{ Map } = require('immutable')
@@ -57,7 +57,7 @@ Define the component layout
                   <g key={index} transform={'translate(' + region.position.join(',') + ')'}>
                     <text>{region.name}</text>
                     {# stroke if boundary, fill otherwise}
-                    <polygon 
+                    <polygon
                       fill={if region.name != 'boundary' then 'rgb(' + region.color.join(',') + ')' else ''}
                       stroke={if region.name == 'boundary' then 'rgb(' + region.color.join(',') + ')' else ''}
                       points={region.points.map((point) -> point.join(',')).join(' ')} />

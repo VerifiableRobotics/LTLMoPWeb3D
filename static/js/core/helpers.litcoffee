@@ -20,7 +20,7 @@ Takes in the event, an extension, and the file reader's callback
           if extension != ext
             alert('This only accepts *.' + ext + ' files!')
             return
-        
+
         # in case you want to get the file as is (just perform validation)
         if opts.keepFile
           return file

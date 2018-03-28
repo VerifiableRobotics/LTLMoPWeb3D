@@ -12,7 +12,7 @@ var controls, projector, renderer, scene, camera, car = {};
 // initialize the scene
 var initScene = function() {
   projector = new THREE.Projector;
-  
+
   // create the renderer
   renderer = new THREE.WebGLRenderer({antialias: true});
   var viewportElem = document.getElementById('viewport')
@@ -22,8 +22,8 @@ var initScene = function() {
   renderer.shadowMapEnabled = true;
   renderer.shadowMapSoft = true;
   viewportElem.appendChild(renderer.domElement)
-  
-  
+
+
   // create the scene and add gravity
   // also add the listener to drop the car down upon update
   scene = new Physijs.Scene;
@@ -34,7 +34,7 @@ var initScene = function() {
       scene.simulate( undefined, 2 );
     }
   );
-  
+
   // create the camera
   camera = new THREE.PerspectiveCamera(
     35,
@@ -56,7 +56,7 @@ var initScene = function() {
   controls.staticMoving = true;
   controls.dynamicDampingFactor = 0.3;
   controls.addEventListener( 'change', render );
-  
+
   // create the lighting
   var light = new THREE.DirectionalLight( 0xFFFFFF );
   light.position.set( 20, 40, -15 );
@@ -80,7 +80,7 @@ var initScene = function() {
   THREEx.WindowResize(renderer, camera, function () {
     return {width: viewportElem.clientWidth, height: viewportElem.clientHeight}
   });
-  
+
   scene.simulate();
   animate();
 }
@@ -109,8 +109,8 @@ var create3DCar = function(startX, startY, startZ) {
   car.body.receiveShadow = car.body.castShadow = true;
   car.body.position.set(startX, startY + 10, startZ);
   scene.add( car.body );
-  
-  
+
+
   // create the 4 wheels
   var wheel_material = Physijs.createMaterial(
     new THREE.MeshLambertMaterial({ color: 0x444444 }),
@@ -138,7 +138,7 @@ var create3DCar = function(startX, startY, startZ) {
     wheel_material,
     500
   );
-    
+
   // hold var for less repeated computations
   var pidiv2 = Math.PI / 2;
   // set contraints and rotations for the wheels
@@ -185,7 +185,7 @@ var create3DCar = function(startX, startY, startZ) {
   );
   scene.addConstraint( car.wheel_br_constraint );
   car.wheel_br_constraint.setAngularLowerLimit({ x: 0, y: 0, z: 0 });
-  car.wheel_br_constraint.setAngularUpperLimit({ x: 0, y: 0, z: 0 }); 
+  car.wheel_br_constraint.setAngularUpperLimit({ x: 0, y: 0, z: 0 });
 
   // camera position
   controls.target.set(startX, startY, startZ);
