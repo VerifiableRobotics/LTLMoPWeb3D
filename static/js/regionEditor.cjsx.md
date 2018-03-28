@@ -9,7 +9,7 @@ Internal Dependencies
 ---------------------
 
     Helpers = require('js/core/helpers.litcoffee')
-    RegionsAPI = require('js/core/regionsParser.litcoffee')
+    RegionsAPI = require('js/core/regions/regionsAPI.litcoffee')
 
 Region Editor Component
 -------------------

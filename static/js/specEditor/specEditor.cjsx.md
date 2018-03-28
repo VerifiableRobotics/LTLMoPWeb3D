@@ -11,7 +11,7 @@ Internal Dependencies
     Fetch = require('js/core/fetchHelpers.litcoffee')
     Helpers = require('js/core/helpers.litcoffee')
     SpecAPI = require('js/core/spec/specAPI.litcoffee')
-    RegionsAPI = require('js/core/regionsParser.litcoffee')
+    RegionsAPI = require('js/core/regions/regionsAPI.litcoffee')
     AutAPI = require('js/core/automatonParser.litcoffee')
     Menu = require('./menu.cjsx.md')
     PropList = require('./propList.cjsx.md')
@@ -82,17 +82,6 @@ Adds all the regions from a list of region objects
               ))
             ))
 
-        # upload the regions file
-        form = new FormData()
-        form.append('file', ev.target.files[0])
-        Fetch('/specEditor/uploadRegions', {
-          method: 'post'
-          body: form
-        }).catch((error) ->
-            console.error('regions upload failed')
-            alert('The regions file upload failed!')
-          )
-
 Upload the spec file
 Given the JSON version of a project object, import the spec
 
@@ -122,7 +111,7 @@ Disable download if not yet compiled
           ev.preventDefault()
           return false
 
-Send json to create spec and then download spec
+Generate text from spec object, create Blob of it, then save it
 
       _saveSpec: () ->
         specURL = Helpers.createFileURL(@_generateSpecText(), specURL)
@@ -137,6 +126,7 @@ Compile the spec and set log + ltl
         # upload the spec and regions file
         form = new FormData()
         form.append('spec', new Blob([@_generateSpecText()]))
+        form.append('regions', new Blob([@_generateRegionsText()]))
         Fetch('/specEditor/compileSpec', {
           method: 'post'
           body: form
@@ -291,7 +281,12 @@ Updates the current spec object with the inputted properties and returns it
 Shortcut function
 
       _generateSpecText: () ->
-        return SpecAPI.generateSpecText(@_createSpecObj())
+        return SpecAPI.generateText(@_createSpecObj())
+
+Shortcut function
+
+      _generateRegionsText: () ->
+        return RegionsAPI.generateText(@state.data.get('regionsObj'))
 
 Show about dialog
 

@@ -34,17 +34,14 @@ def createSession():
   # delete old files asynchronously after each session creation
   threading.Thread(target=deleteOldFiles).start()
 
-# returns a list of regions and the server path given a file
-@app.route('/specEditor/uploadRegions', methods=['POST'])
-def uploadRegions():
-  file = request.files['file']
+# uploads the region file
+def uploadRegions(file):
   if file and allowed_file(file.filename):
-    createSession() # create one in case one currently doesn't exist
     filename = 'regions.regions'
     session['regionsFilePath'] = os.path.join(app.config['UPLOAD_FOLDER'], session['username'], filename)
     file.save(session['regionsFilePath'])
-    return jsonify(theBool = 'True')
-  return jsonify(theBool = 'False')
+    return True
+  return False
 
 # ----------------- simulator functions ------------------------------
 @app.route('/simulator')
@@ -62,6 +59,8 @@ def loadSpecEditor():
 # compiles the project via the spec file, returns log
 @app.route('/specEditor/compileSpec', methods=['POST'])
 def compileSpec():
+  createSession()
+  uploadRegions(request.files['regions'])
   uploadSpec(request.files['spec'])
   sc = specCompiler.SpecCompiler()
   sc.loadSpec(session['specFilePath'])
@@ -132,7 +131,7 @@ def saveZip():
 
 # uploads the spec file
 def uploadSpec(file):
-  if file and allowed_file(file.filename) and 'regionsFilePath' in session: # make sure a regions file has been uploaded
+  if file and allowed_file(file.filename):
     filename = 'spec.spec'
     session['specFilePath'] = os.path.join(app.config['UPLOAD_FOLDER'], session['username'], filename)
     file.save(session['specFilePath'])

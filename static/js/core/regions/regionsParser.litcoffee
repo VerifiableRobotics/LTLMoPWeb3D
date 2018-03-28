@@ -11,10 +11,9 @@ Helper functions to create regions object
       return str.split(':')[0]
 
     getCalibrationPoint = (str) ->
-      calibrationPoint = {}
       calibrationPointSplit = str.split('\t')
-      calibrationPoint[calibrationPointSplit[0]] = calibrationPointSplit[1].trim()
-      return calibrationPoint
+      calibrationPointSplit[1] = calibrationPointSplit[1].trim()
+      return calibrationPointSplit
 
     getTransition = (str) ->
       transition = {} # dict from region -> region -> [points]
