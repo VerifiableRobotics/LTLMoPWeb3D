@@ -9,9 +9,9 @@ Internal Dependencies
 ---------------------
 
     Helpers = require('js/core/helpers.litcoffee')
-    RegionsParser = require('js/core/regionsParser.litcoffee')
+    RegionsAPI = require('js/core/regionsParser.litcoffee')
     SpecAPI = require('js/core/spec/specAPI.litcoffee')
-    AutomatonParser = require('js/core/automatonParser.litcoffee')
+    AutAPI = require('js/core/automatonParser.litcoffee')
     Executor = require('js/core/executor.litcoffee')
     PoseHandler = require('./physijsPoseHandler.litcoffee')
 
@@ -54,33 +54,39 @@ Define the initial state
 When a *.regions file is uploaded; specifically the decomposed one
 
       onRegionsUpload: (ev) ->
-        RegionsParser.uploadRegions(ev.target.files[0], (regionsObj) =>
-          regionFile = regionsObj
-          PoseHandler.createRegions(regionFile)
-          @addRegionButtons(regionFile.Regions))
+        Helpers.onUpload(ev.target.files[0], 'regions')
+          .then(RegionsAPI.parse)
+          .then((regionsObj) =>
+            regionFile = regionsObj
+            PoseHandler.createRegions(regionFile)
+            @addRegionButtons(regionFile.Regions))
 
 When a *.spec file is uploaded
       
       onSpecUpload: (ev) ->
-        SpecAPI.uploadSpec(ev.target.files[0], (specObj) =>
-          spec = specObj
-          # enable uploading of automaton now
-          @setState({disableAut: false})
-          @addPropButtons(spec))
+        Helpers.onUpload(ev.target.files[0], 'spec')
+          .then(SpecAPI.parse)
+          .then((specObj) =>
+            spec = specObj
+            # enable uploading of automaton now
+            @setState({disableAut: false})
+            @addPropButtons(spec))
 
 When a *.aut file is uploaded
 
       onAutUpload: (ev) ->
-        AutomatonParser.uploadAutomaton(ev.target.files[0], spec, (autObj) =>
-          automaton = autObj
-          # enable executor execution now
-          @setState({disableExec: false}))
+        Helpers.onUpload(ev.target.files[0], 'aut')
+          .then((file) => AutAPI.parse(file, spec))
+          .then((autObj) =>
+            automaton = autObj
+            # enable executor execution now
+            @setState({disableExec: false}))
 
 When a ROS Handler is uploaded
 
       onROSHandlerUpload: (ev) ->
         # perform validation
-        Helpers.onUpload(ev.target.files[0], 'js', (file) =>
+        Helpers.onUpload(ev.target.files[0], 'js', {keepFile: true}).then((file) =>
           # terminate any existing workers (new upload)
           ROSWorker.terminate?()
           # create new worker
@@ -88,7 +94,7 @@ When a ROS Handler is uploaded
           ROSWorker.onerror = (e) => console.log(e)
           # add sensor callback
           ROSWorker.onmessage = (e) => @getROSSensor(e.data)
-        , {keepFile: true})
+        )
 
 Toggle for when a ROS message is received
 

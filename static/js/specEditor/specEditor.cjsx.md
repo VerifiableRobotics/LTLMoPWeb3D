@@ -11,8 +11,8 @@ Internal Dependencies
     Fetch = require('js/core/fetchHelpers.litcoffee')
     Helpers = require('js/core/helpers.litcoffee')
     SpecAPI = require('js/core/spec/specAPI.litcoffee')
-    RegionsParser = require('js/core/regionsParser.litcoffee')
-    AutParser = require('js/core/automatonParser.litcoffee')
+    RegionsAPI = require('js/core/regionsParser.litcoffee')
+    AutAPI = require('js/core/automatonParser.litcoffee')
     Menu = require('./menu.cjsx.md')
     PropList = require('./propList.cjsx.md')
     CompileTabs = require('./compileTabs.cjsx.md')
@@ -73,8 +73,9 @@ Upload the regions file
 Adds all the regions from a list of region objects
 
       _uploadRegions: (ev) ->
-        RegionsParser.uploadRegions(ev.target.files[0], (regions) =>
-          @setImmState((d) ->
+        Helpers.onUpload(ev.target.files[0], 'regions')
+          .then(RegionsAPI.parse)
+          .then((regions) => @setImmState((d) ->
             d.set('regionsObj', regions)
               .set('regions', regions.Regions.reduce(
                 ((map, region) -> map.set(region.name, false)), Map()
@@ -97,19 +98,21 @@ Given the JSON version of a project object, import the spec
 
       _uploadSpec: (ev) ->
         # read the spec file
-        SpecAPI.uploadSpec(ev.target.files[0], (spec) =>
-          @refs.editor.insertText(spec.Spec)
-          @setImmState((d) ->
-            # merge values
-            d.set('specObj', spec).merge(Map({
-              'compile_options': Map(spec.CompileOptions)
-            # add props
-            })).set('sensors', Map(spec.Sensors))
-            .set('actuators', Map(spec.Actions))
-            .set('customprops', spec.Customs.reduce(
-              ((map, elem) -> map.set(elem, false)), Map()
+        Helpers.onUpload(ev.target.files[0], 'spec')
+          .then(SpecAPI.parse)
+          .then((spec) =>
+            @refs.editor.insertText(spec.Spec)
+            @setImmState((d) ->
+              # merge values
+              d.set('specObj', spec).merge(Map({
+                'compile_options': Map(spec.CompileOptions)
+              # add props
+              })).set('sensors', Map(spec.Sensors))
+              .set('actuators', Map(spec.Actions))
+              .set('customprops', spec.Customs.reduce(
+                ((map, elem) -> map.set(elem, false)), Map()
+              ))
             ))
-          ))
 
 Disable download if not yet compiled
 
@@ -137,7 +140,10 @@ Compile the spec and set log + ltl
         Fetch('/specEditor/compileSpec', {
           method: 'post'
           body: form
-        }).then(([data, request]) => 
+        }).catch((error) ->
+            console.error('compile spec failed')
+            alert('Spec compilation failed!')
+          ).then(([data, request]) =>
             @setImmState((d) ->
               d.set('isCompiled', true)
                 .set('compilerLog', data.compilerLog))
@@ -145,62 +151,53 @@ Compile the spec and set log + ltl
             @_downloadLTL()
             @_downloadDecomposed()
             @_downloadAut()
-          ).catch((error) ->
-            console.error('compile spec failed')
-            alert('Spec compilation failed!')
           )
 
 Download the ltl
 
       _downloadLTL: () ->
         Fetch('/specEditor/saveLTL', {method: 'post'}, {isBlob: true})
-          .then(([data, request]) =>
-            Helpers.onUpload(data, 'ltl',
-              ((ltl) =>
-                @setImmState (d) -> d.set('ltlOutput', ltl)
-              ), {isBlob: true})
-          ).catch((error) ->
+          .catch((error) ->
             console.error('ltl download failed')
             alert('Downloading the LTL failed!')
-          )
+          ).then(([data, request]) =>
+            Helpers.onUpload(data, 'ltl', {isBlob: true})
+          ).then((ltl) => @setImmState (d) -> d.set('ltlOutput', ltl))
 
 Download the decomposed regions
 
       _downloadDecomposed: () ->
         Fetch('/specEditor/saveDecomposed', {method: 'post'}, {isBlob: true})
-          .then(([data, request]) =>
-            RegionsParser.uploadRegions(data,
-              ((decomposed) =>
-                @setImmState (d) -> d.set('decomposedObj', decomposed)
-              ), {isBlob: true})
-          ).catch((error) -> 
+          .catch((error) ->
             console.error('decompose download failed')
             alert('Downloading the decomposition failed!')
+          ).then(([data, request]) =>
+            Helpers.onUpload(data, 'regions', {isBlob: true})
+          ).then(RegionsAPI.parse)
+          .then((decomposed) =>
+            @setImmState (d) -> d.set('decomposedObj', decomposed)
           )
 
 Download the automaton
 
       _downloadAut: () ->
         Fetch('/specEditor/saveAut', {method: 'post'}, {isBlob: true})
-          .then(([data, request]) =>
-            AutParser.uploadAutomaton(data, @state.data.get('specObj'),
-              ((aut) =>
-                @setImmState (d) -> d.set('autObj', aut)
-              ), {isBlob: true})
-          ).catch((error) ->
+          .catch((error) ->
             console.error('aut download failed')
             alert('Downloading the automaton failed!')
-          )
+          ).then(([data, request]) =>
+            Helpers.onUpload(data, 'aut', {isBlob: true})
+          ).then((file) => AutAPI.parse(file, @state.data.get('specObj')))
+          .then((aut) => @setImmState (d) -> d.set('autObj', aut))
 
 Analyze the spec
 
       _analyzeSpec: () ->
         Fetch('specEditor/analyzeSpec', {method: 'get'})
-          .then(([data, request]) -> alert(data.analyzeLog))
           .catch((error) ->
             console.error('analyze spec failed')
             alert('Spec analysis failed!')
-          )
+          ).then(([data, request]) -> alert(data.analyzeLog))
 
 Toggle a compile option (checkboxes)
 

@@ -1,13 +1,7 @@
 External Dependencies
 ---------------------
-  
+
     DeepExtend = require('deep-extend')
-
-
-Internal Dependencies
----------------------
-
-    Helpers = require('./helpers.litcoffee')
 
 
 Helper functions to create regions object
@@ -95,27 +89,14 @@ Parse the region file
       # parse regions JSON string into JS object
       regions.Regions = JSON.parse(regions.Regions)
 
+      console.log('Regions Object: ')
+      console.log(regions)
       return regions
-
-
-Upload a regions file
----------------------
-Args: file and callback 
-Callback must take the regions object as first arg
-
-    uploadRegions = (file, cb, opts) ->
-      readCallback = (result) => 
-        regionsObj = parseRegions(result)
-        console.log('Regions Object: ')
-        console.log(regionsObj)  
-        cb(regionsObj)
-      Helpers.onUpload(file, 'regions', readCallback, opts)
 
 
 Export
 ------
 
     module.exports = {
-      parseRegions,
-      uploadRegions
+      parse: parseRegions
     }

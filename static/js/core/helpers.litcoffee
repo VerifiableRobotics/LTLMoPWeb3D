@@ -1,10 +1,15 @@
+External Dependencies
+---------------------
+
+    reader = require('promise-file-reader')
+
 Common Helper functions used throughout LTLMoPWeb3D
 ---------------------------------------------------
 
 Helper for uploading and reading files
 Takes in the event, an extension, and the file reader's callback
 
-    onUpload = (file, ext, callback, opts) ->
+    onUpload = (file, ext, opts) ->
       if file?
         # check for blob vs file
         opts = opts || {}
@@ -18,12 +23,9 @@ Takes in the event, an extension, and the file reader's callback
         
         # in case you want to get the file as is (just perform validation)
         if opts.keepFile
-          callback(file)
-          return
+          return file
 
-        reader = new FileReader()
-        reader.onload = (ev) -> callback(ev.target.result)
-        reader.readAsText(file)
+        return reader.readAsText(file)
 
 Helper for creating a text file and URL to it
 

@@ -1,9 +1,3 @@
-Internal Dependencies
----------------------
-
-    Helpers = require('./helpers.litcoffee')
-
-
 Regex declarations
 ------------------
 
@@ -84,27 +78,14 @@ State 0 with rank 0 -> <person:0, hazardous_item:0, pick_up:0, drop:0, radio:0, 
         else
           console.warn('Automaton Parsing: neither state nor successor string')
 
+      console.log('Automaton Object: ')
+      console.log(automaton)
       return automaton
-
-
-Upload an aut file
-------------------
-Args: file, spec object, and callback 
-Callback must take the automaton object as first arg
-
-    uploadAutomaton = (file, specObj, cb, opts) ->
-      readCallback = (result) => 
-        autObj = parseAutomaton(result, specObj)
-        console.log('Automaton Object: ')
-        console.log(autObj)
-        cb(autObj)
-      Helpers.onUpload(file, 'aut', readCallback, opts)
 
 
 Export
 ------
 
     module.exports = {
-      parseAutomaton,
-      uploadAutomaton
+      parse: parseAutomaton
     }

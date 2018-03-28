@@ -8,7 +8,8 @@ External Dependencies
 Internal Dependencies
 ---------------------
 
-    RegionsParser = require('js/core/regionsParser.litcoffee')
+    Helpers = require('js/core/helpers.litcoffee')
+    RegionsAPI = require('js/core/regionsParser.litcoffee')
 
 Region Editor Component
 -------------------
@@ -27,12 +28,14 @@ Define the initial state
 When a regions file is uploaded
 
       _onRegionsUpload: (ev) ->
-        RegionsParser.uploadRegions(ev.target.files[0], (regionsObj) =>
-          @setState({ regionsObj }))
+        Helpers.onUpload(ev.target.files[0], 'regions')
+          .then(RegionsAPI.parse)
+          .then((regionsObj) => @setState({ regionsObj }))
 
       _onDecomposedUpload: (ev) ->
-        RegionsParser.uploadRegions(ev.target.files[0], (decomposedObj) =>
-          @setState({ decomposedObj }))
+        Helpers.onUpload(ev.target.files[0], 'regions')
+          .then(RegionsAPI.parse)
+          .then((decomposedObj) => @setState({ decomposedObj }))
 
 Define the component layout
 

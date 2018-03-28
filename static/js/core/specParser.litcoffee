@@ -1,9 +1,3 @@
-Internal Dependencies
----------------------
-
-    Helpers = require('./helpers.litcoffee')
-
-
 Helper functions to create spec object
 --------------------------------------
     
@@ -79,27 +73,14 @@ Args: the spec file, as text
         # end else
       # end for
 
+      console.log('Spec Object: ')
+      console.log(spec)
       return spec
-
-
-Upload a spec file
-------------------
-Args: file and callback 
-Callback must take the spec object as first arg
-
-    uploadSpec = (file, cb, opts) ->
-      readCallback = (result) => 
-        specObj = parseSpec(result)
-        console.log('Spec Object: ')
-        console.log(specObj)
-        cb(specObj)
-      Helpers.onUpload(file, 'spec', readCallback, opts)
 
 
 Export
 ------
 
     module.exports = {
-      parseSpec,
-      uploadSpec
+      parse: parseSpec
     }
