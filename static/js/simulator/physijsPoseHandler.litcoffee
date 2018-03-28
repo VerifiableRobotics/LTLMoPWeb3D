@@ -2,6 +2,7 @@ Internal Dependencies
 ---------------------
 
     engine = require('./initializePhysics.js')
+    regionInterface = require('./regionInterface.litcoffee')
 
 Main Program
 ------------
@@ -11,37 +12,6 @@ Initial set up
     currentVelocity = 0
     currentTheta = 0
     regionFile = {}
-
-## Helpers
-
-Given a region, get the centroid
-
-    getCentroid = (region) ->
-      # vars for getting centroid of region
-      regionX = 0
-      regionY = 0
-      numPoints = region.points.length
-      position = region.position
-      for point in region.points
-        regionX += point[0]
-        regionY += point[1]
-
-      return [position[0] + regionX / numPoints, position[1] + regionY / numPoints]
-
-
-Given a region, get the midpoint of the transition from the current region to it
-
-    getTransition = (region) ->
-      regionToName = region.name
-      regionFromName = regionFile.Regions[getCurrentRegion()].name
-      #console.log('regionFrom: ' + regionFromName + ' regionTo: ' + regionToName)
-      # get correct transition array, could be ordered either way
-      transition = if !regionFile.Transitions[regionFromName]? or !regionFile.Transitions[regionFromName][regionToName]?
-        regionFile.Transitions[regionToName][regionFromName] 
-      else regionFile.Transitions[regionFromName][regionToName]
-      # return midpoint
-      return [(transition[0][0] + transition[1][0]) / 2, (transition[0][1] + transition[1][1]) / 2]
-
 
 ## Handler Functions
 
@@ -150,18 +120,31 @@ Given region number, creates the car at its centroid
 
     createCar = (region_num) ->
       region = regionFile.Regions[region_num]
-      xpos = region.position[0]
-      ypos = region.position[1]
-      centroid = getCentroid(region)
+      centroid = regionInterface.getCentroid(region)
       engine.create3DCar(centroid[0], 0, centroid[1])
+
+Gets the current region of the car
+
+    getCurrentRegion = () ->
+      car = engine.getCar()
+      xpos = car.body.position.x
+      ypos = car.body.position.z
+      currentRegion = regionInterface.getRegion(regionFile, xpos, ypos)
+      return currentPosition
+
+Gets the target point to move to
+
+    getTargetPoint = (region_num) ->
+      targetRegion = regionFile.Regions[region_num]
+      targetPosition = regionInterface.getTransition(regionFile,
+        getCurrentRegion(), targetRegion)
 
 
 Starts moving the car toward the destination
 
     plotCourse = (region_num, maxVelocity) ->
       car = engine.getCar()
-      target = regionFile.Regions[region_num]
-      targetPosition = getTransition(target)
+      targetPosition = getTargetPoint(region_num)
       currentPosition = [car.body.position.x, car.body.position.z]
       targetTheta = Math.atan2(targetPosition[1] - currentPosition[1], targetPosition[0] - currentPosition[0])
       #console.log('target theta: ' + targetTheta)
@@ -185,38 +168,6 @@ Starts moving the car toward the destination
         setVelocityTheta(maxVelocity / 2, wheelTheta)
       else
         setVelocityTheta(maxVelocity, wheelTheta) 
-
-
-Get the current region (number) the car is located in
-
-    getCurrentRegion = () ->
-      car = engine.getCar()
-      xpos = car.body.position.x
-      ypos = car.body.position.z
-      # loop through the region array
-      for region, index in regionFile.Regions
-        left = region.position[0]
-        right = region.position[0] + region.size[0]
-        bottom = region.position[1]
-        top = region.position[1] + region.size[1]
-        # check if inside bounding box
-        if xpos >= left and xpos <= right and ypos >= bottom and ypos <= top
-          # if in bounding box, check if inside polygon
-          points = region.points
-          pos = region.position
-          j = points.length - 1
-          result = false
-          # check if in polygon (counting edges using ray method)
-          for point, i in points
-            if (points[i][1] + pos[1] > ypos) != (points[j][1] + pos[1] > ypos) and 
-            (xpos < (points[j][0] - points[i][0]) * (ypos - points[i][1] + pos[1]) / (points[j][1] - points[i][1]) + points[i][0] + pos[0])
-              result = !result
-            j = i
-          # if in polygon, return the region's index
-          if result
-            return index
-      # not in a region currently    
-      return null
 
 
 Export
