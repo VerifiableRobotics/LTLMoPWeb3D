@@ -13,7 +13,7 @@ Internal Dependencies
     SpecAPI = require('js/core/spec/specAPI.litcoffee')
     AutAPI = require('js/core/automatonParser.litcoffee')
     Executor = require('js/core/executor.litcoffee')
-    PoseHandler = require('./physijsPoseHandler.litcoffee')
+    PoseHandler = require('./physijs/poseHandler.litcoffee')
 
 Assets
 

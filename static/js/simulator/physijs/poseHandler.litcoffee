@@ -2,7 +2,7 @@ Internal Dependencies
 ---------------------
 
     engine = require('./initializePhysics.js')
-    regionInterface = require('./regionInterface.litcoffee')
+    regionInterface = require('../regionInterface.litcoffee')
     locomotionHandler = require('./carLocomotionHandler.litcoffee')
 
 Main Program
