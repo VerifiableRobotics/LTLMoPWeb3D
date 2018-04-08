@@ -16,7 +16,14 @@ regions.
   * `npm run watch` will start Webpack in watch mode, recompiling the JS and CSS
     whenever the source files change, outputting them into the `build/` folder
     as specified by the Webpack config
-3. Connect to <http://192.168.33.10:5000>
+3. Run `vagrant fsnotify` in a separate terminal window to notify the VM when
+  a file has been changed
+  - Only turn this on when you are _actively_ developing code
+  - You will want to kill this process otherwise as it uses `touch` to
+    propagate events, meaning it will easily interfere with file deletion,
+    particularly when interacting with `git`, which may quickly add and delete
+    files during a `rebase`
+4. Connect to <http://192.168.33.10:5000>
 
 
 ## Installing New Packages

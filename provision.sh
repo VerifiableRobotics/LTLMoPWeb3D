@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# switch to mounted location automatically on SSH
+echo 'cd /LTLMoPWeb3D' >> /home/vagrant/.bashrc;
+
 echo 'Installing Docker...';
 apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 \
   --recv-keys 58118E89F3A912897C070ADBF76221572C52609D

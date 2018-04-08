@@ -1,6 +1,14 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+# install any plugins required to run this VM properly
+required_plugins = %w(vagrant-fsnotify)
+required_plugins.each do |plugin|
+  unless (Vagrant.has_plugin? plugin) || ARGV[0] == 'plugin'
+    exec "vagrant plugin install #{plugin};vagrant #{ARGV.join(' ')}"
+  end
+end
+
 Vagrant.configure(2) do |config|
   config.vm.box = 'phusion/ubuntu-14.04-amd64'
 
@@ -18,18 +26,11 @@ Vagrant.configure(2) do |config|
     vb.memory = '2048'
   end
 
-  # Sync LTLMoP if in the same directory
-  if File.directory?('../LTLMoP')
-    config.vm.synced_folder '../LTLMoP', '/LTLMoP'
-  end
-  # VFS by default, NFS otherwise
-  config.vm.synced_folder './', '/vagrant'
-  config.vm.synced_folder './', '/vagrant', type: 'nfs'
-
-  # also rsync certain foldes to pass fs events to the VM (sync vs. share)
-  config.vm.synced_folder './static', '/web/static', type: 'rsync'
-  config.vm.synced_folder './app', '/web/app', type: 'rsync'
-
+  # sync the codebase to /LTLMoPWeb3D
+  config.vm.synced_folder './', '/vagrant', disabled: true # disable default
+  # VFS by default, NFS if available
+  config.vm.synced_folder './', '/LTLMoPWeb3D', fsnotify: true
+  config.vm.synced_folder './', '/LTLMoPWeb3D', type: 'nfs', fsnotify: true
 
   # provision the image
   config.vm.provision 'shell', path: 'provision.sh'
