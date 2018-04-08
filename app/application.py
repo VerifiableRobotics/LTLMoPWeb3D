@@ -42,6 +42,16 @@ def uploadRegions(file):
     return True
   return False
 
+# uploads the spec file
+def uploadSpec(file):
+  if file and validate_ext(file.filename, 'spec'):
+    filename = 'spec.spec'
+    session['specFilePath'] = os.path.join(app.config['UPLOAD_FOLDER'], session['username'], filename)
+    file.save(session['specFilePath'])
+
+    return True
+  return False
+
 # ----------------- simulator functions ------------------------------
 @app.route('/simulator')
 def loadSimulator():
@@ -127,16 +137,6 @@ def saveDecomposed():
 def saveZip():
   thepath = os.path.join(app.config['UPLOAD_FOLDER'], session['username'], session['username'] + '.zip')
   return send_file(thepath, as_attachment=True, mimetype='text/plain')
-
-# uploads the spec file
-def uploadSpec(file):
-  if file and validate_ext(file.filename, 'spec'):
-    filename = 'spec.spec'
-    session['specFilePath'] = os.path.join(app.config['UPLOAD_FOLDER'], session['username'], filename)
-    file.save(session['specFilePath'])
-
-    return True
-  return False
 
 
 # ------------------------- region editor functions ------------------------
