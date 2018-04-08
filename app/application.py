@@ -5,15 +5,14 @@ sys.path.append(os.path.join(os.sep, 'LTLMoP','src','lib')) # add lib to path
 import specCompiler
 
 UPLOAD_FOLDER = 'uploads'
-ALLOWED_EXTENSIONS = set(['regions', 'spec', 'aut'])
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT' # not actually a secret since no need for authentication
 
-# check if in allowed extensions set
-def allowed_file(filename):
-  return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+def validate_ext(filename, ext):
+  """helper to validate file extension"""
+  return '.' in filename and filename.rsplit('.', 1)[1] == ext
 
 # deletes files older than 24 hours
 def deleteOldFiles():
@@ -36,7 +35,7 @@ def createSession():
 
 # uploads the region file
 def uploadRegions(file):
-  if file and allowed_file(file.filename):
+  if file and validate_ext(file.filename, 'regions'):
     filename = 'regions.regions'
     session['regionsFilePath'] = os.path.join(app.config['UPLOAD_FOLDER'], session['username'], filename)
     file.save(session['regionsFilePath'])
@@ -131,7 +130,7 @@ def saveZip():
 
 # uploads the spec file
 def uploadSpec(file):
-  if file and allowed_file(file.filename):
+  if file and validate_ext(file.filename, 'spec'):
     filename = 'spec.spec'
     session['specFilePath'] = os.path.join(app.config['UPLOAD_FOLDER'], session['username'], filename)
     file.save(session['specFilePath'])
