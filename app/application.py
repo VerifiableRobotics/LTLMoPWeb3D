@@ -37,24 +37,16 @@ def joinToSessionDir(path):
   """helper to join path to the session directory"""
   return os.path.join(app.config['UPLOAD_FOLDER'], session['username'], path)
 
-# uploads the region file
-def uploadRegions(file):
-  if file and validate_ext(file.filename, 'regions'):
-    filename = 'regions.regions'
-    session['regionsFilePath'] = joinToSessionDir(filename)
-    file.save(session['regionsFilePath'])
-    return True
-  return False
-
-# uploads the spec file
-def uploadSpec(file):
-  if file and validate_ext(file.filename, 'spec'):
-    filename = 'spec.spec'
-    session['specFilePath'] = joinToSessionDir(filename)
-    file.save(session['specFilePath'])
-
-    return True
-  return False
+def saveToSession(ext):
+  """helper to save an uploaded file"""
+  file = request.files[ext]
+  if not file or not validate_ext(file.filename, ext):
+    return False
+  session_key = ext + 'FilePath'  # e.g. specFilePath
+  new_name = ext + '.' + ext  # e.g. spec.spec
+  session[session_key] = joinToSessionDir(new_name)
+  file.save(session[session_key])
+  return True
 
 # ----------------- simulator functions ------------------------------
 @app.route('/simulator')
@@ -73,8 +65,8 @@ def loadSpecEditor():
 @app.route('/specEditor/compileSpec', methods=['POST'])
 def compileSpec():
   createSession()
-  uploadRegions(request.files['regions'])
-  uploadSpec(request.files['spec'])
+  saveToSession('regions')
+  saveToSession('spec')
   sc = specCompiler.SpecCompiler()
   sc.loadSpec(session['specFilePath'])
   realizable, realizableFS, logString = sc.compile()
