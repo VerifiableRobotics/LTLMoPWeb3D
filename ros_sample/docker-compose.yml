@@ -1,0 +1,37 @@
+version: '2'
+
+services:
+  master:
+    build: .
+    container_name: master
+    command: roscore
+
+  talker:
+    build: .
+    container_name: talker
+    environment:
+      - "ROS_HOSTNAME=talker"
+      - "ROS_MASTER_URI=http://master:11311"
+    volumes:
+      - ./:/code
+    command: python /code/publish_sensor_string.py
+
+  listener:
+    build: .
+    container_name: listener
+    environment:
+      - "ROS_HOSTNAME=listener"
+      - "ROS_MASTER_URI=http://master:11311"
+    volumes:
+      - ./:/code
+    command: python /code/listen_action_string.py
+
+  bridge:
+    build: .
+    container_name: bridge
+    ports:
+      - "0.0.0.0:9090:9090"
+    environment:
+      - "ROS_HOSTNAME=bridge"
+      - "ROS_MASTER_URI=http://master:11311"
+    command: rosrun rosbridge_server rosbridge_websocket
