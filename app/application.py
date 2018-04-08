@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, jsonify, send_file, session
+from flask import Flask, request, render_template, jsonify, send_file, session, abort
 import os, sys, datetime, uuid, threading, zipfile
 
 # add LTLMoP lib to path so its modules can be imported
@@ -10,11 +10,6 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads'
 # not actually a secret since no need for authentication
 app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
-
-
-def validate_ext(filename, ext):
-    """helper to validate file extension"""
-    return '.' in filename and filename.rsplit('.', 1)[1] == ext
 
 
 def deleteOldFiles():
@@ -48,13 +43,12 @@ def joinToSessionDir(path):
 def saveToSession(ext):
     """helper to save an uploaded file"""
     file = request.files[ext]
-    if not file or not validate_ext(file.filename, ext):
-        return False
+    if not file:
+        abort(400)
     session_key = ext + 'FilePath'  # e.g. specFilePath
     new_name = ext + '.' + ext  # e.g. spec.spec
     session[session_key] = joinToSessionDir(new_name)
     file.save(session[session_key])
-    return True
 
 
 # ----------------- simulator functions ------------------------------
