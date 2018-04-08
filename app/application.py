@@ -99,45 +99,45 @@ def analyzeSpec():
   return jsonify(analyzeLog = output)
 
 # sends the currently stored spec to the user
-@app.route('/specEditor/saveSpec', methods=['GET', 'POST'])
+@app.route('/specEditor/saveSpec', methods=['GET'])
 def saveSpec():
   return send_file(session['specFilePath'], as_attachment=True, mimetype='text/plain')
 
 # sends the currently stored regions to the user
-@app.route('/specEditor/saveRegions', methods=['GET', 'POST'])
+@app.route('/specEditor/saveRegions', methods=['GET'])
 def saveRegions():
   return send_file(session['regionsFilePath'], as_attachment=True, mimetype='text/plain')
 
 # sends the currently stored aut to the user
-@app.route('/specEditor/saveAut', methods=['GET', 'POST'])
+@app.route('/specEditor/saveAut', methods=['GET'])
 def saveAut():
   fileName, fileExtension = os.path.splitext(session['specFilePath']) # split extension
   thepath = fileName + '.aut'
   return send_file(thepath, as_attachment=True, mimetype='text/plain')
 
 # sends the currently stored ltl to the user
-@app.route('/specEditor/saveLTL', methods=['GET', 'POST'])
+@app.route('/specEditor/saveLTL', methods=['GET'])
 def saveLTL():
   fileName, fileExtension = os.path.splitext(session['specFilePath']) # split extension
   thepath = fileName + '.ltl'
   return send_file(thepath, as_attachment=True, mimetype='text/plain')
 
 # sends the currently stored smv to the user
-@app.route('/specEditor/saveSMV', methods=['GET', 'POST'])
+@app.route('/specEditor/saveSMV', methods=['GET'])
 def saveSMV():
   fileName, fileExtension = os.path.splitext(session['specFilePath']) # split extension
   thepath = fileName + '.smv'
   return send_file(thepath, as_attachment=True, mimetype='text/plain')
 
 # sends the currently stored decomposed regions to the user
-@app.route('/specEditor/saveDecomposed', methods=['GET', 'POST'])
+@app.route('/specEditor/saveDecomposed', methods=['GET'])
 def saveDecomposed():
   fileName, fileExtension = os.path.splitext(session['specFilePath']) # split extension
   thepath = fileName + '_decomposed.regions'
   return send_file(thepath, as_attachment=True, mimetype='text/plain')
 
 # sends the currently stored zipped project to the user
-@app.route('/specEditor/saveZip', methods=['GET', 'POST'])
+@app.route('/specEditor/saveZip', methods=['GET'])
 def saveZip():
   thepath = joinToSessionDir(session['username'] + '.zip')
   return send_file(thepath, as_attachment=True, mimetype='text/plain')

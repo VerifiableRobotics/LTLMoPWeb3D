@@ -146,7 +146,7 @@ Compile the spec and set log + ltl
 Download the ltl
 
       _downloadLTL: () ->
-        Fetch('/specEditor/saveLTL', {method: 'post'}, {isBlob: true})
+        Fetch('/specEditor/saveLTL', {}, {isBlob: true})
           .catch((error) ->
             console.error('ltl download failed')
             alert('Downloading the LTL failed!')
@@ -157,7 +157,7 @@ Download the ltl
 Download the decomposed regions
 
       _downloadDecomposed: () ->
-        Fetch('/specEditor/saveDecomposed', {method: 'post'}, {isBlob: true})
+        Fetch('/specEditor/saveDecomposed', {}, {isBlob: true})
           .catch((error) ->
             console.error('decompose download failed')
             alert('Downloading the decomposition failed!')
@@ -171,7 +171,7 @@ Download the decomposed regions
 Download the automaton
 
       _downloadAut: () ->
-        Fetch('/specEditor/saveAut', {method: 'post'}, {isBlob: true})
+        Fetch('/specEditor/saveAut', {}, {isBlob: true})
           .catch((error) ->
             console.error('aut download failed')
             alert('Downloading the automaton failed!')
@@ -183,7 +183,7 @@ Download the automaton
 Analyze the spec
 
       _analyzeSpec: () ->
-        Fetch('specEditor/analyzeSpec', {method: 'get'})
+        Fetch('specEditor/analyzeSpec', {})
           .catch((error) ->
             console.error('analyze spec failed')
             alert('Spec analysis failed!')
