@@ -33,11 +33,15 @@ def createSession():
   # delete old files asynchronously after each session creation
   threading.Thread(target=deleteOldFiles).start()
 
+def joinToSessionDir(path):
+  """helper to join path to the session directory"""
+  return os.path.join(app.config['UPLOAD_FOLDER'], session['username'], path)
+
 # uploads the region file
 def uploadRegions(file):
   if file and validate_ext(file.filename, 'regions'):
     filename = 'regions.regions'
-    session['regionsFilePath'] = os.path.join(app.config['UPLOAD_FOLDER'], session['username'], filename)
+    session['regionsFilePath'] = joinToSessionDir(filename)
     file.save(session['regionsFilePath'])
     return True
   return False
@@ -46,7 +50,7 @@ def uploadRegions(file):
 def uploadSpec(file):
   if file and validate_ext(file.filename, 'spec'):
     filename = 'spec.spec'
-    session['specFilePath'] = os.path.join(app.config['UPLOAD_FOLDER'], session['username'], filename)
+    session['specFilePath'] = joinToSessionDir(filename)
     file.save(session['specFilePath'])
 
     return True
@@ -75,7 +79,7 @@ def compileSpec():
   sc.loadSpec(session['specFilePath'])
   realizable, realizableFS, logString = sc.compile()
   # create zip of all files in the project
-  with zipfile.ZipFile(os.path.join(app.config['UPLOAD_FOLDER'], session['username'], session['username'] + '.zip'), 'w') as myzip:
+  with zipfile.ZipFile(joinToSessionDir(session['username'] + '.zip'), 'w') as myzip:
     myzip.write(session['regionsFilePath'], os.path.basename(session['regionsFilePath']))
     myzip.write(session['specFilePath'], os.path.basename(session['specFilePath']))
     fileName, fileExtension = os.path.splitext(session['specFilePath']) # split extension
@@ -135,7 +139,7 @@ def saveDecomposed():
 # sends the currently stored zipped project to the user
 @app.route('/specEditor/saveZip', methods=['GET', 'POST'])
 def saveZip():
-  thepath = os.path.join(app.config['UPLOAD_FOLDER'], session['username'], session['username'] + '.zip')
+  thepath = joinToSessionDir(session['username'] + '.zip')
   return send_file(thepath, as_attachment=True, mimetype='text/plain')
 
 
