@@ -2,24 +2,24 @@
 // plenty of refactoring done and some changes as well
 'use strict';
 
-// set worker and ammo
-Physijs.scripts.worker = 'static/plugins/physijs/physijs_worker.js';
-Physijs.scripts.ammo = 'ammo.js';
+// External Dependencies
+var Physijs = require('physijs-webpack');
+var THREE = require('three');
+var TrackballControls = require('three-trackballcontrols');
+var WindowResize = require('three-window-resize');
 
 // declare objects
-var controls, projector, renderer, scene, camera, car = {};
+var controls, renderer, scene, camera, car = {};
 
 // initialize the scene
 var initScene = function() {
-  projector = new THREE.Projector;
-
   // create the renderer
-  renderer = new THREE.WebGLRenderer({antialias: true});
+  renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
   var viewportElem = document.getElementById('viewport')
   console.log(viewportElem.clientWidth)
   console.log(viewportElem.clientHeight)
   renderer.setSize(viewportElem.clientWidth, viewportElem.clientHeight)
-  renderer.shadowMapEnabled = true;
+  renderer.shadowMap.enabled = true;
   renderer.shadowMapSoft = true;
   viewportElem.appendChild(renderer.domElement)
 
@@ -47,7 +47,7 @@ var initScene = function() {
   scene.add( camera );
 
   // add trackball controls
-  controls = new THREE.TrackballControls( camera );
+  controls = new TrackballControls( camera );
   controls.rotateSpeed = 1.0;
   controls.zoomSpeed = 1.2;
   controls.panSpeed = 1.2;
@@ -77,7 +77,7 @@ var initScene = function() {
   // scene.add(light);
 
   // add window resizer
-  THREEx.WindowResize(renderer, camera, function () {
+  WindowResize(renderer, camera, function () {
     return {width: viewportElem.clientWidth, height: viewportElem.clientHeight}
   });
 
@@ -102,7 +102,7 @@ var create3DCar = function(startX, startY, startZ) {
     0 // no restitution
   );
   car.body = new Physijs.BoxMesh(
-    new THREE.CubeGeometry( 10, 5, 7 ),
+    new THREE.BoxGeometry( 10, 5, 7 ),
     car_material,
     1000
   );

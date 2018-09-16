@@ -10,7 +10,7 @@ module.exports = {
   },
   output: {
     path: './build', // This is where images AND js will go
-    publicPath: 'http://0.0.0.0:5000', // This is used to generate URLs to e.g. images
+    publicPath: './static/build/', // This is used to generate URLs to e.g. images
     filename: '[name].bundle.js'
   },
   resolveLoader: {

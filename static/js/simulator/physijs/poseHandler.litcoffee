@@ -1,3 +1,9 @@
+External Dependencies
+---------------------
+
+    THREE = require('three')
+    Physijs = require('physijs-webpack')
+
 Internal Dependencies
 ---------------------
 
@@ -81,9 +87,9 @@ Set the velocity and theta
       currentVelocity = velocity
       currentTheta = theta
       #console.log('velocity: ' + velocity)
-      #console.log('car x: ' + car.body.quaternion._euler.x)
-      #console.log('car y: ' + car.body.quaternion._euler.y)
-      #console.log('car z: ' + car.body.quaternion._euler.z)
+      #console.log('car x: ' + car.body.rotation.x)
+      #console.log('car y: ' + car.body.rotation.y)
+      #console.log('car z: ' + car.body.rotation.z)
       #console.log('wheel theta: ' + theta)
 
 
@@ -126,8 +132,8 @@ Starts moving the car toward the destination
       targetTheta = Math.atan2(targetPosition[1] - currentPosition[1], targetPosition[0] - currentPosition[0])
       #console.log('target theta: ' + targetTheta)
       # get proper car theta via transformations of euler angles
-      carTheta = car.body.quaternion._euler.y
-      if Math.abs(car.body.quaternion._euler.x) < Math.PI/2
+      carTheta = car.body.rotation.y
+      if Math.abs(car.body.rotation.x) < Math.PI/2
         carTheta = -(carTheta + Math.PI)
       #console.log('car theta: ' + carTheta)
       # theta = diff b/t car body's theta and target theta
