@@ -107,7 +107,7 @@ Gets the current region of the car
       xpos = car.body.position.x
       ypos = car.body.position.z
       currentRegion = regionInterface.getRegion(regionFile, xpos, ypos)
-      return currentPosition
+      return currentRegion
 
 Gets the target point to move to
 

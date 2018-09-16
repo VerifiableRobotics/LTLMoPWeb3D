@@ -47,7 +47,7 @@ Given a region, get the midpoint of the transition from the current region to it
 
     getTransition = (regionFile, currentRegion, nextRegion) ->
       regionToName = nextRegion.name
-      regionFromName = regionFile.Regions[getRegion()].name
+      regionFromName = regionFile.Regions[currentRegion].name
       #console.log('regionFrom: ' + regionFromName + ' regionTo: ' + regionToName)
       # get correct transition array, could be ordered either way
       transition = if !regionFile.Transitions[regionFromName]? or !regionFile.Transitions[regionFromName][regionToName]?
