@@ -54,7 +54,7 @@ Define the initial state
 When a *.regions file is uploaded; specifically the decomposed one
 
       onRegionsUpload: (ev) ->
-        Helpers.onUpload(ev.target.files[0], 'regions')
+        Helpers.readFile(ev.target.files[0], 'regions')
           .then(RegionsAPI.parse)
           .then((regionsObj) =>
             regionFile = regionsObj
@@ -64,7 +64,7 @@ When a *.regions file is uploaded; specifically the decomposed one
 When a *.spec file is uploaded
 
       onSpecUpload: (ev) ->
-        Helpers.onUpload(ev.target.files[0], 'spec')
+        Helpers.readFile(ev.target.files[0], 'spec')
           .then(SpecAPI.parse)
           .then((specObj) =>
             spec = specObj
@@ -75,7 +75,7 @@ When a *.spec file is uploaded
 When a *.aut file is uploaded
 
       onAutUpload: (ev) ->
-        Helpers.onUpload(ev.target.files[0], 'aut')
+        Helpers.readFile(ev.target.files[0], 'aut')
           .then((file) => AutAPI.parse(file, spec))
           .then((autObj) =>
             automaton = autObj
@@ -86,7 +86,7 @@ When a ROS Handler is uploaded
 
       onROSHandlerUpload: (ev) ->
         # perform validation
-        Helpers.onUpload(ev.target.files[0], 'js', {keepFile: true}).then((file) =>
+        Helpers.readFile(ev.target.files[0], 'js', {keepFile: true}).then((file) =>
           # terminate any existing workers (new upload)
           ROSWorker.terminate?()
           # create new worker

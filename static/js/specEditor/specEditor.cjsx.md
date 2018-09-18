@@ -73,7 +73,7 @@ Upload the regions file
 Adds all the regions from a list of region objects
 
       _uploadRegions: (ev) ->
-        Helpers.onUpload(ev.target.files[0], 'regions')
+        Helpers.readFile(ev.target.files[0], 'regions')
           .then(RegionsAPI.parse)
           .then((regions) => @setImmState((d) ->
             d.set('regionsObj', regions)
@@ -87,7 +87,7 @@ Given the JSON version of a project object, import the spec
 
       _uploadSpec: (ev) ->
         # read the spec file
-        Helpers.onUpload(ev.target.files[0], 'spec')
+        Helpers.readFile(ev.target.files[0], 'spec')
           .then(SpecAPI.parse)
           .then((spec) =>
             @refs.editor.insertText(spec.Spec)
@@ -151,7 +151,7 @@ Download the ltl
             console.error('ltl download failed')
             alert('Downloading the LTL failed!')
           ).then(([data, request]) =>
-            Helpers.onUpload(data, 'ltl', {isBlob: true})
+            Helpers.readFile(data, 'ltl', {isBlob: true})
           ).then((ltl) => @setImmState (d) -> d.set('ltlOutput', ltl))
 
 Download the decomposed regions
@@ -162,7 +162,7 @@ Download the decomposed regions
             console.error('decompose download failed')
             alert('Downloading the decomposition failed!')
           ).then(([data, request]) =>
-            Helpers.onUpload(data, 'regions', {isBlob: true})
+            Helpers.readFile(data, 'regions', {isBlob: true})
           ).then(RegionsAPI.parse)
           .then((decomposed) =>
             @setImmState (d) -> d.set('decomposedObj', decomposed)
@@ -176,7 +176,7 @@ Download the automaton
             console.error('aut download failed')
             alert('Downloading the automaton failed!')
           ).then(([data, request]) =>
-            Helpers.onUpload(data, 'aut', {isBlob: true})
+            Helpers.readFile(data, 'aut', {isBlob: true})
           ).then((file) => AutAPI.parse(file, @state.data.get('specObj')))
           .then((aut) => @setImmState (d) -> d.set('autObj', aut))
 

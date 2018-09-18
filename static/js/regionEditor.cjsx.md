@@ -28,12 +28,12 @@ Define the initial state
 When a regions file is uploaded
 
       _onRegionsUpload: (ev) ->
-        Helpers.onUpload(ev.target.files[0], 'regions')
+        Helpers.readFile(ev.target.files[0], 'regions')
           .then(RegionsAPI.parse)
           .then((regionsObj) => @setState({ regionsObj }))
 
       _onDecomposedUpload: (ev) ->
-        Helpers.onUpload(ev.target.files[0], 'regions')
+        Helpers.readFile(ev.target.files[0], 'regions')
           .then(RegionsAPI.parse)
           .then((decomposedObj) => @setState({ decomposedObj }))
 

@@ -3,13 +3,14 @@ External Dependencies
 
     reader = require('promise-file-reader')
 
+
 Common Helper functions used throughout LTLMoPWeb3D
 ---------------------------------------------------
 
-Helper for uploading and reading files
-Takes in the event, an extension, and the file reader's callback
+Helper for reading files
+Takes in the event, an extension, and some options (keepFile, isBlob)
 
-    onUpload = (file, ext, opts) ->
+    readFile = (file, ext, opts) ->
       if file?
         # check for blob vs file
         opts = opts || {}
@@ -43,6 +44,6 @@ Export
 ------
 
     module.exports = {
-      onUpload,
+      readFile,
       createFileURL
     }
