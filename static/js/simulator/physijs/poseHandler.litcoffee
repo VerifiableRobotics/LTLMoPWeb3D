@@ -99,7 +99,7 @@ Given region number, creates the car at its centroid
     createCar = (region_num) ->
       region = regionFile.Regions[region_num]
       centroid = regionInterface.getCentroid(region)
-      engine.create3DCar(centroid[0], 0, centroid[1])
+      engine.createCar(centroid[0], 0, centroid[1])
 
 Gets the current region of the car
 
