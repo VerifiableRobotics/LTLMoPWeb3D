@@ -105,6 +105,14 @@ function createCarWrapper (startX, startY, startZ) {
 
 function createRegionsWrapper (regions) {
   createRegions(scene, regions)
+  // set camera position to point toward the first region (arbitrarily)
+  // this will move once the car is created, just added it here to give a sense
+  // of progress and what is to come when all the uploads are done
+  var startX = regions[0].position[0]
+  var startY = 0
+  var startZ = regions[0].position[1]
+  controls.target.set(startX, startY, startZ)
+  camera.position.set(startX + 360, startY + 300, startZ + 360)
 }
 
 // set the scene to initiliaze as soon as the window is loaded

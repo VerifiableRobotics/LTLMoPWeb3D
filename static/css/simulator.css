@@ -4,6 +4,8 @@
   float: left;
   width: 85%;
   height: 75%;
+  border: 2px green dashed;
+  margin: -2px; /* offset against the border */
 }
 #simulator_wrapper{
   width: 100%;
