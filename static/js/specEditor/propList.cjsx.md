@@ -18,6 +18,7 @@ Define the component's layout
 
         <div className='spec_editor_selectlist_container'>
           <div className='spec_editor_labels'>{title}</div>
+
           <ul className='spec_editor_selectlist'>
             {data.get(propType).map((checked, name) ->
               <li key={name} tabIndex='0'
@@ -32,6 +33,7 @@ Define the component's layout
               </li>
             ).toArray()}
           </ul>
+
           <ul className='spec_editor_buttonlist'>
             <li>
               <button onClick={() -> _addProp(propType)}>Add</button>

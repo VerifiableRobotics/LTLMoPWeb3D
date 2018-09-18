@@ -305,12 +305,14 @@ Define the component's layout
 
         <div id='spec_editor_wrapper'>
           <Menu {...menuProps} />
+
           <div id='spec_editor_text_wrapper'>
             <SyntaxHighlighter ref='editor'
               regexes={@_getEnabledSensors().concat(@_getEnabledActuators(),
                 @_getAllCustoms(), @_getAllRegions()).map((str) ->
                   new RegExp('(^|((\\s)+))' + str + '(((\\s)+)|$)', 'g'))} />
           </div>
+
           <div id='spec_editor_rightside'>
             <div className='spec_editor_selectlist_container'>
               <div className='spec_editor_labels'>Regions:</div>
@@ -330,12 +332,14 @@ Define the component's layout
                 <li><button>Edit Regions...</button></li>
               </ul>
             </div>
+
             <PropList {...propListProps} title='Sensors:' propType='sensors' />
             <PropList {...propListProps} title='Actuators:'
               propType='actuators' />
             <PropList {...propListProps} title='Custom Propositions:'
               propType='customprops' />
           </div>
+
           <CompileTabs data={data} />
         </div>
 

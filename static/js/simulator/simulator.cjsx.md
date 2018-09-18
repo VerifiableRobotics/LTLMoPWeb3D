@@ -287,6 +287,7 @@ Define the simulator's layout
           <div className='center_wrapper'>
             <button type='button' onClick={@startExecution} disabled={@state.disableExec}>Start</button>
           </div>
+
           <div className='center_wrapper'>
             <form className='upload_form'>
               <input name='file' type='file' className='upload_file_overlay' accept='.regions'
@@ -304,11 +305,13 @@ Define the simulator's layout
               <button type='button' disabled={@state.disableAut}>Upload Automaton</button>
             </form>
           </div>
+
           <div id='simulator_wrapper'>
             <div className='right_wrapper'>
               <input name='file' type='file' className='upload_file_overlay' accept='.js'
                 onChange={@onROSHandlerUpload} disabled={not hasInput} value='' />
               <button type='button' disabled={not hasInput}>Upload Custom ROS Handler</button>
+
               <div>Sensors</div>
               <ul className='simulator_lists'>
                 {@state.sensors.map((values, name) =>
@@ -317,6 +320,7 @@ Define the simulator's layout
                       onClick={@toggleActiveSensors(name)} disabled={values.get('disabled')}>{name}</button>
                   </li>)}
               </ul>
+
               <div>Actuators</div>
               <ul className='simulator_lists'>
                 {@state.actuators.map((values, name) =>
@@ -325,6 +329,7 @@ Define the simulator's layout
                       onClick={@toggleActiveActuators(name)} disabled={values.get('disabled')}>{name}</button>
                   </li>)}
               </ul>
+
               <div>Custom Propositions</div>
               <ul className='simulator_lists'>
                 {@state.customs.map((values, name) =>
@@ -333,6 +338,7 @@ Define the simulator's layout
                       onClick={@toggleActiveCustoms(name)} disabled={values.get('disabled')}>{name}</button>
                   </li>)}
               </ul>
+
               <div>Regions</div>
               <ul className='simulator_lists'>
                 {@state.regions.map((values, name) =>
@@ -342,6 +348,7 @@ Define the simulator's layout
                       disabled={values.get('disabled')}>{name}</button>
                   </li>)}
               </ul>
+
               <div>Maximum Velocity</div>
               <input type='text' value={@state.velocity} onChange={@setVelocity} /> <br />
               <button type='button' onClick={@increaseVelocity}>Increase</button>

@@ -34,18 +34,21 @@ Define the component's layout
               <Tab>LTL Output</Tab>
               <Tab>Workspace Decomposition</Tab>
             </TabList>
+
             <TabPanel className='spec_editor_bottom_div'>
               <div className='spec_editor_max_height'>
                 <textarea className='spec_editor_bottom_textarea' disabled
                   value={data.get('compilerLog')} />
               </div>
             </TabPanel>
+
             <TabPanel className='spec_editor_bottom_div'>
               <div className='spec_editor_max_height'>
                 <textarea className='spec_editor_bottom_textarea' disabled
                   value={data.get('ltlOutput')} />
               </div>
             </TabPanel>
+
             <TabPanel className='spec_editor_bottom_div'>
               <div className='spec_editor_max_height'>
                 <div className='spec_editor_workspace_left'>
