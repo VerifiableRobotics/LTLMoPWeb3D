@@ -1,7 +1,7 @@
 Internal Dependencies
 ---------------------
 
-    engine = require('./engine.js')
+    engine = require('./engine.litcoffee')
     regionInterface = require('../regionInterface.litcoffee')
     locomotionHandler = require('./carLocomotionHandler.litcoffee')
 
