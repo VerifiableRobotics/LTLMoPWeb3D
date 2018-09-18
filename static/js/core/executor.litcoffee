@@ -86,25 +86,25 @@ Execute an automaton
         currentState = getInitialState(automaton, initialProps, currentRegion)
       #console.log('current state: ' + currentState)
       #console.log('current region: ' + currentRegion)
-      # if there is a current state
-      if currentState != false
-        nextState = getNextState(automaton, currentState, sensorReadings)
-        #console.log('next state: ' + nextState)
-        # if there is a next state, go to it
-        if nextState != false
-          # currentState should only be set to nextState when region has been reached
-          if currentRegion == automaton[nextState]['props']['region']
-            currentState = nextState
-          # return next region to go to as well as the props of the current region
-          return [automaton[nextState]['props']['region'],
-            automaton[currentState]['props']['actuators'],
-            automaton[currentState]['props']['customs']]
-        # otherwise stop and return null
-        else
-          return null
+
       # if there is no current state, stop the execution loop and return false
-      else
+      if currentState == false
         return false
+
+      nextState = getNextState(automaton, currentState, sensorReadings)
+      #console.log('next state: ' + nextState)
+      # if there is no next state, stop and return null
+      if nextState == false
+        return null
+
+      # otherwise, go to the next state
+      # currentState should only be set to nextState when region has been reached
+      if currentRegion == automaton[nextState]['props']['region']
+        currentState = nextState
+      # return next region to go to as well as the props of the current region
+      return [automaton[nextState]['props']['region'],
+        automaton[currentState]['props']['actuators'],
+        automaton[currentState]['props']['customs']]
 
 
 Export

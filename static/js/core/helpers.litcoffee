@@ -11,22 +11,24 @@ Helper for reading files
 Takes in the event, an extension, and some options (keepFile, isBlob)
 
     readFile = (file, ext, opts) ->
-      if file?
-        # check for blob vs file
-        opts = opts || {}
-        if !opts.isBlob?
-          nameSplit = file.name.split('.')
-          extension = nameSplit[nameSplit.length - 1]
-          # validation
-          if extension != ext
-            alert('This only accepts *.' + ext + ' files!')
-            return
+      if !file?
+        return
 
-        # in case you want to get the file as is (just perform validation)
-        if opts.keepFile
-          return file
+      # check for blob vs file
+      opts = opts || {}
+      if !opts.isBlob?
+        nameSplit = file.name.split('.')
+        extension = nameSplit[nameSplit.length - 1]
+        # validation
+        if extension != ext
+          alert('This only accepts *.' + ext + ' files!')
+          return
 
-        return reader.readAsText(file)
+      # in case you want to get the file as is (just perform validation)
+      if opts.keepFile
+        return file
+
+      return reader.readAsText(file)
 
 Helper for creating a text file and URL to it
 
