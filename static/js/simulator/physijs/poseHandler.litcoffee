@@ -1,15 +1,10 @@
-External Dependencies
----------------------
-
-    THREE = require('three')
-    Physijs = require('physijs-webpack')
-
 Internal Dependencies
 ---------------------
 
     engine = require('./initializePhysics.js')
     regionInterface = require('../regionInterface.litcoffee')
     locomotionHandler = require('./carLocomotionHandler.litcoffee')
+
 
 Main Program
 ------------
@@ -26,49 +21,7 @@ Create 3D regions from the region array
 
     create3DRegions = (regionsFile) ->
       regionFile = regionsFile
-      # loop through the region array
-      for region in regionFile.Regions
-        # skip boundary
-        if region.name == 'boundary'
-          continue
-        # get position
-        xpos = region.position[0]
-        ypos = region.position[1]
-
-        # create the new ground material
-        new_ground_material = Physijs.createMaterial(
-          new THREE.MeshBasicMaterial(
-            color: 'rgb('+ region.color.join(',') + ')'
-            side: THREE.DoubleSide
-          ),
-          .5, # high friction
-          0 # no restitution
-        )
-        # create the custom geometry from a 2D shape
-        new_shape = new THREE.Shape()
-        # add each point as a vertex of the new shape
-        for point, pointIndex in region.points
-          if pointIndex == 0
-            new_shape.moveTo(point[0], point[1])
-          else
-            new_shape.lineTo(point[0], point[1])
-        # end for
-        new_geometry = new_shape.makeGeometry() # create 3D geometry out of 2D shape
-
-        # create the new ground
-        new_ground = new Physijs.ConvexMesh(
-          new_geometry,
-          new_ground_material,
-          0 # mass
-        )
-        # set the position and rotation
-        # note: makeGeometry creates shape on xy axis, this is putting it on xz
-        new_ground.position.set(xpos, 0, ypos)
-        new_ground.rotation.x = Math.PI/2
-        new_ground.receiveShadow = true
-        # add the new_ground to the scene
-        engine.getScene().add(new_ground)
-
+      engine.createRegions(regionFile.Regions)
 
 Set the velocity and theta
 

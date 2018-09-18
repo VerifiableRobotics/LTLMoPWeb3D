@@ -10,6 +10,7 @@ var WindowResize = require('three-window-resize');
 
 // Internal Dependencies
 var createCar = require('./createCar.litcoffee').createCar
+var createRegions = require('./createRegions.litcoffee').createRegions
 
 // declare objects
 var controls, renderer, scene, camera, car = {};
@@ -102,13 +103,17 @@ function createCarWrapper (startX, startY, startZ) {
   camera.position.set(startX + 60, startY + 50, startZ + 60)
 }
 
+function createRegionsWrapper (regions) {
+  createRegions(scene, regions)
+}
+
 // set the scene to initiliaze as soon as the window is loaded
 window.onload = function() {
   initScene();
 }
 
 module.exports = {
-  getScene: function () { return scene },
+  createRegions: createRegionsWrapper,
   getCar: function () { return car },
   createCar: createCarWrapper
 }
