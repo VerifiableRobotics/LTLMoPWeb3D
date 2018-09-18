@@ -34,11 +34,6 @@ Create 3D regions from the region array
         # get position
         xpos = region.position[0]
         ypos = region.position[1]
-        # get size/bounding box
-        width = region.size[0]
-        height = region.size[1]
-        # get holes
-        holes = region.holeList
 
         # create the new ground material
         new_ground_material = Physijs.createMaterial(

@@ -72,9 +72,6 @@ var initScene = function() {
   light.shadowMapWidth = light.shadowMapHeight = 2048;
   light.shadowDarkness = .7;
   scene.add( light );
-  // attempt ambient lighting...
-  // light = new THREE.AmbientLight(0x404040);
-  // scene.add(light);
 
   // add window resizer
   WindowResize(renderer, camera, function () {

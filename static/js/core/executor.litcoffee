@@ -84,12 +84,10 @@ Execute an automaton
       # if first execution, get the current and next state given initial props and sensors
       if currentState == null
         currentState = getInitialState(automaton, initialProps, currentRegion)
-        nextState = getNextState(automaton, currentState, sensorReadings)
       #console.log('current state: ' + currentState)
       #console.log('current region: ' + currentRegion)
       # if there is a current state
       if currentState != false
-        prevNextState = nextState
         nextState = getNextState(automaton, currentState, sensorReadings)
         #console.log('next state: ' + nextState)
         # if there is a next state, go to it
