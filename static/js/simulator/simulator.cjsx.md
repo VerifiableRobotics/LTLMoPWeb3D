@@ -30,6 +30,7 @@ Initial set up
     regionFile = {}
     currentSimulator = {}
     ROSWorker = {}
+    executorInterval = 0 # timer ID
 
 
 Simulator Component
@@ -118,50 +119,42 @@ Send ROS message when actuator is toggled by executor
 Launch the executor
 
       startExecution: () ->
-        executorInterval = 0 # timer ID
-
-        # reset function in case initial props are invalid
-        resetExecution = () =>
-          @setEnabledProps(true, spec, regionFile.Regions) # re-enable all props
-          @setState({disableExec: false})
-          clearInterval(executorInterval)
-
-        # initialize the execution loop
-        counter = 0
-        executionLoop = () =>
-          # if first execution
-          if counter == 0
-            # current region is the single active one
-            currentRegion = @state.regions.find((values) -> values.get('active')).get('index')
-            PoseHandler.setInitialRegion(currentRegion)
-            if Executor.execute(automaton, @getInitialProps(), null, currentRegion)
-              @setEnabledProps(false, spec, regionFile.Regions) # disable all props
-              counter = 1
-            else
-              resetExecution()
-          else
-            # get current region and set it
-            currentRegion = PoseHandler.getCurrentRegion()
-            @setActiveRegion(currentRegion)
-            # get actuators, customs, and next region from executor's current state
-            [nextRegion, actuators, customs] = Executor.execute(automaton, null, @getSensors(), currentRegion)
-            @setActiveProps(actuators, customs)
-            # if there is a next region, move to it
-            if nextRegion != null
-              if nextRegion == currentRegion
-                PoseHandler.stop()
-              else
-                PoseHandler.plotCourse(nextRegion, @state.velocity)
-            # if there isn't, stop moving
-            else if nextRegion != false
-              PoseHandler.stop()
-            # if there isn't a current state, stop the execution loop
-            else
-              resetExecution()
-        # start the execution loop
-        executorInterval = setInterval(executionLoop, 300)
         # disable buttons/uploads
         @setState({disableRegions: true, disableSpec: true, disableAut: true, disableExec: true})
+
+        # current region is the single active one
+        currentRegion = @state.regions.find((values) -> values.get('active')).get('index')
+        PoseHandler.setInitialRegion(currentRegion)
+        initState = Executor.init(automaton, @getInitialProps(), currentRegion)
+        if !initState
+          @resetExecution()
+          return
+
+        # disable all props and start the execution loop
+        @setEnabledProps(false, spec, regionFile.Regions)
+        executorInterval = setInterval(@executionLoop, 300)
+
+Reset execution in case props are invalid
+
+      resetExecution: () ->
+        @setEnabledProps(true, spec, regionFile.Regions) # re-enable all props
+        @setState({disableExec: false})
+        clearInterval(executorInterval)
+
+A frame of the execution loop
+
+      executionLoop: () ->
+        currentRegion = PoseHandler.getCurrentRegion()
+        @setActiveRegion(currentRegion)
+        # get actuators, customs, and next region from executor's current state
+        [nextRegion, actuators, customs] = Executor.execute(automaton, @getSensors(), currentRegion)
+        @setActiveProps(actuators, customs)
+
+        if nextRegion == null or nextRegion == currentRegion
+          PoseHandler.stop()
+        else
+          PoseHandler.plotCourse(nextRegion, @state.velocity)
+
 
 Gets the initial props (all of sensors, actuators, and customs) for the executor to determine initial state
 Outputs a {sensors, actuators, customs} dict of prop -> 1 or 0 (active or not), excluding disabled props
