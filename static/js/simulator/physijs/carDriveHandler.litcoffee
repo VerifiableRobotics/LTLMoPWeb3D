@@ -6,18 +6,27 @@ Internal Dependencies
 
 Main Program
 ------------
-Converts the global target velocity, theta, and pose data (carTheta) to velocity and theta for the wheels of the car
+Gets the target wheel theta from the target theta and the car's current theta
 
-    setVelocityTheta = (maxVelocity, targetTheta, carTheta, loco) ->
-      # wheelTheta = diff b/t car body's theta and target theta
+    getWheelTheta = (targetTheta, carTheta) ->
+      # target wheelTheta = diff b/t car body's theta and target theta
       wheelTheta = -(targetTheta - carTheta)
+
       # properly transform when angle is too big/too small
       if wheelTheta > Math.PI
         wheelTheta = Math.PI - wheelTheta
       else if wheelTheta < -Math.PI
         wheelTheta = 2*Math.PI + wheelTheta
 
+      return wheelTheta
+
+
+Converts the global target velocity, theta, and pose data (carTheta) to velocity and theta for the wheels of the car
+
+    setVelocityTheta = (maxVelocity, targetTheta, carTheta, loco) ->
       if maxVelocity <= 0 then maxVelocity = 8 # default
+
+      wheelTheta = getWheelTheta(targetTheta, carTheta)
 
       # if theta > PI/4 or PI/2, then slower turn
       if wheelTheta > Math.PI/2 or wheelTheta < -Math.PI/2
