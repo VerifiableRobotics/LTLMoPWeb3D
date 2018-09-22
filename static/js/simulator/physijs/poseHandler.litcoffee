@@ -3,7 +3,7 @@ Internal Dependencies
 
     engine = require('./engine.litcoffee')
     regionInterface = require('../regionInterface.litcoffee')
-    locomotionHandler = require('./carLocomotionHandler.litcoffee')
+    LocomotionHandler = require('./carLocomotionHandler.litcoffee')
 
 
 Main Program
@@ -11,9 +11,8 @@ Main Program
 
 Initial set up
 
-    currentVelocity = 0
-    currentTheta = 0
     regionFile = {}
+    locomotionHandler = new LocomotionHandler()
 
 ## Handler Functions
 
@@ -26,26 +25,12 @@ Create 3D regions from the region array
 Set the velocity and theta
 
     setVelocityTheta = (velocity, theta) ->
-      car = engine.getCar()
-      #console.log('car position x:' + car.body.position.x)
-      #console.log('car position y:' + car.body.position.z)
-      locomotionHandler.setVelocityTheta(car, velocity, theta)
+      locomotionHandler.setVelocityTheta(velocity, theta)
 
-      # set current velocity and theta in case of later stop
-      currentVelocity = velocity
-      currentTheta = theta
-      #console.log('velocity: ' + velocity)
-      #console.log('car x: ' + car.body.rotation.x)
-      #console.log('car y: ' + car.body.rotation.y)
-      #console.log('car z: ' + car.body.rotation.z)
-      #console.log('wheel theta: ' + theta)
+Stop the robot
 
-
-Stop the velocity and theta (reverse acceleration)
-
-    stopVelocityTheta = () ->
-      car = engine.getCar()
-      locomotionHandler.stopVelocityTheta(car, currentVelocity, currentTheta)
+    stop = () ->
+      locomotionHandler.stop()
 
 Given region number, creates the car at its centroid
 
@@ -108,6 +93,6 @@ Export
       createRegions: create3DRegions,
       setInitialRegion: createCar
       getCurrentRegion,
-      stop: stopVelocityTheta,
+      stop,
       plotCourse,
     }

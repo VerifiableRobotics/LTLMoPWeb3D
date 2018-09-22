@@ -1,3 +1,9 @@
+Internal Dependencies
+---------------------
+
+    engine = require('./engine.litcoffee')
+
+
 Locomotion Handler for a PhysiJS car
 ------------------------------------
 
@@ -34,11 +40,23 @@ Stop the velocity and theta of the car (reverse acceleration)
       car.wheels.fl.constraint.configureAngularMotor( 1, currentTheta, -currentTheta, 0, 200 )
       car.wheels.fr.constraint.configureAngularMotor( 1, currentTheta, -currentTheta, 0, 200 )
 
+Create the Handler
+
+    class CarLocomotionHandler
+      currentVelocity: 0
+      currentTheta: 0
+
+      setVelocityTheta: (velocity, theta) =>
+        # set current velocity and theta in case of later stop
+        @currentVelocity = velocity
+        @currentTheta = theta
+        setVelocityTheta(engine.getCar(), velocity, theta)
+
+      stop: () =>
+        stopVelocityTheta(engine.getCar(), @currentVelocity, @currentTheta)
+
 
 Export
 ------
 
-    module.exports = {
-      setVelocityTheta,
-      stopVelocityTheta
-    }
+    module.exports = CarLocomotionHandler
