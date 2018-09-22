@@ -71,8 +71,8 @@ Finds an initial state given the automaton, initial props, and initial region nu
       return false
 
 
-Execute an automaton
---------------------
+Traverse an automaton
+---------------------
 
     # store the current and next states
     currentState = null
@@ -82,8 +82,8 @@ Execute an automaton
       currentState = getInitialState(automaton, initialProps, currentRegion)
       return currentState
 
-    # to be executed continuously
-    execute = (automaton, sensorReadings, currentRegion) ->
+    # to be called continuously by Executor
+    next = (automaton, sensorReadings, currentRegion) ->
       nextState = getNextState(automaton, currentState, sensorReadings)
       if nextState == false
         return false

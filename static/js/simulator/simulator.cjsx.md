@@ -12,7 +12,7 @@ Internal Dependencies
     RegionsAPI = require('js/core/regions/regionsAPI.litcoffee')
     SpecAPI = require('js/core/spec/specAPI.litcoffee')
     AutAPI = require('js/core/automatonParser.litcoffee')
-    Executor = require('js/core/executor.litcoffee')
+    Strategy = require('js/core/strategy.litcoffee')
     PoseHandler = require('./physijs/poseHandler.litcoffee')
 
 Assets
@@ -125,7 +125,7 @@ Launch the executor
         # current region is the single active one
         currentRegion = @state.regions.find((values) -> values.get('active')).get('index')
         PoseHandler.setInitialRegion(currentRegion)
-        initState = Executor.init(automaton, @getInitialProps(), currentRegion)
+        initState = Strategy.init(automaton, @getInitialProps(), currentRegion)
         if !initState
           @resetExecution()
           return
@@ -146,8 +146,8 @@ A frame of the execution loop
       executionLoop: () ->
         currentRegion = PoseHandler.getCurrentRegion()
         @setActiveRegion(currentRegion)
-        # get actuators, customs, and next region from executor's current state
-        [nextRegion, actuators, customs] = Executor.execute(automaton, @getSensors(), currentRegion)
+
+        [nextRegion, actuators, customs] = Strategy.next(automaton, @getSensors(), currentRegion)
         @setActiveProps(actuators, customs)
 
         if nextRegion == null or nextRegion == currentRegion
