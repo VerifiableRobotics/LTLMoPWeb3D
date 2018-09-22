@@ -5,8 +5,7 @@ Finds a next state
 
     getNextState = (automaton, currentState, sensors) ->
       if automaton[currentState]['successors'].length < 1
-        alert 'The current state has no successors'
-        return false
+        throw new Error 'The current state has no successors'
       for successorState in automaton[currentState]['successors']
         isValidSuccessorState = true
         # check sensors
@@ -21,8 +20,7 @@ Finds a next state
         if isValidSuccessorState
           return successorState
       # end for
-      alert 'None of the current state\'s successors can be reached with those sensor readings'
-      return false
+      throw new Error 'None of the current state\'s successors can be reached with those sensor readings'
 
 Finds an initial state given the automaton, initial props, and initial region num
 
@@ -67,41 +65,42 @@ Finds an initial state given the automaton, initial props, and initial region nu
         if isValidInitialState
           return stateName
       # end for
-      alert 'The current configuration of props does not match any possible state in the automaton'
-      return false
+      throw new Error 'The current configuration of props does not match any possible state in the automaton'
 
 
 Traverse an automaton
 ---------------------
 
-    # store the current and next states
-    currentState = null
-    nextState = null
+    class Strategy
+      automaton: null
+      currentState: null
+      nextState: null
 
-    init = (automaton, initialProps, currentRegion) ->
-      currentState = getInitialState(automaton, initialProps, currentRegion)
-      return currentState
+      _nextRegion: () =>
+        return @automaton[@nextState]['props']['region']
 
-    # to be called continuously by Executor
-    next = (automaton, sensorReadings, currentRegion) ->
-      nextState = getNextState(automaton, currentState, sensorReadings)
-      if nextState == false
-        return false
+      _actuators: () =>
+        return @automaton[@currentState]['props']['actuators']
 
-      # currentState should only be set to nextState when region has been reached
-      if currentRegion == automaton[nextState]['props']['region']
-        currentState = nextState
+      _customs: () =>
+        return @automaton[@currentState]['props']['customs']
 
-      # return next region to go to as well as the props of the current region
-      return [automaton[nextState]['props']['region'],
-        automaton[currentState]['props']['actuators'],
-        automaton[currentState]['props']['customs']]
+      constructor: (automaton, initialProps, currentRegion) ->
+        @automaton = automaton
+        @currentState = getInitialState(@automaton, initialProps, currentRegion)
+
+      # to be called continuously by Executor
+      next: (sensorReadings, currentRegion) =>
+        @nextState = getNextState(@automaton, @currentState, sensorReadings)
+
+        # currentState should only be set to nextState when region has been reached
+        if currentRegion == @_nextRegion()
+          @currentState = @nextState
+
+        return [@_nextRegion(), @_actuators(), @_customs()]
 
 
 Export
 ------
 
-    module.exports = {
-      init,
-      execute
-    }
+    module.exports = Strategy

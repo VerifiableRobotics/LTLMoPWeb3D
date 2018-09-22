@@ -30,6 +30,7 @@ Initial set up
     regionFile = {}
     currentSimulator = {}
     ROSWorker = {}
+    strategy = null
     executorInterval = 0 # timer ID
 
 
@@ -125,8 +126,11 @@ Launch the executor
         # current region is the single active one
         currentRegion = @state.regions.find((values) -> values.get('active')).get('index')
         PoseHandler.setInitialRegion(currentRegion)
-        initState = Strategy.init(automaton, @getInitialProps(), currentRegion)
-        if !initState
+
+        try
+          strategy = new Strategy(automaton, @getInitialProps(), currentRegion)
+        catch err
+          alert(err.message)
           @resetExecution()
           return
 
@@ -147,9 +151,14 @@ A frame of the execution loop
         currentRegion = PoseHandler.getCurrentRegion()
         @setActiveRegion(currentRegion)
 
-        [nextRegion, actuators, customs] = Strategy.next(automaton, @getSensors(), currentRegion)
-        @setActiveProps(actuators, customs)
+        try
+          [nextRegion, actuators, customs] = strategy.next(@getSensors(), currentRegion)
+        catch err
+          alert(err.message)
+          PoseHandler.stop()
+          return
 
+        @setActiveProps(actuators, customs)
         if nextRegion == null or nextRegion == currentRegion
           PoseHandler.stop()
         else
