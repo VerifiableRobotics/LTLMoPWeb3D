@@ -135,13 +135,13 @@ Launch the executor
           return
 
         # disable all props and start the execution loop
-        @setEnabledProps(false, spec, regionFile.Regions)
+        @setEnabledProps(false, spec)
         executorInterval = setInterval(@executionLoop, 300)
 
 Reset execution in case props are invalid
 
       resetExecution: () ->
-        @setEnabledProps(true, spec, regionFile.Regions) # re-enable all props
+        @setEnabledProps(true, spec) # re-enable all props
         @setState({disableExec: false})
         clearInterval(executorInterval)
 
@@ -233,7 +233,7 @@ Toggle for when an actuator is clicked
 
 Toggle the enabled state of all actuators, customs, and regions (unless it were disabled in spec to begin with)
 
-      setEnabledProps: (enabled, spec, regions_arr) ->
+      setEnabledProps: (enabled, spec) ->
         # do not set to true if it were disabled in spec
         actuators = @state.actuators.map((values, name) -> values.set('disabled', !enabled || spec.Actions[name] == 1))
         customs = @state.customs.map((values) -> values.set('disabled', !enabled))
