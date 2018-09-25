@@ -33,6 +33,8 @@ Initial set up
     currentSimulator = {}
     ROSWorker = {}
     strategy = null
+    poseHandler = null
+    motionHandler = null
     executorInterval = 0 # timer ID
 
 
@@ -62,7 +64,7 @@ When a *.regions file is uploaded; specifically the decomposed one
           .then(RegionsAPI.parse)
           .then((regionsObj) =>
             regionFile = regionsObj
-            PoseHandler.createRegions(regionFile)
+            poseHandler = new PoseHandler(regionFile)
             @addRegionButtons(regionFile.Regions))
 
 When a *.spec file is uploaded
@@ -127,7 +129,7 @@ Launch the executor
 
         # current region is the single active one
         currentRegion = @state.regions.find((values) -> values.get('active')).get('index')
-        PoseHandler.setInitialRegion(regionFile, currentRegion)
+        poseHandler.setInitialRegion(currentRegion)
 
         try
           strategy = new Strategy(automaton, @getInitialProps(), currentRegion)
@@ -138,6 +140,7 @@ Launch the executor
 
         # disable all props and start the execution loop
         @setEnabledProps(false, spec)
+        motionHandler = new MotionHandler(regionFile)
         executorInterval = setInterval(@executionLoop, 300)
 
 Reset execution in case props are invalid
@@ -150,7 +153,7 @@ Reset execution in case props are invalid
 A frame of the execution loop
 
       executionLoop: () ->
-        poseData = PoseHandler.getPose()
+        poseData = poseHandler.getPose()
         currentRegion = regionInterface.getRegion(regionFile, poseData[0], poseData[1])
         @setActiveRegion(currentRegion)
 
@@ -158,14 +161,14 @@ A frame of the execution loop
           [nextRegion, actuators, customs] = strategy.next(@getSensors(), currentRegion)
         catch err
           alert(err.message)
-          MotionHandler.stop()
+          motionHandler.stop()
           return
 
         @setActiveProps(actuators, customs)
         if nextRegion == null or nextRegion == currentRegion
-          MotionHandler.stop()
+          motionHandler.stop()
         else
-          MotionHandler.plotCourse(regionFile, nextRegion, @state.velocity, poseData)
+          motionHandler.plotCourse(nextRegion, @state.velocity, poseData)
 
 
 Gets the initial props (all of sensors, actuators, and customs) for the executor to determine initial state

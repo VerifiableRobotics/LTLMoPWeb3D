@@ -7,11 +7,6 @@ Internal Dependencies
 
 Main Program
 ------------
-Globals
-
-    driveHandler = new DriveHandler()
-
-## Handler Functions
 
 Gets the target point to move to
 
@@ -23,21 +18,32 @@ Gets the target point to move to
         currentRegion, targetRegion)
 
 
-Starts moving the car toward the destination
+Calculates the target theta to move to based on the current position and target position
 
-    plotCourse = (regionFile, targetRegionNum, maxVelocity, poseData) ->
-      [xpos, ypos, carTheta] = poseData
+    getTargetTheta = (regionFile, targetRegionNum, poseData) ->
+      [xpos, ypos] = poseData
       currentPosition = [xpos, ypos]
       targetPosition = getTargetPoint(regionFile, targetRegionNum, xpos, ypos)
       targetTheta = Math.atan2(targetPosition[1] - currentPosition[1], targetPosition[0] - currentPosition[0])
+      return targetTheta
 
-      driveHandler.setVelocityTheta(maxVelocity, targetTheta, poseData)
+Create the Handler
 
+    class MotionHandler
+      regionFile: null
+      driveHandler: new DriveHandler()
+
+      constructor: (regionFile) ->
+        @regionFile = regionFile
+
+      # starts moving the robot toward the destination
+      plotCourse: (targetRegionNum, maxVelocity, poseData) =>
+        targetTheta = getTargetTheta(@regionFile, targetRegionNum, poseData)
+        @driveHandler.setVelocityTheta(maxVelocity, targetTheta, poseData)
+
+      stop: () -> @driveHandler.stop()
 
 Export
 ------
 
-    module.exports = {
-      plotCourse,
-      stop: driveHandler.stop
-    }
+    module.exports = MotionHandler

@@ -38,12 +38,21 @@ Gets the Pose data of the car
       theta = getTheta(car)
       return [xpos, ypos, theta]
 
+Create the Handler
+
+    class PoseHandler
+      regionFile: null
+
+      constructor: (regionFile) ->
+        @regionFile = regionFile
+        create3DRegions(@regionFile)
+
+      setInitialRegion: (regionNum) =>
+        createCar(@regionFile, regionNum)
+
+      getPose: () -> getPose()
 
 Export
 ------
 
-    module.exports = {
-      createRegions: create3DRegions,
-      setInitialRegion: createCar
-      getPose
-    }
+    module.exports = PoseHandler
