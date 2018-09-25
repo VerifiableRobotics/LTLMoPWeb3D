@@ -10,10 +10,12 @@ Internal Dependencies
 
     Helpers = require('js/core/helpers.litcoffee')
     RegionsAPI = require('js/core/regions/regionsAPI.litcoffee')
+    regionInterface = require('./regionInterface.litcoffee')
     SpecAPI = require('js/core/spec/specAPI.litcoffee')
     AutAPI = require('js/core/automatonParser.litcoffee')
     Strategy = require('js/core/strategy.litcoffee')
     PoseHandler = require('./physijs/poseHandler.litcoffee')
+    MotionHandler = require('./physijs/motionHandler.litcoffee')
 
 Assets
 
@@ -125,7 +127,7 @@ Launch the executor
 
         # current region is the single active one
         currentRegion = @state.regions.find((values) -> values.get('active')).get('index')
-        PoseHandler.setInitialRegion(currentRegion)
+        PoseHandler.setInitialRegion(regionFile, currentRegion)
 
         try
           strategy = new Strategy(automaton, @getInitialProps(), currentRegion)
@@ -148,21 +150,22 @@ Reset execution in case props are invalid
 A frame of the execution loop
 
       executionLoop: () ->
-        currentRegion = PoseHandler.getCurrentRegion()
+        poseData = PoseHandler.getPose()
+        currentRegion = regionInterface.getRegion(regionFile, poseData[0], poseData[1])
         @setActiveRegion(currentRegion)
 
         try
           [nextRegion, actuators, customs] = strategy.next(@getSensors(), currentRegion)
         catch err
           alert(err.message)
-          PoseHandler.stop()
+          MotionHandler.stop()
           return
 
         @setActiveProps(actuators, customs)
         if nextRegion == null or nextRegion == currentRegion
-          PoseHandler.stop()
+          MotionHandler.stop()
         else
-          PoseHandler.plotCourse(nextRegion, @state.velocity)
+          MotionHandler.plotCourse(regionFile, nextRegion, @state.velocity, poseData)
 
 
 Gets the initial props (all of sensors, actuators, and customs) for the executor to determine initial state

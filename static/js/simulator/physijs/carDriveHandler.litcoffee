@@ -8,7 +8,9 @@ Main Program
 ------------
 Gets the target wheel theta from the target theta and the car's current theta
 
-    getWheelTheta = (targetTheta, carTheta) ->
+    getWheelTheta = (targetTheta, poseData) ->
+      carTheta = poseData[2]
+
       # target wheelTheta = diff b/t car body's theta and target theta
       wheelTheta = -(targetTheta - carTheta)
 
@@ -23,10 +25,10 @@ Gets the target wheel theta from the target theta and the car's current theta
 
 Converts the global target velocity, theta, and pose data (carTheta) to velocity and theta for the wheels of the car
 
-    setVelocityTheta = (maxVelocity, targetTheta, carTheta, loco) ->
+    setVelocityTheta = (maxVelocity, targetTheta, poseData, loco) ->
       if maxVelocity <= 0 then maxVelocity = 8 # default
 
-      wheelTheta = getWheelTheta(targetTheta, carTheta)
+      wheelTheta = getWheelTheta(targetTheta, poseData)
 
       # if theta > PI/4 or PI/2, then slower turn
       if wheelTheta > Math.PI/2 or wheelTheta < -Math.PI/2
@@ -41,8 +43,8 @@ Create the Handler
     class CarDriveHandler
       loco: new CarLocomotionHandler()
 
-      setVelocityTheta: (maxVelocity, targetTheta, carTheta) =>
-        setVelocityTheta(maxVelocity, targetTheta, carTheta, @loco)
+      setVelocityTheta: (maxVelocity, targetTheta, poseData) =>
+        setVelocityTheta(maxVelocity, targetTheta, poseData, @loco)
 
       stop: () => @loco.stop()
 
